@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- Database: Interact with Supabase using its JavaScript client. Leverage Supabase Row Level Security (RLS) as an additional layer of data protection.
+   - Data Fetching: In Server Components, use native `fetch` with Next.js caching and revalidation tags (`next: { tags: [...] }`) for efficient data retrieval.
+   - API Responses: Route Handlers should return `NextResponse` objects with appropriate status codes and typed JSON bodies.
