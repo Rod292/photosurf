@@ -34,7 +34,7 @@ export function TextReveal({ text, className = "", delay = 0, duration = 0.05, o
         type: "spring",
         damping: 12,
         stiffness: 100,
-      },
+      } as const,
     },
   }
 
