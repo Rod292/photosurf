@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { Trash2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { getStripe } from "@/lib/stripe-client"
 import { PhotoModal } from "@/components/photo-modal"
 
 export function CartContent() {
@@ -20,67 +19,14 @@ export function CartContent() {
     src: string
     title: string
     price: number
-    surfer: string
+    surfer?: string
   }>(null)
 
   const handleCheckout = async () => {
-    try {
-      setIsLoading(true)
-      console.log("Initiating checkout process")
-
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          items: cart,
-          totalPrice: totalPrice - discount,
-          discount: discount,
-        }),
-      })
-
-      console.log("Checkout API response status:", response.status)
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error("Checkout API error:", errorData)
-        throw new Error(errorData.error || "Network response was not ok")
-      }
-
-      const data = await response.json()
-      console.log("Checkout API response data:", data)
-
-      if (!data.sessionId) {
-        throw new Error("No sessionId received from the server")
-      }
-
-      console.log("Received sessionId:", data.sessionId)
-
-      const stripe = await getStripe()
-      if (!stripe) {
-        throw new Error("Failed to load Stripe")
-      }
-
-      console.log("Redirecting to Stripe checkout...")
-      const result = await stripe.redirectToCheckout({
-        sessionId: data.sessionId,
-      })
-
-      if (result.error) {
-        console.error("Stripe redirect error:", result.error)
-        throw new Error(result.error.message)
-      }
-    } catch (error: any) {
-      console.error("Checkout error:", error)
-      toast({
-        title: "Erreur",
-        description: `Une erreur s'est produite lors du paiement: ${error.message || "Erreur inconnue"}. Veuillez réessayer.`,
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
+    toast({
+      title: "En construction",
+      description: "Le système de paiement est en cours de reconstruction.",
+    })
   }
 
   const handleApplyPromo = () => {
@@ -203,11 +149,11 @@ export function CartContent() {
           </div>
         </>
       )}
-      {selectedPhoto && (
+      {selectedPhoto && selectedPhoto.surfer && (
         <PhotoModal
           isOpen={!!selectedPhoto}
           onClose={closePhotoModal}
-          photo={selectedPhoto}
+          photo={selectedPhoto as any}
           onPrevious={() => {}}
           onNext={() => {}}
           hasPrevious={false}
