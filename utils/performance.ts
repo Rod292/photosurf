@@ -35,7 +35,7 @@ function loadScripts() {
 
 function prefetchImages() {
   // Liste des images à précharger
-  const imagesToPrefetch = [
+  const imagesToPrefetch: string[] = [
     // Ajouter ici les URLs des images importantes qui seront nécessaires plus tard
   ]
 
