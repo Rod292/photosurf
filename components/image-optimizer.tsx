@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Image, { type ImageProps } from "next/image"
+import NextImage, { type ImageProps } from "next/image"
 
 interface OptimizedImageProps extends Omit<ImageProps, "onLoad"> {
   lowQualitySrc?: string
@@ -25,7 +25,7 @@ export function OptimizedImage({ src, alt, lowQualitySrc, className, ...props }:
   }, [src])
 
   return (
-    <Image
+    <NextImage
       {...props}
       src={currentSrc || "/placeholder.svg"}
       alt={alt}
