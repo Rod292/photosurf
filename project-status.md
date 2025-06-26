@@ -8,9 +8,6 @@
 ### 📝 To Do
 
 #### Phase 1: Foundation & Core Backend
-- [ ] **[Ops]** Set up Vercel project and link to GitHub repository.
-- [ ] **[BE]** Design and create initial Supabase database tables: `galleries`, `photos`, `orders`, `order_items` using SQL schema.
-- [ ] **[BE]** Create a secure admin page (`/admin/upload`) protected by Supabase Auth.
 - [ ] **[BE]** Build the photo upload Server Action:
     - [ ] Takes files and a gallery name as input.
     - [ ] Uploads original image to a **private** S3/Supabase storage bucket.
@@ -53,3 +50,7 @@
 - [✅] **[Setup]** Install all dependencies: pnpm, Supabase, Stripe, React Hook Form, Zod, Resend, Framer Motion.
 - [✅] **[Ops]** Set up Vercel project and link to GitHub repository.
 - [✅] **[Ops]** Configure `.env.local` with placeholder keys for Supabase, Stripe, and Resend.
+- [✅] **[Ops]** Set up Vercel project and link to GitHub repository.
+- [✅] **[BE]** Design and create initial Supabase database tables: `galleries`, `photos`, `orders`, `order_items` using SQL schema.
+- [✅] **[BE]** Create a secure admin page (`/admin/upload`) protected by Supabase Auth.
+

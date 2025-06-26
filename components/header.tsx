@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Instagram, ShoppingCart } from "lucide-react"
+import { Instagram, ShoppingCart, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import { useCart } from "@/context/cart-context"
@@ -13,6 +13,8 @@ interface HeaderProps {
 
 export function Header({ alwaysVisible = false }: HeaderProps) {
   const [isAtTop, setIsAtTop] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [debugMode, setDebugMode] = useState(false) // Debug désactivé
   const { totalItems } = useCart()
   const router = useRouter()
 
@@ -29,8 +31,35 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
     }
   }, [])
 
+  // Vérifier l'authentification
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/check')
+        if (response.ok) {
+          const { authenticated } = await response.json()
+          setIsAuthenticated(authenticated)
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error)
+        setIsAuthenticated(false)
+      }
+    }
+
+    checkAuth()
+    
+    // Vérifier périodiquement l'authentification
+    const interval = setInterval(checkAuth, 30000) // Toutes les 30 secondes
+    
+    return () => clearInterval(interval)
+  }, [])
+
   const handleNavigation = (path: string) => {
     router.push(path)
+  }
+
+  const handleAdminClick = () => {
+    handleNavigation("/admin/upload")
   }
 
   return (
@@ -62,7 +91,20 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
           </button>
         </div>
 
-        <nav className="flex items-center space-x-6">
+        <nav className="flex items-center space-x-4">
+          {isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleAdminClick}
+              className={`flex items-center gap-2 ${
+                alwaysVisible || !isAtTop ? "text-black hover:text-black/80" : "text-white hover:text-white/80"
+              }`}
+            >
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Admin</span>
+            </Button>
+          )}
           <a href="https://www.instagram.com/arode.studio/" target="_blank" rel="noopener noreferrer">
             <Button
               variant="ghost"
