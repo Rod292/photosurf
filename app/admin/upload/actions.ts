@@ -1,42 +1,19 @@
 'use server'
 
-import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase/server'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { SurfSchool, Gallery } from '@/lib/database.types'
 
-// Debug function to check env vars
-export async function checkEnvironmentVariables() {
-  console.log('🔍 Environment check:')
-  console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Set' : '❌ Missing')
-  console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ Set' : '❌ Missing')
-  console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Set' : '❌ Missing')
-  
-  return {
-    supabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    anonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    serviceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
-  }
-}
-
-// Nouvelles Server Actions pour récupérer les données
+// Server Actions pour récupérer les données - SIMPLIFIÉ
 export async function fetchSurfSchools(): Promise<SurfSchool[]> {
   try {
-    console.log('🏄‍♂️ Attempting to fetch surf schools...')
+    console.log('🏄‍♂️ Fetching surf schools with standard client...')
     
-    // Vérifier les variables d'environnement avant de créer le client
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('❌ Missing required environment variables')
-      console.log('URL:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
-      console.log('Service Key:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
-      return []
-    }
+    const supabase = await createSupabaseServerClient()
     
-    const supabaseAdmin = createSupabaseAdminClient()
-    console.log('✅ Supabase admin client created successfully')
-    
-    const { data: schools, error } = await supabaseAdmin
+    const { data: schools, error } = await supabase
       .from('surf_schools')
       .select('id, name, slug')
       .order('name', { ascending: true })
@@ -56,18 +33,11 @@ export async function fetchSurfSchools(): Promise<SurfSchool[]> {
 
 export async function fetchGalleries(): Promise<Gallery[]> {
   try {
-    console.log('🖼️ Attempting to fetch galleries...')
+    console.log('🖼️ Fetching galleries with standard client...')
     
-    // Vérifier les variables d'environnement avant de créer le client
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('❌ Missing required environment variables for galleries')
-      return []
-    }
+    const supabase = await createSupabaseServerClient()
     
-    const supabaseAdmin = createSupabaseAdminClient()
-    console.log('✅ Supabase admin client created for galleries')
-    
-    const { data: galleries, error } = await supabaseAdmin
+    const { data: galleries, error } = await supabase
       .from('galleries')
       .select('id, name, date, school_id, created_at')
       .order('created_at', { ascending: false })
@@ -112,9 +82,6 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
       redirect('/login')
     }
 
-    // Client admin pour les opérations de base de données
-    const adminSupabase = createSupabaseAdminClient()
-
     // Extraire et valider les données du FormData
     const schoolId = parseInt(formData.get('school_id') as string)
     const gallerySelection = formData.get('gallerySelection') as string
@@ -143,7 +110,7 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
     const { school_id, gallerySelection: selectedGallery, newGalleryName: newName, galleryDate: date } = validationResult.data
 
     // Vérifier que l'école de surf existe
-    const { data: surfSchool, error: schoolError } = await adminSupabase
+    const { data: surfSchool, error: schoolError } = await supabase
       .from('surf_schools')
       .select('id, name')
       .eq('id', school_id)
@@ -191,7 +158,7 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
       }
 
       // Créer une nouvelle galerie avec school_id
-      const { data: newGallery, error: galleryError } = await adminSupabase
+      const { data: newGallery, error: galleryError } = await supabase
         .from('galleries')
         .insert({
           name: newName.trim(),
@@ -212,7 +179,7 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
       galleryId = newGallery.id
     } else {
       // Vérifier que la galerie existe et appartient à la bonne école
-      const { data: existingGallery, error: galleryCheckError } = await adminSupabase
+      const { data: existingGallery, error: galleryCheckError } = await supabase
         .from('galleries')
         .select('id, school_id')
         .eq('id', selectedGallery)
@@ -256,7 +223,7 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
         const previewBuffer = Buffer.from(await previewFile.arrayBuffer())
 
         // Upload de l'image originale vers Supabase Storage (bucket privé)
-        const { data: originalUpload, error: originalError } = await adminSupabase.storage
+        const { data: originalUpload, error: originalError } = await supabase.storage
           .from('originals')
           .upload(`gallery-${galleryId}/${originalFileName}`, originalBuffer, {
             contentType: originalFile.type,
@@ -268,7 +235,7 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
         }
 
         // Upload de l'image preview vers Supabase Storage (bucket public)
-        const { data: previewUpload, error: previewError } = await adminSupabase.storage
+        const { data: previewUpload, error: previewError } = await supabase.storage
           .from('web-previews')
           .upload(`gallery-${galleryId}/${previewFileName}`, previewBuffer, {
             contentType: previewFile.type,
@@ -277,19 +244,19 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
 
         if (previewError) {
           // Si preview échoue, nettoyer l'original déjà uploadé
-          await adminSupabase.storage
+          await supabase.storage
             .from('originals')
             .remove([originalUpload.path])
           throw new Error(`Erreur upload preview ${previewFile.name}: ${previewError.message}`)
         }
 
         // Obtenir l'URL publique de la preview
-        const { data: previewUrl } = adminSupabase.storage
+        const { data: previewUrl } = supabase.storage
           .from('web-previews')
           .getPublicUrl(previewUpload.path)
 
         // Enregistrer les métadonnées dans Supabase (utiliser les noms de colonnes du schéma existant)
-        const { error: photoError } = await adminSupabase
+        const { error: photoError } = await supabase
           .from('photos')
           .insert({
             gallery_id: galleryId,
@@ -304,8 +271,8 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
           console.error('Photo metadata save error:', photoError)
           // Nettoyer les fichiers uploadés si l'insertion DB échoue
           await Promise.all([
-            adminSupabase.storage.from('originals').remove([originalUpload.path]),
-            adminSupabase.storage.from('web-previews').remove([previewUpload.path])
+            supabase.storage.from('originals').remove([originalUpload.path]),
+            supabase.storage.from('web-previews').remove([previewUpload.path])
           ])
           throw new Error(`Erreur lors de la sauvegarde des métadonnées pour ${originalFile.name}`)
         }
