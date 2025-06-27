@@ -85,12 +85,13 @@ export const metadata = {
   alternates: {
     canonical: "/",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-  },
-    generator: 'v0.dev'
+  generator: 'v0.dev'
+}
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 }
 
 export default function RootLayout({
@@ -105,10 +106,10 @@ export default function RootLayout({
     >
       <body className="bg-gray-50 font-sans flex flex-col min-h-screen">
         <CursorPreload />
-        <FilterProvider>
-          <div className="flex-grow">{children}</div>
-          <Footer />
-        </FilterProvider>
+          <FilterProvider>
+            <div className="flex-grow">{children}</div>
+            <Footer />
+          </FilterProvider>
         <Toaster />
         <SpeedInsights />
         <Analytics />

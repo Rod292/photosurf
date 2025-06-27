@@ -6,10 +6,35 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { SurfSchool, Gallery } from '@/lib/database.types'
 
+// Debug function to check env vars
+export async function checkEnvironmentVariables() {
+  console.log('🔍 Environment check:')
+  console.log('NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Set' : '❌ Missing')
+  console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ Set' : '❌ Missing')
+  console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Set' : '❌ Missing')
+  
+  return {
+    supabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    anonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    serviceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+  }
+}
+
 // Nouvelles Server Actions pour récupérer les données
 export async function fetchSurfSchools(): Promise<SurfSchool[]> {
   try {
+    console.log('🏄‍♂️ Attempting to fetch surf schools...')
+    
+    // Vérifier les variables d'environnement avant de créer le client
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('❌ Missing required environment variables')
+      console.log('URL:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
+      console.log('Service Key:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+      return []
+    }
+    
     const supabaseAdmin = createSupabaseAdminClient()
+    console.log('✅ Supabase admin client created successfully')
     
     const { data: schools, error } = await supabaseAdmin
       .from('surf_schools')
@@ -17,20 +42,30 @@ export async function fetchSurfSchools(): Promise<SurfSchool[]> {
       .order('name', { ascending: true })
     
     if (error) {
-      console.error('Error fetching surf schools:', error)
+      console.error('❌ Error fetching surf schools:', error)
       return []
     }
     
+    console.log('✅ Surf schools fetched successfully:', schools?.length || 0)
     return schools || []
   } catch (error) {
-    console.error('Unexpected error in fetchSurfSchools:', error)
+    console.error('💥 Unexpected error in fetchSurfSchools:', error)
     return []
   }
 }
 
 export async function fetchGalleries(): Promise<Gallery[]> {
   try {
+    console.log('🖼️ Attempting to fetch galleries...')
+    
+    // Vérifier les variables d'environnement avant de créer le client
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('❌ Missing required environment variables for galleries')
+      return []
+    }
+    
     const supabaseAdmin = createSupabaseAdminClient()
+    console.log('✅ Supabase admin client created for galleries')
     
     const { data: galleries, error } = await supabaseAdmin
       .from('galleries')
@@ -38,13 +73,14 @@ export async function fetchGalleries(): Promise<Gallery[]> {
       .order('created_at', { ascending: false })
     
     if (error) {
-      console.error('Error fetching galleries:', error)
+      console.error('❌ Error fetching galleries:', error)
       return []
     }
     
+    console.log('✅ Galleries fetched successfully:', galleries?.length || 0)
     return galleries || []
   } catch (error) {
-    console.error('Unexpected error in fetchGalleries:', error)
+    console.error('💥 Unexpected error in fetchGalleries:', error)
     return []
   }
 }

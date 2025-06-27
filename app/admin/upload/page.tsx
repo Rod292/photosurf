@@ -1,9 +1,15 @@
 import { Suspense } from 'react'
 import { PhotoUploadForm } from './upload-form'
 import { Loader2 } from 'lucide-react'
-import { fetchSurfSchools, fetchGalleries } from './actions'
+import { fetchSurfSchools, fetchGalleries, checkEnvironmentVariables } from './actions'
 
 export default async function AdminUploadPage() {
+  console.log('🚀 Admin upload page loading...')
+  
+  // Debug: vérifier les variables d'environnement
+  const envCheck = await checkEnvironmentVariables()
+  console.log('Environment variables status:', envCheck)
+  
   const [surfSchools, galleries] = await Promise.all([
     fetchSurfSchools(),
     fetchGalleries()

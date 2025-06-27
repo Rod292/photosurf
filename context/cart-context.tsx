@@ -40,7 +40,7 @@ export const useCartStore = create<CartStore>()(
             const newItems = [...state.items]
             newItems[existingIndex] = item
             return { items: newItems }
-          } else {
+      } else {
             // Ajouter le nouvel item
             return { items: [...state.items, item] }
           }
@@ -70,7 +70,7 @@ export const useCartStore = create<CartStore>()(
     {
       name: 'arode-cart-storage',
       partialize: (state) => ({ items: state.items })
-    }
+  }
   )
 )
 
