@@ -39,6 +39,11 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
         if (response.ok) {
           const { authenticated } = await response.json()
           setIsAuthenticated(authenticated)
+          if (!authenticated) {
+            console.log('User not authenticated - hiding admin link')
+          }
+        } else {
+          setIsAuthenticated(false)
         }
       } catch (error) {
         console.error('Error checking auth:', error)
@@ -48,11 +53,37 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
 
     checkAuth()
     
+    // Vérifier aussi quand la page devient visible (retour d'onglet)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        checkAuth()
+      }
+    }
+    
+    // Écouter les changements de visibilité
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
     // Vérifier périodiquement l'authentification
     const interval = setInterval(checkAuth, 30000) // Toutes les 30 secondes
     
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
+
+  // Fonction pour gérer la déconnexion explicite
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', { method: 'POST' })
+      if (response.ok) {
+        setIsAuthenticated(false)
+        router.push('/')
+      }
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
 
   const handleNavigation = (path: string) => {
     router.push(path)
@@ -94,19 +125,32 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
         </div>
 
         <nav className="flex items-center space-x-4">
-          {isAuthenticated && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleAdminClick}
-              className={`flex items-center gap-2 ${
-                alwaysVisible || !isAtTop ? "text-black hover:text-black/80" : "text-white hover:text-white/80"
-              }`}
-            >
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin</span>
-            </Button>
-          )}
+          {isAuthenticated ? (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleAdminClick}
+                className={`flex items-center gap-2 ${
+                  alwaysVisible || !isAtTop ? "text-black hover:text-black/80" : "text-white hover:text-white/80"
+                }`}
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Admin</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className={`${
+                  alwaysVisible || !isAtTop ? "text-black hover:text-black/80" : "text-white hover:text-white/80"
+                }`}
+              >
+                <span className="hidden sm:inline">Déconnexion</span>
+                <span className="sm:hidden">↗</span>
+              </Button>
+            </>
+          ) : null}
           <a href="https://www.instagram.com/arode.studio/" target="_blank" rel="noopener noreferrer">
             <Button
               variant="ghost"
