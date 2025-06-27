@@ -1,3 +1,4 @@
+// import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { createSupabaseAdminClient } from '@/lib/supabase/server'
 import { PhotoUploadForm } from './upload-form'
@@ -95,4 +96,10 @@ export default async function AdminUploadPage() {
       </div>
     </div>
   )
-} 
+}
+
+// export const metadata: Metadata = {
+//   title: 'Admin - Upload de Photos',
+//   description: 'Page pour uploader de nouvelles photos et gérer les galeries.',
+//   viewport: 'width=device-width, initial-scale=1',
+// } 
