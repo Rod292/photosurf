@@ -4,9 +4,7 @@ import { Footer } from "@/components/footer"
 import Link from "next/link"
 import Image from "next/image"
 import { createSupabaseAdminClient } from "@/lib/supabase/server"
-import { Database } from "@/lib/database.types"
-
-type Gallery = Database["public"]["Tables"]["galleries"]["Row"]
+import { Gallery } from "@/lib/database.types"
 
 // Mock data pour les tests en attendant les vraies données - UUIDs valides
 const mockGalleries: Gallery[] = [
@@ -14,14 +12,14 @@ const mockGalleries: Gallery[] = [
     id: "550e8400-e29b-41d4-a716-446655440000",
     name: "Session Matin - La Torche",
     date: "2024-12-15",
-    surf_school_id: "550e8400-e29b-41d4-a716-446655440001",
+    school_id: 1,
     created_at: "2024-12-15T10:00:00Z"
   },
   {
     id: "550e8400-e29b-41d4-a716-446655440002", 
     name: "Session Après-midi - Penhors",
     date: "2024-12-14",
-    surf_school_id: "550e8400-e29b-41d4-a716-446655440001",
+    school_id: 1,
     created_at: "2024-12-14T14:00:00Z"
   }
 ]
