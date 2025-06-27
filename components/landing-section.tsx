@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Instagram, ChevronDown } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 import { motion } from "framer-motion"
 
 export function LandingSection() {
@@ -13,11 +13,9 @@ export function LandingSection() {
         <Image
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/arodesurf-32.jpg-Tvlf2Ll5xApOCKGGqyWl6yi28WcNTT.jpeg"
           alt="Surf background"
-          layout="fill"
-          objectFit="cover"
-          objectPosition="center"
+          fill
           priority
-          className="landing-background"
+          className="landing-background object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent md:from-black/70 md:via-black/40 md:to-transparent" />
       </div>
@@ -46,20 +44,17 @@ export function LandingSection() {
             className="pt-6 md:pt-8"
           >
             <Link
-              href="https://www.instagram.com/arode.studio/"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/gallery"
               className="inline-block"
             >
               <Button
                 variant="outline"
                 size="lg"
                 className="bg-white/10 text-white border-white hover:bg-white/20 hover:text-white 
-                         transition-all duration-300 px-6 md:px-8 py-5 md:py-6 text-base md:text-lg 
-                         rounded-full group relative overflow-hidden"
+                         transition-all duration-300 px-8 md:px-12 py-6 md:py-8 text-lg md:text-xl 
+                         rounded-full group relative overflow-hidden shadow-2xl hover:shadow-white/20"
               >
-                <Instagram className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:w-6 transition-transform group-hover:scale-110" />
-                <span className="text-lg md:text-xl font-lexend-deca">Contactez nous</span>
+                <span className="text-xl md:text-2xl font-lexend-deca">📸 Découvre tes photos</span>
               </Button>
             </Link>
           </motion.div>

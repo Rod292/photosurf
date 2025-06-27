@@ -1,5 +1,4 @@
 import { FilterProvider } from "@/context/filter-context"
-import { CartProvider } from "@/context/cart-context"
 import {
   Playfair_Display,
   Montserrat,
@@ -14,6 +13,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
 import { Footer } from "@/components/footer"
 import { CursorPreload } from "@/components/cursor-preload"
+import { Toaster } from "@/components/ui/toaster"
 import Script from "next/script"
 
 const playfair = Playfair_Display({
@@ -105,12 +105,11 @@ export default function RootLayout({
     >
       <body className="bg-gray-50 font-sans flex flex-col min-h-screen">
         <CursorPreload />
-        <CartProvider>
-          <FilterProvider>
-            <div className="flex-grow">{children}</div>
-            <Footer />
-          </FilterProvider>
-        </CartProvider>
+        <FilterProvider>
+          <div className="flex-grow">{children}</div>
+          <Footer />
+        </FilterProvider>
+        <Toaster />
         <SpeedInsights />
         <Analytics />
         {/* Stripe sera chargé de manière différée pour ne pas bloquer le rendu initial */}

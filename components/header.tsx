@@ -2,10 +2,11 @@
 
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Instagram, ShoppingCart, Settings } from "lucide-react"
+import { Instagram, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
-import { useCart } from "@/context/cart-context"
+import { useCartStore } from "@/context/cart-context"
+import { CartSlideOver } from "@/components/cart-slide-over"
 
 interface HeaderProps {
   alwaysVisible?: boolean
@@ -15,7 +16,6 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
   const [isAtTop, setIsAtTop] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [debugMode, setDebugMode] = useState(false) // Debug désactivé
-  const { totalItems } = useCart()
   const router = useRouter()
 
   useEffect(() => {
@@ -61,6 +61,8 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
   const handleAdminClick = () => {
     handleNavigation("/admin/upload")
   }
+
+  const isDarkMode = !alwaysVisible && isAtTop
 
   return (
     <header
@@ -117,23 +119,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
               <span className="sr-only">Instagram</span>
             </Button>
           </a>
-          <div onClick={() => handleNavigation("/cart")}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`relative ${
-                alwaysVisible || !isAtTop ? "text-black hover:text-black/80" : "text-white hover:text-white/80"
-              }`}
-            >
-              <ShoppingCart className="h-6 w-6" />
-              <span className="sr-only">Panier</span>
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 flex items-center justify-center min-w-[20px] h-5 px-1 text-xs font-bold text-white bg-red-600 rounded-full">
-                  {totalItems}
-                </span>
-              )}
-            </Button>
-          </div>
+          <CartSlideOver headerStyle={isDarkMode ? 'dark' : 'light'} />
         </nav>
       </div>
     </header>
