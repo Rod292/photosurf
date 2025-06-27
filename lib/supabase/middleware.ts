@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { CookieOptions } from '@supabase/ssr'
 
@@ -51,21 +52,15 @@ export async function updateSession(request: NextRequest) {
 
     // Vérifier le rôle admin dans la table profiles
     // Utiliser le service role key pour bypasser RLS
-    const supabaseAdmin = createServerClient(
+    // IMPORTANT: Utiliser createClient de @supabase/supabase-js pour le service role
+    const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
-        cookies: {
-          get(name: string) {
-            return request.cookies.get(name)?.value
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            // Ne rien faire côté middleware
-          },
-          remove(name: string, options: CookieOptions) {
-            // Ne rien faire côté middleware
-          },
-        },
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        }
       }
     )
 
