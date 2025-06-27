@@ -4,6 +4,50 @@ import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/sup
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
+import { SurfSchool, Gallery } from '@/lib/database.types'
+
+// Nouvelles Server Actions pour récupérer les données
+export async function fetchSurfSchools(): Promise<SurfSchool[]> {
+  try {
+    const supabaseAdmin = createSupabaseAdminClient()
+    
+    const { data: schools, error } = await supabaseAdmin
+      .from('surf_schools')
+      .select('id, name, slug')
+      .order('name', { ascending: true })
+    
+    if (error) {
+      console.error('Error fetching surf schools:', error)
+      return []
+    }
+    
+    return schools || []
+  } catch (error) {
+    console.error('Unexpected error in fetchSurfSchools:', error)
+    return []
+  }
+}
+
+export async function fetchGalleries(): Promise<Gallery[]> {
+  try {
+    const supabaseAdmin = createSupabaseAdminClient()
+    
+    const { data: galleries, error } = await supabaseAdmin
+      .from('galleries')
+      .select('id, name, date, school_id, created_at')
+      .order('created_at', { ascending: false })
+    
+    if (error) {
+      console.error('Error fetching galleries:', error)
+      return []
+    }
+    
+    return galleries || []
+  } catch (error) {
+    console.error('Unexpected error in fetchGalleries:', error)
+    return []
+  }
+}
 
 // Schéma de validation côté serveur
 const uploadServerSchema = z.object({

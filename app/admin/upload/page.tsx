@@ -1,53 +1,7 @@
-// import { Metadata } from 'next'
 import { Suspense } from 'react'
-import { createSupabaseAdminClient } from '@/lib/supabase/server'
 import { PhotoUploadForm } from './upload-form'
 import { Loader2 } from 'lucide-react'
-import { SurfSchool, Gallery } from '@/lib/database.types'
-
-// Server Component pour récupérer les écoles de surf
-async function fetchSurfSchools(): Promise<SurfSchool[]> {
-  try {
-    const supabase = createSupabaseAdminClient()
-    
-    const { data: schools, error } = await supabase
-      .from('surf_schools')
-      .select('id, name, slug')
-      .order('name', { ascending: true })
-    
-    if (error) {
-      console.error('Error fetching surf schools:', error)
-      return []
-    }
-    
-    return schools || []
-  } catch (error) {
-    console.error('Unexpected error in fetchSurfSchools:', error)
-    return []
-  }
-}
-
-// Server Component pour récupérer les galeries
-async function fetchGalleries(): Promise<Gallery[]> {
-  try {
-    const supabase = createSupabaseAdminClient()
-    
-    const { data: galleries, error } = await supabase
-      .from('galleries')
-      .select('id, name, date, school_id, created_at')
-      .order('created_at', { ascending: false })
-    
-    if (error) {
-      console.error('Error fetching galleries:', error)
-      return []
-    }
-    
-    return galleries || []
-  } catch (error) {
-    console.error('Unexpected error in fetchGalleries:', error)
-    return []
-  }
-}
+import { fetchSurfSchools, fetchGalleries } from './actions'
 
 export default async function AdminUploadPage() {
   const [surfSchools, galleries] = await Promise.all([
@@ -96,10 +50,4 @@ export default async function AdminUploadPage() {
       </div>
     </div>
   )
-}
-
-// export const metadata: Metadata = {
-//   title: 'Admin - Upload de Photos',
-//   description: 'Page pour uploader de nouvelles photos et gérer les galeries.',
-//   viewport: 'width=device-width, initial-scale=1',
-// } 
+} 
