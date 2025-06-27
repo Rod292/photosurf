@@ -8,12 +8,6 @@
 ### 📝 To Do
 
 #### Phase 1: Foundation & Core Backend
-- [ ] **[BE]** Build the photo upload Server Action:
-    - [ ] Takes files and a gallery name as input.
-    - [ ] Uploads original image to a **private** S3/Supabase storage bucket.
-    - [ ] Resizes and watermarks the image for a web preview.
-    - [ ] Uploads the preview to a **public** storage bucket.
-    - [ ] Writes photo metadata (URLs, gallery link) to the `photos` table.
 - [ ] **[BE]** Create the Stripe webhook Route Handler (`/api/stripe-webhook`):
     - [ ] Verifies the Stripe signature.
     - [ ] Handles the `checkout.session.completed` event.
@@ -57,6 +51,6 @@
 - [✅] **[BE]** Build the photo upload Server Action:
     - [✅] Takes files and a gallery name as input.
     - [✅] Uploads original image to a **private** S3/Supabase storage bucket.
-    - [ ✅] Resizes and watermarks the image for a web preview.
-    - [ ] Uploads the preview to a **public** storage bucket.
-    - [ ] Writes photo metadata (URLs, gallery link) to the `photos` table.
+    - [✅] Resizes and watermarks the image for a web preview.
+    - [✅] Uploads the preview to a **public** storage bucket.
+    - [✅] Writes photo metadata (URLs, gallery link) to the `photos` table.

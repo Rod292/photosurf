@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import PhotoAlbum from "react-photo-album"
 import Image from "next/image"
 import { Gallery, Photo } from "@/lib/database.types"
 import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
@@ -14,38 +13,6 @@ interface GalleryClientProps {
 
 export function GalleryClient({ photos, gallery }: GalleryClientProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
-
-  // Transformer les photos pour react-photo-album
-  const photoAlbumPhotos = photos.map((photo, index) => ({
-    src: photo.preview_s3_url,
-    width: photo.width || 800, // Utilise la largeur réelle ou par défaut
-    height: photo.height || 600, // Utilise la hauteur réelle ou par défaut
-    alt: photo.filename,
-    key: photo.id,
-    onClick: () => setLightboxIndex(index)
-  }))
-
-  const renderPhoto = ({ photo, wrapperStyle, renderDefaultPhoto }: any) => {
-    return (
-      <div style={wrapperStyle} className="cursor-pointer group">
-        <div className="relative overflow-hidden rounded-lg bg-gray-200">
-          <Image
-            src={photo.src}
-            alt={photo.alt}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            onClick={photo.onClick}
-          />
-          {/* Overlay avec watermark */}
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="absolute bottom-2 right-2 bg-white/90 px-2 py-1 rounded text-xs font-medium opacity-70">
-            Arode Studio
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -62,18 +29,30 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
       {/* Galerie de photos */}
       {photos.length > 0 ? (
         <div className="mb-8">
-          <PhotoAlbum
-            photos={photoAlbumPhotos}
-            layout="masonry"
-            columns={(containerWidth) => {
-              if (containerWidth < 640) return 1
-              if (containerWidth < 768) return 2
-              if (containerWidth < 1024) return 3
-              return 4
-            }}
-            spacing={12}
-            renderPhoto={renderPhoto}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {photos.map((photo, index) => (
+              <div 
+                key={photo.id} 
+                className="cursor-pointer group"
+                onClick={() => setLightboxIndex(index)}
+              >
+                <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gray-200">
+                  <Image
+                    src={photo.preview_s3_url}
+                    alt={photo.filename}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  />
+                  {/* Overlay avec watermark */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-2 right-2 bg-white/90 px-2 py-1 rounded text-xs font-medium opacity-70">
+                    Arode Studio
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <div className="text-center py-16">
