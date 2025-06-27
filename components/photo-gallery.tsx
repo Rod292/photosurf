@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { PhotoModal } from "./photo-modal"
-import { useCart } from "@/context/cart-context"
+import { useCartStore, CartItem } from "@/context/cart-context"
 import { ShoppingCart, Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -41,8 +41,13 @@ export function PhotoGallery({
   const [error, setError] = useState<string | null>(null)
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
-  const { addToCart, isInCart, cart } = useCart()
+  const addItem = useCartStore((state) => state.addItem)
+  const items = useCartStore((state) => state.items)
   const [isMobile, setIsMobile] = useState(false)
+
+  const isInCart = (photoId: string) => {
+    return items.some(item => item.photo_id === photoId)
+  }
 
   useEffect(() => {
     const checkMobile = () => {
@@ -106,35 +111,21 @@ export function PhotoGallery({
 
   // Calculate the potential price for a photo based on current cart state
   const calculatePotentialPrice = (photo: Photo): number => {
-    const surferPhotosInCart = cart.filter((p) => p.surfer === photo.surfer).length
-    const potentialTotal = surferPhotosInCart + 1 // Including this photo
-
-    // If there are already 10 or more photos of this surfer, it's free
-    if (surferPhotosInCart >= 10) return 0
-
-    // For 10+ photos, calculate based on the €40 cap
-    if (potentialTotal >= 10) {
-      return Math.round((40 / potentialTotal) * 100) / 100
-    }
-
-    // Use the new tiered pricing model
-    if (potentialTotal <= 2) return 10
-    if (potentialTotal <= 4) return 8
-    if (potentialTotal <= 9) return 6
-
-    return 4 // This line should never be reached due to the cap check above
+    // Simplify pricing for new system - use fixed price
+    return 15 // Prix fixe pour le téléchargement numérique
   }
 
   const handleAddToCart = (e: React.MouseEvent, photo: Photo) => {
     e.stopPropagation()
     const price = calculatePotentialPrice(photo)
-    addToCart({
-      id: photo.id,
-      src: photo.src,
-      title: photo.title,
+    const cartItem: CartItem = {
+      photo_id: photo.id,
+      product_type: 'digital',
       price: price,
-      surfer: photo.surfer,
-    })
+      preview_url: photo.src,
+      filename: photo.title
+    }
+    addItem(cartItem)
   }
 
   const handlePageChange = (newPage: number) => {
