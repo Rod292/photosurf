@@ -28,6 +28,8 @@ export interface Photo {
   filename: string
   filesize?: number
   content_type?: string
+  width?: number
+  height?: number
   created_at?: string
   gallery?: Gallery
 }

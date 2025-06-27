@@ -54,3 +54,9 @@
 - [✅] **[BE]** Design and create initial Supabase database tables: `galleries`, `photos`, `orders`, `order_items` using SQL schema.
 - [✅] **[BE]** Create a secure admin page (`/admin/upload`) protected by Supabase Auth.
 
+- [✅] **[BE]** Build the photo upload Server Action:
+    - [✅] Takes files and a gallery name as input.
+    - [✅] Uploads original image to a **private** S3/Supabase storage bucket.
+    - [ ✅] Resizes and watermarks the image for a web preview.
+    - [ ] Uploads the preview to a **public** storage bucket.
+    - [ ] Writes photo metadata (URLs, gallery link) to the `photos` table.

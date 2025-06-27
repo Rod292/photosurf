@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useCart } from "@/context/cart-context"
+import { useCartStore } from "@/context/cart-context"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 
 export default function SuccessPage() {
-  const { clearCart } = useCart()
+  const clearCart = useCartStore((state) => state.clearCart)
   const router = useRouter()
   const [hasCleared, setHasCleared] = useState(false)
 

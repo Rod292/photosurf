@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useCart } from "@/context/cart-context"
+import { useCartStore } from "@/context/cart-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
@@ -10,9 +10,14 @@ import { useToast } from "@/components/ui/use-toast"
 import { PhotoModal } from "@/components/photo-modal"
 
 export function CartContent() {
-  const { cart, removeFromCart, totalItems, totalPrice, discount, applyDiscount } = useCart()
+  const items = useCartStore((state) => state.items)
+  const removeItem = useCartStore((state) => state.removeItem)
+  const getTotalPrice = useCartStore((state) => state.getTotalPrice)
+  const getItemCount = useCartStore((state) => state.getItemCount)
+  
   const [isLoading, setIsLoading] = useState(false)
   const [promoCode, setPromoCode] = useState("")
+  const [discount, setDiscount] = useState(0)
   const { toast } = useToast()
   const [selectedPhoto, setSelectedPhoto] = useState<null | {
     id: string
@@ -21,6 +26,9 @@ export function CartContent() {
     price: number
     surfer?: string
   }>(null)
+
+  const totalPrice = getTotalPrice()
+  const totalItems = getItemCount()
 
   const handleCheckout = async () => {
     toast({
@@ -39,8 +47,9 @@ export function CartContent() {
       return
     }
 
-    const success = applyDiscount(promoCode)
-    if (success) {
+    // Logique simple de code promo
+    if (promoCode.toLowerCase() === "arode10") {
+      setDiscount(totalPrice * 0.1)
       toast({
         title: "Succès",
         description: "Le code promo a été appliqué avec succès.",
@@ -55,16 +64,22 @@ export function CartContent() {
     }
   }
 
-  const handlePhotoClick = (photo: typeof selectedPhoto) => {
-    setSelectedPhoto(photo)
+  const handlePhotoClick = (item: any) => {
+    setSelectedPhoto({
+      id: item.photo_id,
+      src: item.preview_url,
+      title: item.filename,
+      price: item.price,
+      surfer: "Inconnu"
+    })
   }
 
   const closePhotoModal = () => {
     setSelectedPhoto(null)
   }
 
-  const handleRemoveFromCart = (id: string) => {
-    removeFromCart(id)
+  const handleRemoveFromCart = (photoId: string, productType: string) => {
+    removeItem(photoId, productType)
     toast({
       title: "Photo supprimée",
       description: "La photo a été supprimée de votre panier.",
@@ -73,31 +88,34 @@ export function CartContent() {
 
   return (
     <>
-      {cart.length === 0 ? (
+      {items.length === 0 ? (
         <p className="font-lexend-deca">Votre panier est vide.</p>
       ) : (
         <>
           <div className="bg-white shadow-md rounded-lg overflow-hidden mb-8">
-            {cart.map((item) => (
-              <div key={item.id} className="flex items-center p-4 border-b">
+            {items.map((item) => (
+              <div key={`${item.photo_id}-${item.product_type}`} className="flex items-center p-4 border-b">
                 <div className="cursor-pointer mr-4" onClick={() => handlePhotoClick(item)}>
                   <Image
-                    src={item.src || "/placeholder.svg"}
-                    alt={item.title}
+                    src={item.preview_url || "/placeholder.svg"}
+                    alt={item.filename}
                     width={100}
                     height={67}
                     className="rounded-md object-cover"
                   />
                 </div>
                 <div className="flex-grow">
-                  <h3 className="font-semibold font-lexend-deca">{item.title}</h3>
+                  <h3 className="font-semibold font-lexend-deca">{item.filename}</h3>
+                  <p className="text-sm text-gray-600 font-lexend-deca">
+                    {item.product_type === 'digital' ? '📱 Numérique' : item.product_type === 'print' ? '🖼️ Tirage A4' : '🎁 Pack Complet'}
+                  </p>
                   <p className="text-sm text-gray-600 font-lexend-deca">
                     {item.price === 0 ? "Gratuit" : `${item.price.toFixed(2)}€`}
                   </p>
                 </div>
                 <Button
                   variant="ghost"
-                  onClick={() => handleRemoveFromCart(item.id)}
+                  onClick={() => handleRemoveFromCart(item.photo_id, item.product_type)}
                   aria-label="Supprimer du panier"
                   className="font-lexend-deca"
                 >

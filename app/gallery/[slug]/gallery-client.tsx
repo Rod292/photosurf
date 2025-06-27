@@ -17,7 +17,7 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
 
   // Transformer les photos pour react-photo-album
   const photoAlbumPhotos = photos.map((photo, index) => ({
-    src: photo.preview_url,
+    src: photo.preview_s3_url,
     width: photo.width || 800, // Utilise la largeur réelle ou par défaut
     height: photo.height || 600, // Utilise la hauteur réelle ou par défaut
     alt: photo.filename,

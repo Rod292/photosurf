@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { X, ShoppingCart, ChevronLeft, ChevronRight, Check } from "lucide-react"
-import { useCart } from "@/context/cart-context"
+import { useCartStore, CartItem } from "@/context/cart-context"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -26,13 +26,25 @@ interface PhotoModalProps {
 }
 
 export function PhotoModal({ isOpen, onClose, photo, onPrevious, onNext, hasPrevious, hasNext }: PhotoModalProps) {
-  const { addToCart, isInCart } = useCart()
+  const addItem = useCartStore((state) => state.addItem)
+  const items = useCartStore((state) => state.items)
   const [isLoading, setIsLoading] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
 
+  const isInCart = (photoId: string) => {
+    return items.some(item => item.photo_id === photoId)
+  }
+
   const handleAddToCart = () => {
-    addToCart(photo)
+    const cartItem: CartItem = {
+      photo_id: photo.id,
+      product_type: 'digital',
+      price: photo.price,
+      preview_url: photo.src,
+      filename: photo.title
+    }
+    addItem(cartItem)
   }
 
   const handleKeyDown = useCallback(
