@@ -49,31 +49,6 @@ export async function updateSession(request: NextRequest) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-
-    // Vérifier le rôle admin dans la table profiles
-    // Utiliser le service role key pour bypasser RLS
-    // IMPORTANT: Utiliser createClient de @supabase/supabase-js pour le service role
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        }
-      }
-    )
-
-    const { data: profile, error } = await supabaseAdmin
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    // Si erreur de requête ou pas de rôle admin, rediriger vers accueil
-    if (error || profile?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
   }
 
   return response
