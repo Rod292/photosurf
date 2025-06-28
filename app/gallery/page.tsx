@@ -49,10 +49,11 @@ export const metadata: Metadata = {
 export default async function GalleriesListPage({
   searchParams
 }: {
-  searchParams: SearchParams
+  searchParams: Promise<SearchParams>
 }) {
-  const galleries = await getFilteredGalleries(searchParams)
-  const hasFilters = searchParams.date || searchParams.school
+  const resolvedSearchParams = await searchParams
+  const galleries = await getFilteredGalleries(resolvedSearchParams)
+  const hasFilters = resolvedSearchParams.date || resolvedSearchParams.school
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -91,14 +92,14 @@ export default async function GalleriesListPage({
             <div className="container mx-auto px-4">
               <div className="flex items-center justify-center gap-4 flex-wrap">
                 <span className="text-gray-700">Filtres actifs :</span>
-                {searchParams.date && (
+                {resolvedSearchParams.date && (
                   <span className="bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
-                    📅 {new Date(searchParams.date).toLocaleDateString("fr-FR")}
+                    📅 {new Date(resolvedSearchParams.date).toLocaleDateString("fr-FR")}
                   </span>
                 )}
-                {searchParams.school && (
+                {resolvedSearchParams.school && (
                   <span className="bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
-                    🏄‍♂️ {searchParams.school}
+                    🏄‍♂️ {resolvedSearchParams.school}
                   </span>
                 )}
                 <Link 
