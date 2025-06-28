@@ -28,32 +28,32 @@ import { uploadPhotos } from './actions'
 import { useToast } from '@/components/ui/use-toast'
 import { SurfSchool, Gallery, FileMatch } from '@/lib/database.types'
 
-// Schéma de validation avec Zod
+// Schéma de validation avec Zod - utilise any pour FileList côté serveur
 const uploadFormSchema = z.object({
   school_id: z.number().min(1, "Veuillez sélectionner une école de surf"),
   gallerySelection: z.string().min(1, "Veuillez sélectionner une galerie"),
   newGalleryName: z.string().optional(),
   galleryDate: z.string().min(1, "La date est requise"),
   originalFiles: z
-    .instanceof(FileList)
-    .refine((files) => files.length > 0, "Veuillez sélectionner au moins une photo originale")
+    .any()
+    .refine((files) => files && files.length > 0, "Veuillez sélectionner au moins une photo originale")
     .refine(
-      (files) => Array.from(files).every((file) => file.type.startsWith('image/')),
+      (files) => files && Array.from(files as FileList).every((file) => (file as File).type.startsWith('image/')),
       "Seuls les fichiers image sont autorisés pour les originaux"
     )
     .refine(
-      (files) => Array.from(files).every((file) => file.size <= 50 * 1024 * 1024),
+      (files) => files && Array.from(files as FileList).every((file) => (file as File).size <= 50 * 1024 * 1024),
       "Chaque fichier original doit faire moins de 50MB"
     ),
   previewFiles: z
-    .instanceof(FileList)
-    .refine((files) => files.length > 0, "Veuillez sélectionner au moins une photo preview")
+    .any()
+    .refine((files) => files && files.length > 0, "Veuillez sélectionner au moins une photo preview")
     .refine(
-      (files) => Array.from(files).every((file) => file.type.startsWith('image/')),
+      (files) => files && Array.from(files as FileList).every((file) => (file as File).type.startsWith('image/')),
       "Seuls les fichiers image sont autorisés pour les previews"
     )
     .refine(
-      (files) => Array.from(files).every((file) => file.size <= 50 * 1024 * 1024),
+      (files) => files && Array.from(files as FileList).every((file) => (file as File).size <= 50 * 1024 * 1024),
       "Chaque fichier preview doit faire moins de 50MB"
     ),
 })
@@ -191,15 +191,15 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
       }
 
       // Ajouter les fichiers triés pour garantir l'ordre
-      const sortedOriginals = Array.from(data.originalFiles).sort((a, b) => a.name.localeCompare(b.name))
-      const sortedPreviews = Array.from(data.previewFiles).sort((a, b) => a.name.localeCompare(b.name))
+      const sortedOriginals = Array.from(data.originalFiles as FileList).sort((a, b) => (a as File).name.localeCompare((b as File).name))
+      const sortedPreviews = Array.from(data.previewFiles as FileList).sort((a, b) => (a as File).name.localeCompare((b as File).name))
       
       sortedOriginals.forEach((file) => {
-        formData.append("originalFiles", file)
+        formData.append("originalFiles", file as File)
       })
       
       sortedPreviews.forEach((file) => {
-        formData.append("previewFiles", file)
+        formData.append("previewFiles", file as File)
       })
 
       setTotalFiles(sortedOriginals.length)

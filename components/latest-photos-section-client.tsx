@@ -1,6 +1,8 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { createSupabaseAdminClient } from "@/lib/supabase/server"
 import { Photo, Gallery } from "@/lib/database.types"
 
 // Interface pour les photos avec leurs galeries
@@ -8,41 +10,50 @@ interface PhotoWithGallery extends Photo {
   gallery?: Gallery
 }
 
-async function getLatestPhotos(): Promise<PhotoWithGallery[]> {
-  try {
-    const supabase = createSupabaseAdminClient()
-    
-    // Récupérer les 8 dernières photos avec leurs galeries
-    const { data: photos, error } = await supabase
-      .from('photos')
-      .select(`
-        *,
-        gallery:gallery_id (
-          id,
-          name,
-          date,
-          school_id
-        )
-      `)
-      .order('created_at', { ascending: false })
-      .limit(8)
-    
-    if (error) {
-      console.error('Erreur lors de la récupération des dernières photos:', error)
-      return []
+export function LatestPhotosSectionClient() {
+  const [photos, setPhotos] = useState<PhotoWithGallery[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchLatestPhotos() {
+      try {
+        const response = await fetch('/api/latest-photos')
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération des photos')
+        }
+        const data = await response.json()
+        setPhotos(data.photos || [])
+      } catch (err) {
+        console.error('Erreur:', err)
+        setError(err instanceof Error ? err.message : 'Erreur inconnue')
+      } finally {
+        setLoading(false)
+      }
     }
-    
-    return photos || []
-  } catch (error) {
-    console.error('Erreur dans getLatestPhotos:', error)
-    return []
+
+    fetchLatestPhotos()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="mb-12">
+        <h2 className="text-4xl font-bold mb-12 text-center font-dm-sans-handgloves relative">
+          <span className="relative inline-block">
+            Dernières Sessions
+            <span className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-blue-500 to-blue-700 rounded-full"></span>
+          </span>
+        </h2>
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="w-64 h-48 bg-gray-200 rounded-lg animate-pulse flex-shrink-0" />
+          ))}
+        </div>
+      </div>
+    )
   }
-}
 
-export async function LatestPhotosSection() {
-  const photos = await getLatestPhotos()
-
-  if (photos.length === 0) {
+  if (error || photos.length === 0) {
     return (
       <div className="mb-12">
         <h2 className="text-4xl font-bold mb-12 text-center font-dm-sans-handgloves relative">

@@ -1,271 +1,280 @@
 "use client"
 
+import { Suspense, useState } from "react"
+import { ExpandableSearch } from "@/components/animations/expandable-search"
+import { ContentFlowAnimation, FlowItem } from "@/components/animations/content-flow-animation"
+import { LatestPhotosSectionClient } from "@/components/latest-photos-section-client"
+import { PhotosByDate } from "@/components/photos-by-date"
+import { PhotosBySchool } from "@/components/photos-by-school"
 import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
-import { LandingSection } from "@/components/landing-section"
-import { FilterProvider } from "@/context/filter-context"
-import Link from "next/link"
-import Image from "next/image"
-import { Camera } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import StructuredData from "@/components/structured-data"
-import { useEffect } from "react"
-import { loadNonCriticalResources } from "@/utils/performance"
+import { motion, useScroll, useTransform } from "framer-motion"
 
-// Importer les composants d'animation
-import { motion } from "framer-motion"
-import { ScrollAnimation } from "@/components/animations/scroll-animation"
-import { LatestPhotosSection } from "@/components/latest-photos-section"
+export default function HomePage() {
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false)
+  const { scrollY } = useScroll()
+  
+  // Animations de réduction du titre au scroll
+  const titleScale = useTransform(scrollY, [0, 200], [1, 0.7])
+  const titleOpacity = useTransform(scrollY, [0, 200], [1, 0.8])
+  const titleY = useTransform(scrollY, [0, 200], [0, -20])
+  
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.8,
+        staggerChildren: 0.2
+      }
+    }
+  }
 
-export default function Home() {
-  useEffect(() => {
-    loadNonCriticalResources()
-  }, [])
+  const titleVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.7,
+        delay: 0.3
+      }
+    }
+  }
+
+  const searchBarVariants = {
+    hidden: { opacity: 0, y: 40, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        delay: 0.6
+      }
+    }
+  }
+
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8
+      }
+    }
+  }
   
   return (
-    <>
-      <FilterProvider>
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <LandingSection />
-          <main className="relative z-10 bg-white">
-            <div className="bg-gray-200">
-              <div className="w-full py-2 bg-white border-y border-gray-200">
-                <p className="text-center text-sm text-gray-600 font-montserrat font-medium tracking-wide">
-                  Tirages photo disponibles
-                </p>
-              </div>
-              <div className="container mx-auto px-4 py-8">
-                
-                {/* Section Dernières Sessions avec vraies photos */}
-                <LatestPhotosSection />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header toujours visible */}
+      <Header alwaysVisible={true} />
+      
+      {/* Hero section avec barre de recherche */}
+      <section className="bg-white">
+        <div className="relative">
+          {/* Image de fond subtile */}
+          <div 
+            className="absolute inset-0 bg-gradient-to-r from-blue-50 to-cyan-50"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e0f2fe' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          />
+          
+                      <motion.div
+            className="relative z-10 max-w-6xl mx-auto pt-6 pb-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {/* Titre principal */}
+                      <motion.div
+              className="text-center mb-4"
+              variants={titleVariants}
+              style={{
+                scale: titleScale,
+                opacity: titleOpacity,
+                y: titleY
+              }}
+            >
+              <motion.h1 
+                className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.5 }}
+              >
+                Retrouvez vos photos de surf à{" "}
+                <motion.span 
+                  className="text-red-500"
+                  initial={{ color: "#374151" }}
+                  animate={{ color: "#ef4444" }}
+                  transition={{ duration: 0.8, delay: 1.2 }}
+                >
+                  La Torche
+                </motion.span>
+              </motion.h1>
+                      </motion.div>
 
-                  {/* Image Showcase */}
-                  <ScrollAnimation animation="stagger" className="mt-16 max-w-6xl mx-auto">
-                    <div className="grid md:grid-cols-2 gap-8">
+            {/* Barre de recherche expansible */}
                       <motion.div
-                        whileHover={{ scale: 1.03 }}
-                        transition={{ duration: 0.3 }}
-                        className="relative aspect-[3/2] rounded-2xl overflow-hidden shadow-xl"
-                      >
-                        <Image
-                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cadre.jpg-rsUlwefP6JP0REBu5BHmpR27LyVLBG.jpeg"
-                          alt="Surf photography by Arode Studio"
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                          priority
+              variants={searchBarVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <ExpandableSearch 
+                variant="full" 
+                onStateChange={setIsSearchExpanded}
                         />
                       </motion.div>
-                      <motion.div
-                        whileHover={{ scale: 1.03 }}
-                        transition={{ duration: 0.3 }}
-                        className="relative aspect-[3/2] rounded-2xl overflow-hidden shadow-xl"
-                      >
-                        <Image
-                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/HomePageArode4.jpg-70CUfejJb0gE5JwCk3oOs8xLol5AhS.jpeg"
-                          alt="Surf photography by Arode Studio"
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                          priority
-                        />
-                      </motion.div>
-                      <motion.div
-                        whileHover={{ scale: 1.03 }}
-                        transition={{ duration: 0.3 }}
-                        className="relative aspect-[3/2] rounded-2xl overflow-hidden shadow-xl"
-                      >
-                        <Image
-                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/HomePageArode3.jpg-Ewu1fTeEgnPkO1luTPm21XTxmmhIPK.jpeg"
-                          alt="Surf photography by Arode Studio"
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                          priority
-                        />
-                      </motion.div>
-                      <motion.div
-                        whileHover={{ scale: 1.03 }}
-                        transition={{ duration: 0.3 }}
-                        className="relative aspect-[3/2] rounded-2xl overflow-hidden shadow-xl"
-                      >
-                        <Image
-                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/HomePageArode.jpg-4zAe9Jv5Ilkq5g7JzIH8mHoeusllQ5.jpeg"
-                          alt="Surf photography by Arode Studio"
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                          priority
-                        />
                       </motion.div>
                     </div>
-                  </ScrollAnimation>
+      </section>
+
+      {/* Section Photos récentes */}
+      <ContentFlowAnimation 
+        className="bg-white border-t border-gray-100"
+        layoutId="recent-photos"
+        staggerChildren={0.1}
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="px-6 py-8">
+            <FlowItem className="mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900">
+                📸 Photos récentes
+              </h2>
+            </FlowItem>
+            <FlowItem>
+              <Suspense fallback={
+                <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+                  {[...Array(4)].map((_, i) => (
+                    <motion.div 
+                      key={i} 
+                      className="w-80 h-64 bg-gray-200 rounded-xl animate-pulse flex-shrink-0"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5, delay: i * 0.1 }}
+                    />
+                  ))}
                 </div>
-              
-                {/* Print Quality Showcase Section */}
-                <ScrollAnimation animation="fadeUp" className="max-w-6xl mx-auto mb-6 bg-white rounded-lg shadow-lg">
-                  <div className="grid md:grid-cols-2 gap-8 items-center p-8">
-                    <motion.div
-                      initial={{ opacity: 0, x: -50 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.6 }}
-                      viewport={{ once: true }}
-                      className="relative aspect-[4/3] w-full h-full"
-                    >
-                      <Image
-                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Beige%20Minimalist%20Picture%20Frame%20Mockup%20Instagram%20Post-1ioAq2Nvl9jngZhCj9bXtUgordejoH.png"
-                        alt="Impression photo haute qualité encadrée"
-                        fill
-                        className="object-contain rounded-3xl"
-                        priority
-                      />
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: 50 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.6, delay: 0.2 }}
-                      viewport={{ once: true }}
-                      className="space-y-4 font-lexend-deca"
-                    >
-                      <div className="flex flex-col items-center mb-6">
-                        <Image
-                          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/arodelogowhitepng-HNnXW50qCnMuNb7pxKVPk3x4zxq9mP.png"
-                          alt="Arode Logo"
-                          width={100}
-                          height={100}
-                          className="brightness-0 mb-3"
-                        />
-                        <motion.h2
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, delay: 0.3 }}
-                          viewport={{ once: true }}
-                          className="text-3xl md:text-4xl font-bold font-dm-sans"
-                        >
-                          TIRAGES PHOTO
-                        </motion.h2>
-                      </div>
-                      <motion.p
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        transition={{ duration: 0.5, delay: 0.4 }}
-                        viewport={{ once: true }}
-                        className="text-lg text-gray-600"
-                      >
-                        Nous pouvons imprimer vos photos avec notre imprimante professionnelle EPSON sur du papier photo
-                        de haute qualité.
-                      </motion.p>
-                      <motion.ul
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        transition={{ duration: 0.5, delay: 0.5, staggerChildren: 0.1 }}
-                        viewport={{ once: true }}
-                        className="space-y-4 text-gray-600 mt-4"
-                      >
-                        <motion.li
-                          initial={{ opacity: 0, x: -20 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: 0.5 }}
-                          viewport={{ once: true }}
-                          className="flex items-center"
-                        >
-                          <span className="mr-2">•</span>
-                          Formats disponibles jusqu'à A2 📄✅
-                        </motion.li>
-                        <motion.li
-                          initial={{ opacity: 0, x: -20 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: 0.6 }}
-                          viewport={{ once: true }}
-                          className="flex items-center"
-                        >
-                          <span className="mr-2">•</span>
-                          Papier photo haute qualité 📸✨
-                        </motion.li>
-                        <motion.li
-                          initial={{ opacity: 0, x: -20 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: 0.7 }}
-                          viewport={{ once: true }}
-                          className="flex items-center"
-                        >
-                          <span className="mr-2">•</span>
-                          Rendu des couleurs exceptionnel 🎨🔥
-                        </motion.li>
-                      </motion.ul>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.8 }}
-                        viewport={{ once: true }}
-                        className="mt-6 flex justify-center"
-                      >
-                        <Button
-                          asChild
-                          variant="outline"
-                          size="lg"
-                        className="bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:border-blue-700 transition-all duration-300 px-8 py-6 text-lg rounded-full group relative overflow-hidden font-lexend-deca"
-                        >
-                          <Link
-                          href="/gallery"
-                            className="inline-flex items-center"
-                          >
-                          <Camera className="mr-3 h-6 w-6 transition-transform group-hover:scale-110" />
-                          <span>📸 Voir vos photos</span>
-                          </Link>
-                        </Button>
-                      </motion.div>
-                    </motion.div>
-                  </div>
-                </ScrollAnimation>
-              
-                {/* About Section */}
-                <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-                  <div className="grid md:grid-cols-2 gap-8 items-center">
-                    <div className="flex flex-col items-center justify-center py-8 px-4">
-                      <Image
-                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/arodelogowhitepng-HNnXW50qCnMuNb7pxKVPk3x4zxq9mP.png"
-                        alt="Arode Logo"
-                        width={160}
-                        height={160}
-                      className="brightness-0 mb-4"
-                      />
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="lg"
-                        className="bg-white/10 text-black border-black hover:bg-black/5 hover:text-black transition-all duration-300 px-8 py-6 text-lg rounded-full group relative overflow-hidden font-lexend-deca"
-                      >
-                        <Link href="/a-propos" className="inline-flex items-center">
-                          <span>À propos de Arode Studio</span>
-                        </Link>
-                      </Button>
-                    </div>
-                    <div className="relative aspect-[4/3] w-full">
-                      <Image
-                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/HomePageArode7.jpg-sWuRiQWQCOz5Ya4L3SGXUxBYXJpyMc.jpeg"
-                        alt="Surfer at sunset between rocks"
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </main>
-          <div className="hidden md:block">
-            <Sidebar />
+              }>
+                <LatestPhotosSectionClient />
+              </Suspense>
+            </FlowItem>
           </div>
         </div>
-      </FilterProvider>
-      <StructuredData
-        title="Arode Studio - Photographie de surf en Bretagne"
-        description="Immortalisez vos meilleures sessions de surf en Bretagne avec Arode Studio. Découvrez nos galeries photo et commandez vos tirages."
-        imageUrl="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/HomePageArode.jpg-4zAe9Jv5Ilkq5g7JzIH8mHoeusllQ5.jpeg"
-      />
-    </>
+      </ContentFlowAnimation>
+
+      {/* Section Sessions par jour */}
+      <ContentFlowAnimation 
+        className="bg-gray-50"
+        layoutId="sessions-by-date"
+        staggerChildren={0.15}
+      >
+        <div className="max-w-7xl mx-auto">
+          <Suspense fallback={
+            <div className="px-6 py-8">
+              <FlowItem>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                  📅 Sessions par jour
+                </h2>
+              </FlowItem>
+              <FlowItem>
+                <div className="flex gap-6 overflow-x-auto scrollbar-hide">
+                  {[...Array(5)].map((_, i) => (
+                    <motion.div
+                      key={i} 
+                      className="w-72 h-80 bg-white rounded-xl animate-pulse flex-shrink-0"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: i * 0.1 }}
+                    />
+                  ))}
+                </div>
+              </FlowItem>
+                      </div>
+          }>
+            <PhotosByDate />
+          </Suspense>
+                  </div>
+      </ContentFlowAnimation>
+              
+      {/* Section Écoles de surf */}
+      <ContentFlowAnimation 
+        className="bg-white"
+        layoutId="schools"
+        staggerChildren={0.1}
+      >
+        <div className="max-w-7xl mx-auto">
+          <Suspense fallback={
+            <div className="px-6 py-8">
+              <FlowItem>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                  🏄‍♂️ Écoles de surf
+                </h2>
+              </FlowItem>
+              <FlowItem>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {[...Array(8)].map((_, i) => (
+                    <motion.div 
+                      key={i} 
+                      className="bg-gray-200 rounded-xl h-64 animate-pulse"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5, delay: i * 0.05 }}
+                    />
+                  ))}
+                </div>
+              </FlowItem>
+            </div>
+          }>
+            <PhotosBySchool />
+          </Suspense>
+              </div>
+      </ContentFlowAnimation>
+
+      {/* Section Call-to-Action */}
+      <ContentFlowAnimation 
+        className="bg-gradient-to-r from-blue-600 to-blue-700 text-white"
+        layoutId="cta"
+        staggerChildren={0.2}
+      >
+        <div className="max-w-4xl mx-auto px-6 py-16 text-center">
+          <FlowItem>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Vous ne trouvez pas vos photos ?
+            </h2>
+          </FlowItem>
+          <FlowItem delay={0.2}>
+            <p className="text-xl mb-8 opacity-90">
+              Contactez-nous directement et nous vous aiderons à les retrouver
+            </p>
+          </FlowItem>
+          <FlowItem delay={0.4}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <motion.a
+                href="https://www.instagram.com/arode.studio/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white text-blue-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors inline-flex items-center justify-center gap-2"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span>📱</span>
+                Nous contacter sur Instagram
+              </motion.a>
+              <motion.button 
+                className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white/10 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                📞 Par téléphone
+              </motion.button>
+            </div>
+          </FlowItem>
+        </div>
+      </ContentFlowAnimation>
+
+    </div>
   )
 }
 

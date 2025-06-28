@@ -1,60 +1,10 @@
 import { notFound } from "next/navigation"
 import { Metadata } from "next"
+import Image from "next/image"
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { GalleryClient } from "./gallery-client"
 import { createSupabaseAdminClient } from "@/lib/supabase/server"
 import { Gallery, Photo, SurfSchool } from "@/lib/database.types"
-
-// Mock data pour les tests - utilisation d'UUIDs valides
-const mockGallery: Gallery = {
-  id: "550e8400-e29b-41d4-a716-446655440000",
-  name: "Session Matin - La Torche",
-  date: "2024-12-15",
-  school_id: 1, 
-  created_at: "2024-12-15T10:00:00Z"
-}
-
-const mockSurfSchool: SurfSchool = {
-  id: 1,
-  name: "École de Surf La Torche",
-  slug: "ecole-surf-la-torche",
-  is_active: true,
-  created_at: "2024-01-01T00:00:00Z"
-}
-
-const mockPhotos: Photo[] = [
-  {
-    id: "550e8400-e29b-41d4-a716-446655440010",
-    gallery_id: "550e8400-e29b-41d4-a716-446655440000",
-    filename: "surf_1.jpg",
-    original_s3_key: "originals/surf_1.jpg",
-    preview_s3_url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/HomePageArode.jpg",
-    width: 1920,
-    height: 1080,
-    created_at: "2024-12-15T10:00:00Z"
-  },
-  {
-    id: "550e8400-e29b-41d4-a716-446655440011", 
-    gallery_id: "550e8400-e29b-41d4-a716-446655440000",
-    filename: "surf_2.jpg",
-    original_s3_key: "originals/surf_2.jpg",
-    preview_s3_url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/HomePageArode3.jpg",
-    width: 1920,
-    height: 1080,
-    created_at: "2024-12-15T10:15:00Z"
-  },
-  {
-    id: "550e8400-e29b-41d4-a716-446655440012",
-    gallery_id: "550e8400-e29b-41d4-a716-446655440000", 
-    filename: "surf_3.jpg",
-    original_s3_key: "originals/surf_3.jpg",
-    preview_s3_url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/HomePageArode4.jpg",
-    width: 1920,
-    height: 1080,
-    created_at: "2024-12-15T10:30:00Z"
-  }
-]
 
 async function getGalleryWithPhotos(galleryId: string) {
   try {
@@ -69,22 +19,21 @@ async function getGalleryWithPhotos(galleryId: string) {
     
     if (galleryError) {
       console.error("Erreur galerie:", galleryError)
-      return {
-        gallery: mockGallery,
-        surfSchool: mockSurfSchool,
-        photos: mockPhotos
-      }
+      return null
     }
     
     // Fetch surf school
-    const { data: surfSchool, error: schoolError } = await supabase
+    let surfSchool = null
+    if (gallery.school_id) {
+      const { data: schoolData, error: schoolError } = await supabase
       .from("surf_schools")
       .select("*")
       .eq("id", gallery.school_id)
       .single()
     
-    if (schoolError) {
-      console.error("Erreur école de surf:", schoolError)
+      if (!schoolError && schoolData) {
+        surfSchool = schoolData
+      }
     }
     
     // Fetch photos
@@ -96,26 +45,36 @@ async function getGalleryWithPhotos(galleryId: string) {
     
     if (photosError) {
       console.error("Erreur photos:", photosError)
+      return {
+        gallery,
+        surfSchool,
+        photos: []
+      }
     }
     
     return {
-      gallery: gallery || mockGallery,
-      surfSchool: surfSchool || mockSurfSchool,
-      photos: photos || mockPhotos
+      gallery,
+      surfSchool,
+      photos: photos || []
     }
   } catch (error) {
     console.error("Erreur lors de la récupération des données:", error)
-    return {
-      gallery: mockGallery,
-      surfSchool: mockSurfSchool,
-      photos: mockPhotos
-    }
+    return null
   }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  const { gallery } = await getGalleryWithPhotos(slug)
+  const result = await getGalleryWithPhotos(slug)
+  
+  if (!result) {
+    return {
+      title: "Galerie introuvable - Arode Studio",
+      description: "Cette galerie n'existe pas ou n'est plus disponible."
+    }
+  }
+  
+  const { gallery } = result
   
   return {
     title: `${gallery.name} - Arode Studio`,
@@ -131,25 +90,41 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function GalleryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const { gallery, surfSchool, photos } = await getGalleryWithPhotos(slug)
+  const result = await getGalleryWithPhotos(slug)
   
-  if (!gallery) {
+  if (!result) {
     notFound()
   }
+  
+  const { gallery, surfSchool, photos } = result
   
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-1 pt-20">
-        {/* Header de la galerie */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12">
-          <div className="container mx-auto px-4">
-            <h1 className="text-3xl md:text-5xl font-bold font-playfair mb-4">
+      <main className="flex-1">
+        {/* Header de la galerie avec image de fond */}
+        <div className="relative pt-20 pb-24 overflow-hidden">
+          {/* Image de fond */}
+          <div className="absolute inset-0">
+            <Image
+              src="/latorche-aerial.jpg"
+              alt="Vue aérienne de La Torche"
+              fill
+              className="object-cover"
+              priority
+            />
+            {/* Léger overlay sombre uniquement pour la lisibilité du texte */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
+          </div>
+          
+          {/* Contenu */}
+          <div className="relative z-10 container mx-auto px-4 text-white">
+            <h1 className="text-4xl md:text-6xl font-bold font-playfair mb-6 drop-shadow-lg">
               {gallery.name}
             </h1>
-            <div className="flex flex-col md:flex-row md:items-center gap-4 text-lg">
-              <div className="flex items-center">
+            <div className="flex flex-col md:flex-row md:items-center gap-6 text-lg">
+              <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
                 <span className="opacity-90">📅</span>
                 <span className="ml-2 font-varela-round">
                   {new Date(gallery.date).toLocaleDateString("fr-FR", {
@@ -161,14 +136,14 @@ export default async function GalleryPage({ params }: { params: Promise<{ slug: 
                 </span>
               </div>
               {surfSchool && (
-                <div className="flex items-center">
+                <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
                   <span className="opacity-90">🏄‍♂️</span>
                   <span className="ml-2 font-varela-round">
                     {surfSchool.name}
                   </span>
                 </div>
               )}
-              <div className="flex items-center">
+              <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
                 <span className="opacity-90">📸</span>
                 <span className="ml-2 font-varela-round">
                   {photos.length} photo{photos.length > 1 ? "s" : ""}
@@ -183,8 +158,6 @@ export default async function GalleryPage({ params }: { params: Promise<{ slug: 
           <GalleryClient gallery={gallery} photos={photos} />
         </div>
       </main>
-      
-      <Footer />
     </div>
   )
 } 

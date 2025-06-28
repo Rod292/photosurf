@@ -285,8 +285,10 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
       }
     }
 
-    // Invalider le cache de la page admin
+    // Invalider le cache des pages concernées
     revalidatePath('/admin/upload')
+    revalidatePath('/gallery')
+    revalidatePath(`/gallery/${galleryId}`)
 
     return {
       success: true,

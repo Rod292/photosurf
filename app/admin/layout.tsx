@@ -8,7 +8,7 @@ export default async function AdminLayout({ children }: PropsWithChildren) {
 
     if (!user) {
         redirect('/login');
-    }
+  }
 
     return <>{children}</>;
 } 
