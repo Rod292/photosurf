@@ -63,9 +63,9 @@ async function getGalleryWithPhotos(galleryId: string) {
   }
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params
-  const result = await getGalleryWithPhotos(slug)
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const result = await getGalleryWithPhotos(id)
   
   if (!result) {
     return {
@@ -88,9 +88,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-export default async function GalleryPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-  const result = await getGalleryWithPhotos(slug)
+export default async function GalleryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const result = await getGalleryWithPhotos(id)
   
   if (!result) {
     notFound()
