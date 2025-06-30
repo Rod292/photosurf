@@ -27,13 +27,15 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
   const shadowOpacity = useTransform(scrollY, [0, 50], [0, 0.1])
   
   // Transformations pour la navigation et la barre de recherche
-  const navOpacity = useTransform(scrollY, [0, 150], [1, 0])
-  const navScale = useTransform(scrollY, [0, 150], [1, 0.8])
-  const navY = useTransform(scrollY, [0, 150], [0, -20])
+  const navOpacity = useTransform(scrollY, [80, 140], [1, 0])
+  const navScale = useTransform(scrollY, [80, 140], [1, 0.8])
+  const navY = useTransform(scrollY, [80, 140], [0, -20])
+  const navPointerEvents = useTransform(scrollY, [140], (value) => value > 140 ? 'none' : 'auto')
   
-  const searchOpacity = useTransform(scrollY, [100, 200], [0, 1])
-  const searchScale = useTransform(scrollY, [100, 200], [0.8, 1])
-  const searchY = useTransform(scrollY, [100, 200], [20, 0])
+  const searchOpacity = useTransform(scrollY, [150, 200], [0, 1])
+  const searchScale = useTransform(scrollY, [150, 250], [0.8, 0.85])
+  const searchY = useTransform(scrollY, [150, 200], [20, 0])
+  const searchHeight = useTransform(scrollY, [200, 300], [40, 32])
 
   // Vérifier l'authentification
   useEffect(() => {
@@ -113,7 +115,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
 
   return (
     <motion.header 
-      className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200"
+      className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -179,7 +181,8 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             opacity: navOpacity,
             scale: navScale,
             y: navY,
-            gap: isScrolled ? "1.5rem" : "2rem"
+            gap: isScrolled ? "1.5rem" : "2rem",
+            pointerEvents: navPointerEvents as any
           }}
         >
             <motion.button 
@@ -264,17 +267,19 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             </motion.button>
         </motion.nav>
 
-        {/* Barre de recherche compacte (apparaît au scroll) */}
+
+        {/* Search bar compacte dans le header lors du scroll */}
         <motion.div 
           className="hidden lg:flex absolute left-0 right-0 mx-auto justify-center items-center h-full"
           style={{
             opacity: searchOpacity,
             scale: searchScale,
             y: searchY,
-            pointerEvents: scrollY.get() > 100 ? 'auto' : 'none'
+            height: searchHeight,
+            pointerEvents: scrollY.get() > 150 ? 'auto' : 'none'
           }}
         >
-          <SearchBar compact />
+          <SearchBar compact={true} searchHeight={searchHeight} />
         </motion.div>
 
         {/* Actions à droite */}

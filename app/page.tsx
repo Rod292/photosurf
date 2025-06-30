@@ -1,7 +1,7 @@
 "use client"
 
 import { Suspense, useState } from "react"
-import { ExpandableSearch } from "@/components/animations/expandable-search"
+import { MorphingSearch } from "@/components/morphing-search"
 import { ContentFlowAnimation, FlowItem } from "@/components/animations/content-flow-animation"
 import { LatestPhotosSectionClient } from "@/components/latest-photos-section-client"
 import { PhotosByDate } from "@/components/photos-by-date"
@@ -13,10 +13,14 @@ export default function HomePage() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const { scrollY } = useScroll()
   
-  // Animations de réduction du titre au scroll
-  const titleScale = useTransform(scrollY, [0, 200], [1, 0.7])
-  const titleOpacity = useTransform(scrollY, [0, 200], [1, 0.8])
-  const titleY = useTransform(scrollY, [0, 200], [0, -20])
+  // Animations de réduction du titre et de la search bar au scroll
+  const titleScale = useTransform(scrollY, [0, 200], [1, 0])
+  const titleOpacity = useTransform(scrollY, [100, 200], [1, 0])
+  const titleY = useTransform(scrollY, [0, 200], [0, -50])
+  
+  const searchScale = useTransform(scrollY, [0, 200], [1, 0])
+  const searchOpacity = useTransform(scrollY, [100, 200], [1, 0])
+  const searchY = useTransform(scrollY, [0, 200], [0, -50])
   
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -120,11 +124,13 @@ export default function HomePage() {
               variants={searchBarVariants}
               initial="hidden"
               animate="visible"
+              style={{
+                scale: searchScale,
+                opacity: searchOpacity,
+                y: searchY
+              }}
             >
-              <ExpandableSearch 
-                variant="full" 
-                onStateChange={setIsSearchExpanded}
-                        />
+              <MorphingSearch />
                       </motion.div>
                       </motion.div>
                     </div>
