@@ -39,9 +39,9 @@ export function PhotosByDate() {
 
   if (loading) {
     return (
-      <div className="px-6 py-8">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-          Sessions par jour
+      <div className="px-6 py-4">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          📅 Sessions par jour >
         </h2>
         <div className="flex gap-4 overflow-x-auto scrollbar-hide">
           {[...Array(5)].map((_, i) => (
@@ -57,17 +57,11 @@ export function PhotosByDate() {
   }
 
   return (
-    <div className="px-6 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900">
-          Sessions par jour
+    <div className="px-6 py-4">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-900">
+          📅 Sessions par jour >
         </h2>
-        <Link 
-          href="/gallery" 
-          className="text-blue-600 font-semibold hover:underline"
-        >
-          Voir tout
-        </Link>
       </div>
       
       <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-4">

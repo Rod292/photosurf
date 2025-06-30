@@ -2,10 +2,8 @@
 
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Instagram, Settings, Search, Menu, Globe, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Instagram, Settings, User, Menu } from "lucide-react"
 import { useState, useEffect } from "react"
-import { useCartStore } from "@/context/cart-context"
 import { CartSlideOver } from "@/components/cart-slide-over"
 import { SearchBar } from "@/components/search-bar"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
@@ -116,7 +114,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
 
   return (
     <motion.header 
-      className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200"
+      className="sticky top-0 z-40 bg-white"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -175,7 +173,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
 
         {/* Navigation centrale - avec Boutique parfaitement centré */}
         <motion.nav 
-          className="hidden lg:flex items-center justify-center absolute left-0 right-0 mx-auto h-full"
+          className="hidden lg:flex items-center justify-center absolute left-0 right-0 mx-auto h-full pointer-events-none"
           variants={containerVariants}
           transition={{ duration: 0.3, ease: "easeOut" }}
           style={{
@@ -188,7 +186,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
         >
             <motion.button 
               onClick={() => handleNavigation("/gallery")}
-              className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors font-medium text-gray-700 hover:text-black"
+              className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors font-medium text-gray-700 hover:text-black pointer-events-auto"
               variants={navItemVariants}
               whileHover="hover"
               whileTap={{ scale: 0.95 }}
@@ -215,7 +213,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             
             <motion.button 
             onClick={() => handleNavigation("/boutique")}
-            className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors font-medium text-gray-700 hover:text-black"
+            className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors font-medium text-gray-700 hover:text-black pointer-events-auto"
             variants={navItemVariants}
             whileHover="hover"
             whileTap={{ scale: 0.95 }}
@@ -242,7 +240,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             
             <motion.button 
             onClick={() => handleNavigation("/contact")}
-            className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors font-medium text-gray-700 hover:text-black"
+            className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors font-medium text-gray-700 hover:text-black pointer-events-auto"
             variants={navItemVariants}
             whileHover="hover"
             whileTap={{ scale: 0.95 }}
@@ -271,7 +269,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
 
         {/* Search bar compacte dans le header lors du scroll */}
         <motion.div 
-          className="hidden lg:flex absolute left-0 right-0 mx-auto justify-center items-center h-full"
+          className="hidden lg:flex absolute left-0 right-0 mx-auto justify-center items-center h-full pointer-events-none"
           style={{
             opacity: searchOpacity,
             scale: searchScale,
@@ -280,7 +278,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             pointerEvents: searchPointerEvents
           }}
         >
-          <SearchBar compact={true} searchHeight={searchHeight} />
+          <SearchBar compact={true} searchHeight={searchHeight} className="pointer-events-auto" />
         </motion.div>
 
         {/* Actions à droite */}
@@ -303,59 +301,36 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
           {/* Panier */}
           <CartSlideOver headerStyle="light" />
 
-          {/* Menu utilisateur */}
-          <motion.div 
-            className="flex items-center gap-2 border border-gray-300 rounded-full py-2 px-2 hover:shadow-md transition-shadow"
-            whileHover={{ scale: 1.02, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-          >
-            <button className="p-1">
-              <Menu className="h-4 w-4 text-gray-600" />
-            </button>
-            <AnimatePresence mode="wait">
-              {isAuthenticated ? (
-                <motion.div 
-                  className="flex items-center gap-2"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <motion.button
-                    onClick={() => handleNavigation("/admin/upload")}
-                    className="p-2 rounded-full hover:bg-gray-100"
-                    title="Admin"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <Settings className="h-4 w-4 text-gray-600" />
-                  </motion.button>
-                  <motion.button
-                    onClick={handleLogout}
-                    className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700"
-                    title="Déconnexion"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <User className="h-4 w-4" />
-                  </motion.button>
-                </motion.div>
-              ) : (
-                <motion.button
-                  onClick={() => handleNavigation("/login")}
-                  className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700"
-                  title="Se connecter"
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 10 }}
-                  transition={{ duration: 0.3 }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <User className="h-4 w-4" />
-                </motion.button>
-              )}
-            </AnimatePresence>
-          </motion.div>
+          {/* Authentication - Simple button */}
+          <AnimatePresence mode="wait">
+            {isAuthenticated ? (
+              <motion.button
+                onClick={() => handleNavigation("/admin/upload")}
+                className="p-3 rounded-full hover:bg-gray-100 transition-colors"
+                title="Admin"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <Settings className="h-5 w-5 text-gray-600" />
+              </motion.button>
+            ) : (
+              <motion.button
+                onClick={() => handleNavigation("/login")}
+                className="p-3 rounded-full hover:bg-gray-100 transition-colors"
+                title="Se connecter"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <User className="h-5 w-5 text-gray-600" />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </motion.div>
         {/* Menu mobile */}
         <motion.div className="lg:hidden">

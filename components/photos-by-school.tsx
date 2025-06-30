@@ -43,9 +43,9 @@ export function PhotosBySchool() {
 
   if (loading) {
     return (
-      <div className="px-6 py-8">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-          Écoles de surf
+      <div className="px-6 py-4">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          🏄‍♂️ Écoles de surf >
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
@@ -61,17 +61,11 @@ export function PhotosBySchool() {
   }
 
   return (
-    <div className="px-6 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold text-gray-900">
-          Écoles de surf
+    <div className="px-6 py-4">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-900">
+          🏄‍♂️ Écoles de surf >
         </h2>
-        <Link 
-          href="/gallery" 
-          className="text-blue-600 font-semibold hover:underline"
-        >
-          Voir toutes
-        </Link>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

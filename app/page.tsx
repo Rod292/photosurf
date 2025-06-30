@@ -75,7 +75,7 @@ export default function HomePage() {
       <Header alwaysVisible={true} />
       
       {/* Hero section avec barre de recherche */}
-      <section className="bg-white">
+      <section className="bg-white border-b border-gray-200">
         <div className="relative">
           {/* Image de fond subtile */}
           <div 
@@ -143,10 +143,10 @@ export default function HomePage() {
         staggerChildren={0.1}
       >
         <div className="max-w-7xl mx-auto">
-          <div className="px-6 py-8">
+          <div className="px-6 py-4">
             <FlowItem className="mb-6">
-              <h2 className="text-2xl font-semibold text-gray-900">
-                📸 Photos récentes
+              <h2 className="text-xl font-semibold text-gray-900">
+                📸 Photos récentes >
               </h2>
             </FlowItem>
             <FlowItem>
@@ -178,10 +178,10 @@ export default function HomePage() {
       >
         <div className="max-w-7xl mx-auto">
           <Suspense fallback={
-            <div className="px-6 py-8">
+            <div className="px-6 py-4">
               <FlowItem>
-                <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                  📅 Sessions par jour
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  📅 Sessions par jour >
                 </h2>
               </FlowItem>
               <FlowItem>
@@ -212,10 +212,10 @@ export default function HomePage() {
       >
         <div className="max-w-7xl mx-auto">
           <Suspense fallback={
-            <div className="px-6 py-8">
+            <div className="px-6 py-4">
               <FlowItem>
-                <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                  🏄‍♂️ Écoles de surf
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  🏄‍♂️ Écoles de surf >
                 </h2>
               </FlowItem>
               <FlowItem>

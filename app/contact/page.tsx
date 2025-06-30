@@ -1,9 +1,25 @@
 import { Header } from "@/components/header"
+import Link from "next/link"
+import { ArrowLeft, Home } from "lucide-react"
 
 export default function ContactPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header alwaysVisible={true} />
+      
+      {/* Bouton retour accueil */}
+      <div className="bg-white py-4 border-b border-gray-200">
+        <div className="container mx-auto px-4">
+          <Link 
+            href="/"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <Home className="w-4 h-4" />
+            <span className="font-medium">Retour à l'accueil</span>
+          </Link>
+        </div>
+      </div>
       
       <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
