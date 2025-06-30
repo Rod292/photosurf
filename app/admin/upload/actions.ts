@@ -250,31 +250,34 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
           throw new Error(`Erreur upload preview ${previewFile.name}: ${previewError.message}`)
         }
 
-        // Obtenir l'URL publique de la preview
-        const { data: previewUrl } = supabase.storage
+        // ÉTAPE CRUCIALE : Obtenir l'URL publique de l'image de prévisualisation
+        const { data: { publicUrl: previewPublicUrl } } = supabase.storage
           .from('web-previews')
           .getPublicUrl(previewUpload.path)
 
-        // Enregistrer les métadonnées dans Supabase (utiliser les noms de colonnes du schéma existant)
-        const { error: photoError } = await supabase
-          .from('photos')
-          .insert({
-            gallery_id: galleryId,
-            original_s3_key: originalUpload.path,
-            preview_s3_url: previewUrl.publicUrl,
-            filename: originalFile.name,
-            filesize: originalFile.size,
-            content_type: originalFile.type,
-          })
+        if (!previewPublicUrl) {
+          // Si on ne peut pas obtenir l'URL, on considère que c'est une erreur et on nettoie
+          await supabase.storage.from('originals').remove([originalUpload.path])
+          await supabase.storage.from('web-previews').remove([previewUpload.path])
+          throw new Error(`Impossible d'obtenir l'URL publique pour ${previewFile.name}`)
+        }
 
-        if (photoError) {
-          console.error('Photo metadata save error:', photoError)
-          // Nettoyer les fichiers uploadés si l'insertion DB échoue
-          await Promise.all([
-            supabase.storage.from('originals').remove([originalUpload.path]),
-            supabase.storage.from('web-previews').remove([previewUpload.path])
-          ])
-          throw new Error(`Erreur lors de la sauvegarde des métadonnées pour ${originalFile.name}`)
+        // Insérer les métadonnées de la photo dans la base de données
+        const { error: dbError } = await supabase.from('photos').insert({
+          gallery_id: galleryId,
+          filename: originalFile.name,
+          original_s3_key: originalUpload.path,
+          preview_s3_url: previewPublicUrl,
+          width: 0, // A REMPLACER : extraire les dimensions réelles si possible
+          height: 0, // A REMPLACER : extraire les dimensions réelles si possible
+          price: 25.00, // Prix par défaut, à ajuster si nécessaire
+        })
+
+        if (dbError) {
+          // Si l'insertion échoue, nettoyer les fichiers uploadés
+          await supabase.storage.from('originals').remove([originalUpload.path])
+          await supabase.storage.from('web-previews').remove([previewUpload.path])
+          throw new Error(`Erreur DB pour ${originalFile.name}: ${dbError.message}`)
         }
 
         uploadedCount++
