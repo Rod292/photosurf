@@ -30,12 +30,13 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
   const navOpacity = useTransform(scrollY, [80, 140], [1, 0])
   const navScale = useTransform(scrollY, [80, 140], [1, 0.8])
   const navY = useTransform(scrollY, [80, 140], [0, -20])
-  const navPointerEvents = useTransform(scrollY, [140], (value) => value > 140 ? 'none' : 'auto')
+  const navPointerEvents = useTransform(scrollY, [140, 141], ["auto", "none"])
   
   const searchOpacity = useTransform(scrollY, [150, 200], [0, 1])
   const searchScale = useTransform(scrollY, [150, 250], [0.8, 0.85])
   const searchY = useTransform(scrollY, [150, 200], [20, 0])
   const searchHeight = useTransform(scrollY, [200, 300], [40, 32])
+  const searchPointerEvents = useTransform(scrollY, [150, 151], ["none", "auto"])
 
   // Vérifier l'authentification
   useEffect(() => {
@@ -182,7 +183,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             scale: navScale,
             y: navY,
             gap: isScrolled ? "1.5rem" : "2rem",
-            pointerEvents: navPointerEvents as any
+            pointerEvents: navPointerEvents
           }}
         >
             <motion.button 
@@ -276,7 +277,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             scale: searchScale,
             y: searchY,
             height: searchHeight,
-            pointerEvents: scrollY.get() > 150 ? 'auto' : 'none'
+            pointerEvents: searchPointerEvents
           }}
         >
           <SearchBar compact={true} searchHeight={searchHeight} />
