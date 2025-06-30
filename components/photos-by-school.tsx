@@ -45,7 +45,7 @@ export function PhotosBySchool() {
     return (
       <div className="px-6 py-4">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">
-          🏄‍♂️ Écoles de surf >
+          🏄‍♂️ Écoles de surf {'>'}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
@@ -64,7 +64,7 @@ export function PhotosBySchool() {
     <div className="px-6 py-4">
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900">
-          🏄‍♂️ Écoles de surf >
+          🏄‍♂️ Écoles de surf {'>'}
         </h2>
       </div>
       

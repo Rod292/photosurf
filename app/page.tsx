@@ -146,7 +146,7 @@ export default function HomePage() {
           <div className="px-6 py-4">
             <FlowItem className="mb-6">
               <h2 className="text-xl font-semibold text-gray-900">
-                📸 Photos récentes >
+                📸 Photos récentes {'>'}
               </h2>
             </FlowItem>
             <FlowItem>
@@ -181,7 +181,7 @@ export default function HomePage() {
             <div className="px-6 py-4">
               <FlowItem>
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                  📅 Sessions par jour >
+                  📅 Sessions par jour {'>'}
                 </h2>
               </FlowItem>
               <FlowItem>
@@ -215,7 +215,7 @@ export default function HomePage() {
             <div className="px-6 py-4">
               <FlowItem>
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                  🏄‍♂️ Écoles de surf >
+                  🏄‍♂️ Écoles de surf {'>'}
                 </h2>
               </FlowItem>
               <FlowItem>

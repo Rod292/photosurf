@@ -41,7 +41,7 @@ export function PhotosByDate() {
     return (
       <div className="px-6 py-4">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">
-          📅 Sessions par jour >
+          📅 Sessions par jour {'>'}
         </h2>
         <div className="flex gap-4 overflow-x-auto scrollbar-hide">
           {[...Array(5)].map((_, i) => (
@@ -60,7 +60,7 @@ export function PhotosByDate() {
     <div className="px-6 py-4">
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900">
-          📅 Sessions par jour >
+          📅 Sessions par jour {'>'}
         </h2>
       </div>
       
