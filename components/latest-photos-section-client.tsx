@@ -7,7 +7,7 @@ import { Photo, Gallery } from "@/lib/database.types"
 
 // Interface pour les photos avec leurs galeries
 interface PhotoWithGallery extends Photo {
-  gallery?: Gallery
+  galleries?: Gallery
 }
 
 export function LatestPhotosSectionClient() {
@@ -75,11 +75,11 @@ export function LatestPhotosSectionClient() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <p className="text-sm font-medium truncate">
-                {photo.gallery?.name || 'Session de surf'}
+                {photo.galleries?.name || 'Session de surf'}
               </p>
               <p className="text-xs opacity-90">
-                {photo.gallery?.date ? 
-                  new Date(photo.gallery.date).toLocaleDateString('fr-FR', {
+                {photo.galleries?.date ? 
+                  new Date(photo.galleries.date).toLocaleDateString('fr-FR', {
                     day: 'numeric',
                     month: 'long'
                   }) 

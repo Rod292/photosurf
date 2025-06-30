@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseAdminClient } from '@/lib/supabase/server'
 
 export async function GET() {
   try {
-    const supabase = await createSupabaseServerClient()
+    // Vérifier les variables d'environnement
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Variables d\'environnement Supabase manquantes')
+      return NextResponse.json(
+        { error: 'Configuration serveur manquante' },
+        { status: 500 }
+      )
+    }
+
+    const supabase = createSupabaseAdminClient()
 
     // Récupérer les écoles avec leurs galeries et photos
     const { data: schools, error } = await supabase
@@ -24,8 +33,11 @@ export async function GET() {
       .order('name', { ascending: true })
 
     if (error) {
-      console.error('Erreur Supabase:', error)
-      return NextResponse.json({ error: 'Erreur base de données' }, { status: 500 })
+      console.error('Erreur Supabase dans photos-by-school:', error)
+      return NextResponse.json({ 
+        error: 'Erreur base de données', 
+        details: error.message 
+      }, { status: 500 })
     }
 
     // Transformer les données pour le composant
@@ -53,9 +65,13 @@ export async function GET() {
       .filter((schoolGroup: any) => schoolGroup.totalPhotos > 0) // Garder seulement les écoles avec des photos
       .slice(0, 12) // Limiter à 12 écoles
 
+    console.log(`photos-by-school: ${schoolGroups.length} écoles avec photos récupérées`)
     return NextResponse.json({ schoolGroups })
   } catch (error) {
-    console.error('Erreur API:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    console.error('Erreur API photos-by-school:', error)
+    return NextResponse.json({ 
+      error: 'Erreur serveur', 
+      details: error instanceof Error ? error.message : 'Erreur inconnue' 
+    }, { status: 500 })
   }
 } 

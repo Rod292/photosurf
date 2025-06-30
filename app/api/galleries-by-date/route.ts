@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseAdminClient } from '@/lib/supabase/server'
 
 export async function GET() {
   try {
-    const supabase = await createSupabaseServerClient()
+    // Vérifier les variables d'environnement
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Variables d\'environnement Supabase manquantes')
+      return NextResponse.json(
+        { error: 'Configuration serveur manquante' },
+        { status: 500 }
+      )
+    }
+
+    const supabase = createSupabaseAdminClient()
 
     // Récupérer les galeries avec les photos
     const { data: galleries, error } = await supabase
@@ -21,8 +30,11 @@ export async function GET() {
       .limit(20)
 
     if (error) {
-      console.error('Erreur Supabase:', error)
-      return NextResponse.json({ error: 'Erreur base de données' }, { status: 500 })
+      console.error('Erreur Supabase dans galleries-by-date:', error)
+      return NextResponse.json({ 
+        error: 'Erreur base de données', 
+        details: error.message 
+      }, { status: 500 })
     }
 
     // Grouper par date
@@ -52,9 +64,13 @@ export async function GET() {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 10) // Limiter à 10 groupes de dates
 
+    console.log(`galleries-by-date: ${sortedGroups.length} groupes de dates récupérés`)
     return NextResponse.json({ galleryGroups: sortedGroups })
   } catch (error) {
-    console.error('Erreur API:', error)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    console.error('Erreur API galleries-by-date:', error)
+    return NextResponse.json({ 
+      error: 'Erreur serveur', 
+      details: error instanceof Error ? error.message : 'Erreur inconnue' 
+    }, { status: 500 })
   }
 } 
