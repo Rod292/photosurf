@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Search, Calendar, School, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
+import { SimpleCalendar } from "./ui/simple-calendar"
 
 interface UnifiedSearchProps {
   mode?: "compact" | "full"
@@ -194,16 +195,14 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50"
+                className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
               >
-                <input
-                  type="date"
-                  value={searchState.date}
-                  onChange={(e) => {
-                    updateSearchState("date", e.target.value)
+                <SimpleCalendar
+                  selectedDate={searchState.date}
+                  onDateSelect={(date) => {
+                    updateSearchState("date", date)
                     setShowDatePicker(false)
                   }}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </motion.div>
             )}
@@ -392,16 +391,14 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50"
+                  className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
                 >
-                  <input
-                    type="date"
-                    value={searchState.date}
-                    onChange={(e) => {
-                      updateSearchState("date", e.target.value)
+                  <SimpleCalendar
+                    selectedDate={searchState.date}
+                    onDateSelect={(date) => {
+                      updateSearchState("date", date)
                       setShowDatePicker(false)
                     }}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </motion.div>
               )}

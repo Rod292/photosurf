@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Search, Calendar, School } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, MotionValue } from "framer-motion"
+import { SimpleCalendar } from "./ui/simple-calendar"
 
 interface SearchBarProps {
   compact?: boolean
@@ -95,16 +96,14 @@ export function SearchBar({ compact = false, className = "", searchHeight }: Sea
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50"
+                className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
               >
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => {
-                    setSelectedDate(e.target.value)
+                <SimpleCalendar
+                  selectedDate={selectedDate}
+                  onDateSelect={(date) => {
+                    setSelectedDate(date)
                     setShowDatePicker(false)
                   }}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </motion.div>
             )}
