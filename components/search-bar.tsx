@@ -5,6 +5,7 @@ import { Search, Calendar, School } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, MotionValue } from "framer-motion"
 import { SimpleCalendar } from "./ui/simple-calendar"
+import { useSurfSchools } from "@/hooks/use-surf-schools"
 
 interface SearchBarProps {
   compact?: boolean
@@ -21,12 +22,8 @@ export function SearchBar({ compact = false, className = "", searchHeight }: Sea
   const dateRef = useRef<HTMLDivElement>(null)
   const schoolRef = useRef<HTMLDivElement>(null)
   
-  // Liste des écoles disponibles
-  const schools = [
-    "ESB",
-    "Rise Up",
-    "La Torche Surf School"
-  ]
+  // Récupérer les écoles depuis la base de données
+  const { schools } = useSurfSchools()
   
   // Fermer les menus au clic extérieur
   useEffect(() => {
@@ -134,17 +131,17 @@ export function SearchBar({ compact = false, className = "", searchHeight }: Sea
                 transition={{ duration: 0.2 }}
                 className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 min-w-[200px]"
               >
-                {schools.map((schoolName) => (
+                {schools.map((school) => (
                   <motion.button
-                    key={schoolName}
+                    key={school.id}
                     onClick={() => {
-                      setSelectedSchool(schoolName)
+                      setSelectedSchool(school.name)
                       setShowSchoolList(false)
                     }}
                     className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded-md transition-colors"
                     whileHover={{ backgroundColor: "#f3f4f6" }}
                   >
-                    {schoolName}
+                    {school.name}
                   </motion.button>
                 ))}
               </motion.div>

@@ -5,6 +5,7 @@ import { Search, Calendar, School, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { SimpleCalendar } from "./ui/simple-calendar"
+import { useSurfSchools } from "@/hooks/use-surf-schools"
 
 interface UnifiedSearchProps {
   mode?: "compact" | "full"
@@ -18,13 +19,8 @@ interface SearchState {
   session: string
 }
 
-const SURF_SCHOOLS = [
-  "ESB",
-  "Rise Up",
-  "La Torche Surf School"
-]
-
 export function UnifiedSearch({ mode = "full", className = "", onModeChange }: UnifiedSearchProps) {
+  const { schools } = useSurfSchools()
   const [searchState, setSearchState] = useState<SearchState>({
     date: "",
     school: "",
@@ -244,17 +240,17 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
                 transition={{ duration: 0.2 }}
                 className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 min-w-[200px]"
               >
-                {SURF_SCHOOLS.map((schoolName) => (
+                {schools.map((school) => (
                   <motion.button
-                    key={schoolName}
+                    key={school.id}
                     onClick={() => {
-                      updateSearchState("school", schoolName)
+                      updateSearchState("school", school.name)
                       setShowSchoolList(false)
                     }}
                     className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded-md transition-colors"
                     whileHover={{ backgroundColor: "#f3f4f6" }}
                   >
-                    {schoolName}
+                    {school.name}
                   </motion.button>
                 ))}
               </motion.div>
@@ -446,17 +442,17 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
                   transition={{ duration: 0.2 }}
                   className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 min-w-[200px]"
                 >
-                  {SURF_SCHOOLS.map((schoolName) => (
+                  {schools.map((school) => (
                     <motion.button
-                      key={schoolName}
+                      key={school.id}
                       onClick={() => {
-                        updateSearchState("school", schoolName)
+                        updateSearchState("school", school.name)
                         setShowSchoolList(false)
                       }}
                       className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded-md transition-colors"
                       whileHover={{ backgroundColor: "#f3f4f6" }}
                     >
-                      {schoolName}
+                      {school.name}
                     </motion.button>
                   ))}
                 </motion.div>

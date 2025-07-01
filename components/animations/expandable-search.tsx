@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, useMotionValue, useTransform, useScroll } from "framer-motion"
 import { CollapsibleContent } from "./content-flow-animation"
 import { SimpleCalendar } from "../ui/simple-calendar"
+import { useSurfSchools } from "@/hooks/use-surf-schools"
 
 interface ExpandableSearchProps {
   variant?: "compact" | "full"
@@ -13,6 +14,7 @@ interface ExpandableSearchProps {
 }
 
 export function ExpandableSearch({ variant = "full", onStateChange }: ExpandableSearchProps) {
+  const { schools } = useSurfSchools()
   const [isExpanded, setIsExpanded] = useState(variant === "full")
   const [isSearching, setIsSearching] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
@@ -181,17 +183,17 @@ export function ExpandableSearch({ variant = "full", onStateChange }: Expandable
                       transition={{ duration: 0.2 }}
                       className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 min-w-[200px]"
                     >
-                      {["ESB", "Rise Up", "La Torche Surf School"].map((schoolName) => (
+                      {schools.map((school) => (
                         <motion.button
-                          key={schoolName}
+                          key={school.id}
                           onClick={() => {
-                            setFormData(prev => ({ ...prev, school: schoolName }))
+                            setFormData(prev => ({ ...prev, school: school.name }))
                             setShowSchoolList(false)
                           }}
                           className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded-md transition-colors"
                           whileHover={{ backgroundColor: "#f3f4f6" }}
                         >
-                          {schoolName}
+                          {school.name}
                         </motion.button>
                       ))}
                     </motion.div>
@@ -226,7 +228,7 @@ export function ExpandableSearch({ variant = "full", onStateChange }: Expandable
               SUGGESTIONS RAPIDES
             </div>
             <div className="flex flex-wrap gap-2">
-              {["ESB", "Rise Up", "Cours débutant", "Session matin"].map((suggestion, i) => (
+              {[...(schools.slice(0, 2).map(school => school.name)), "Cours débutant", "Session matin"].map((suggestion, i) => (
                 <motion.button
                   key={suggestion}
                   className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700 transition-colors"

@@ -5,19 +5,15 @@ import { Search, Calendar, School, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { SimpleCalendar } from "./ui/simple-calendar"
+import { useSurfSchools } from "@/hooks/use-surf-schools"
 
 interface SearchState {
   date: string
   school: string
 }
 
-const SURF_SCHOOLS = [
-  "ESB",
-  "Rise Up",
-  "La Torche Surf School"
-]
-
 export function MorphingSearch() {
+  const { schools } = useSurfSchools()
   const [searchState, setSearchState] = useState<SearchState>({
     date: "",
     school: ""
@@ -112,16 +108,16 @@ export function MorphingSearch() {
             
             {showSchoolList && (
               <div className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 min-w-[200px]">
-                {SURF_SCHOOLS.map((schoolName) => (
+                {schools.map((school) => (
                   <button
-                    key={schoolName}
+                    key={school.id}
                     onClick={() => {
-                      updateSearchState("school", schoolName)
+                      updateSearchState("school", school.name)
                       setShowSchoolList(false)
                     }}
                     className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded-md transition-colors"
                   >
-                    {schoolName}
+                    {school.name}
                   </button>
                 ))}
               </div>
