@@ -181,7 +181,7 @@ export function ExpandableSearch({ variant = "full", onStateChange }: Expandable
                       transition={{ duration: 0.2 }}
                       className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 min-w-[200px]"
                     >
-                      {["Surf School La Torche", "École de Surf ECF", "West Surf Association", "Glisse & Nature", "La Torche Surf Club", "Breizh Surf School"].map((schoolName) => (
+                      {["ESB", "Rise Up", "La Torche Surf School"].map((schoolName) => (
                         <motion.button
                           key={schoolName}
                           onClick={() => {
@@ -226,7 +226,7 @@ export function ExpandableSearch({ variant = "full", onStateChange }: Expandable
               SUGGESTIONS RAPIDES
             </div>
             <div className="flex flex-wrap gap-2">
-              {["Surf School La Torche", "École ECF", "Cours débutant", "Session matin"].map((suggestion, i) => (
+              {["ESB", "Rise Up", "Cours débutant", "Session matin"].map((suggestion, i) => (
                 <motion.button
                   key={suggestion}
                   className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700 transition-colors"

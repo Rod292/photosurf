@@ -23,12 +23,9 @@ export function SearchBar({ compact = false, className = "", searchHeight }: Sea
   
   // Liste des écoles disponibles
   const schools = [
-    "Surf School La Torche",
-    "École de Surf ECF",
-    "West Surf Association",
-    "Glisse & Nature",
-    "La Torche Surf Club",
-    "Breizh Surf School"
+    "ESB",
+    "Rise Up",
+    "La Torche Surf School"
   ]
   
   // Fermer les menus au clic extérieur

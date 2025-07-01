@@ -19,12 +19,9 @@ interface SearchState {
 }
 
 const SURF_SCHOOLS = [
-  "Surf School La Torche",
-  "École de Surf ECF", 
-  "West Surf Association",
-  "Glisse & Nature",
-  "La Torche Surf Club",
-  "Breizh Surf School"
+  "ESB",
+  "Rise Up",
+  "La Torche Surf School"
 ]
 
 export function UnifiedSearch({ mode = "full", className = "", onModeChange }: UnifiedSearchProps) {
