@@ -268,9 +268,8 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
           filename: originalFile.name,
           original_s3_key: originalUpload.path,
           preview_s3_url: previewPublicUrl,
-          width: 0, // A REMPLACER : extraire les dimensions réelles si possible
-          height: 0, // A REMPLACER : extraire les dimensions réelles si possible
-          price: 25.00, // Prix par défaut, à ajuster si nécessaire
+          filesize: originalFile.size,
+          content_type: originalFile.type
         })
 
         if (dbError) {
