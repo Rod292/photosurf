@@ -14,43 +14,55 @@ export async function GET() {
 
     const supabase = createSupabaseAdminClient()
 
-    // Récupérer les écoles avec leurs galeries et photos
-    const { data: schools, error } = await supabase
-      .from('surf_schools')
+    // Première approche : récupérer toutes les galeries avec photos
+    const { data: galleries, error: galleriesError } = await supabase
+      .from('galleries')
       .select(`
         id,
         name,
-        slug,
-        galleries (
+        school_id,
+        photos (
           id,
-          name,
-          photos (
-            id,
-            preview_s3_url
-          )
+          preview_s3_url
         )
       `)
+      .not('school_id', 'is', null)
+    
+    if (galleriesError) {
+      console.error('Erreur récupération galeries:', galleriesError)
+      return NextResponse.json({ 
+        schoolGroups: [],
+        error: galleriesError.message 
+      })
+    }
+
+    // Récupérer les écoles
+    const { data: schools, error } = await supabase
+      .from('surf_schools')
+      .select('id, name, slug')
       .order('name', { ascending: true })
 
     if (error) {
       console.error('Erreur Supabase dans photos-by-school:', error)
       return NextResponse.json({ 
-        error: 'Erreur base de données', 
-        details: error.message 
-      }, { status: 500 })
+        schoolGroups: [],
+        error: error.message 
+      })
     }
 
     // Transformer les données pour le composant
     const schoolGroups = schools
       .map((school: any) => {
-        const galleries = school.galleries.map((gallery: any) => ({
+        const schoolGalleries = galleries.filter((gallery: any) => gallery.school_id === school.id)
+        
+        const galleriesData = schoolGalleries.map((gallery: any) => ({
           id: gallery.id,
           name: gallery.name,
           photoCount: gallery.photos?.length || 0,
           coverPhoto: gallery.photos?.[0]?.preview_s3_url || null
         }))
 
-        const totalPhotos = galleries.reduce((sum: number, gallery: any) => sum + gallery.photoCount, 0)
+        const totalPhotos = galleriesData.reduce((sum: number, gallery: any) => sum + gallery.photoCount, 0)
 
         return {
           school: {
@@ -58,7 +70,7 @@ export async function GET() {
             name: school.name,
             slug: school.slug
           },
-          galleries: galleries.slice(0, 10), // Limiter à 10 galeries par école
+          galleries: galleriesData.slice(0, 10), // Limiter à 10 galeries par école
           totalPhotos
         }
       })
@@ -70,8 +82,8 @@ export async function GET() {
   } catch (error) {
     console.error('Erreur API photos-by-school:', error)
     return NextResponse.json({ 
-      error: 'Erreur serveur', 
-      details: error instanceof Error ? error.message : 'Erreur inconnue' 
-    }, { status: 500 })
+      schoolGroups: [],
+      error: error instanceof Error ? error.message : 'Erreur inconnue'
+    })
   }
 } 

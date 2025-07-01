@@ -14,14 +14,14 @@ export async function GET() {
 
     const supabase = createSupabaseAdminClient()
 
-    // Récupérer les galeries avec les photos
+    // Récupérer les galeries avec les photos - approche simplifiée
     const { data: galleries, error } = await supabase
       .from('galleries')
       .select(`
         id,
         name,
         date,
-        photos (
+        photos!gallery_id (
           id,
           preview_s3_url
         )
@@ -31,10 +31,11 @@ export async function GET() {
 
     if (error) {
       console.error('Erreur Supabase dans galleries-by-date:', error)
+      // Return empty array to prevent total failure
       return NextResponse.json({ 
-        error: 'Erreur base de données', 
-        details: error.message 
-      }, { status: 500 })
+        galleryGroups: [], 
+        error: error.message 
+      })
     }
 
     // Grouper par date
@@ -69,8 +70,8 @@ export async function GET() {
   } catch (error) {
     console.error('Erreur API galleries-by-date:', error)
     return NextResponse.json({ 
-      error: 'Erreur serveur', 
-      details: error instanceof Error ? error.message : 'Erreur inconnue' 
-    }, { status: 500 })
+      galleryGroups: [],
+      error: error instanceof Error ? error.message : 'Erreur inconnue'
+    })
   }
 } 

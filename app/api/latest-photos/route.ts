@@ -18,8 +18,12 @@ export async function GET() {
     const { data: photos, error } = await supabase
       .from('photos')
       .select(`
-        *,
-        galleries!gallery_id (
+        id,
+        gallery_id,
+        preview_s3_url,
+        filename,
+        created_at,
+        galleries (
           id,
           name,
           date,
@@ -31,19 +35,18 @@ export async function GET() {
     
     if (error) {
       console.error('Erreur Supabase dans latest-photos:', error)
-      return NextResponse.json(
-        { error: 'Erreur lors de la récupération des photos', details: error.message },
-        { status: 500 }
-      )
+      // Return empty array instead of 500 error to prevent total failure
+      return NextResponse.json({ photos: [], error: error.message })
     }
     
     console.log(`latest-photos: ${photos?.length || 0} photos récupérées`)
     return NextResponse.json({ photos: photos || [] })
   } catch (error) {
     console.error('Erreur dans l\'API latest-photos:', error)
-    return NextResponse.json(
-      { error: 'Erreur serveur interne', details: error instanceof Error ? error.message : 'Erreur inconnue' },
-      { status: 500 }
-    )
+    // Return empty array to prevent total failure
+    return NextResponse.json({ 
+      photos: [], 
+      error: error instanceof Error ? error.message : 'Erreur inconnue' 
+    })
   }
 } 
