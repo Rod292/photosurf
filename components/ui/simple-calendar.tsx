@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface SimpleCalendarProps {
   selectedDate: string
@@ -81,7 +81,7 @@ export function SimpleCalendar({ selectedDate, onDateSelect }: SimpleCalendarPro
           onClick={() => navigateMonth('prev')}
           className="p-1 hover:bg-gray-100 rounded transition-colors"
         >
-          <ChevronLeftIcon className="h-4 w-4 text-gray-600" />
+          <ChevronLeft className="h-4 w-4 text-gray-600" />
         </button>
         
         <h3 className="text-sm font-medium text-gray-900">
@@ -92,7 +92,7 @@ export function SimpleCalendar({ selectedDate, onDateSelect }: SimpleCalendarPro
           onClick={() => navigateMonth('next')}
           className="p-1 hover:bg-gray-100 rounded transition-colors"
         >
-          <ChevronRightIcon className="h-4 w-4 text-gray-600" />
+          <ChevronRight className="h-4 w-4 text-gray-600" />
         </button>
       </div>
 

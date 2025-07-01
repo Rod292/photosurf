@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Search, Calendar, School, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
+import { SimpleCalendar } from "./ui/simple-calendar"
 
 interface SearchState {
   date: string
@@ -88,15 +89,13 @@ export function MorphingSearch() {
             </button>
             
             {showDatePicker && (
-              <div className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50">
-                <input
-                  type="date"
-                  value={searchState.date}
-                  onChange={(e) => {
-                    updateSearchState("date", e.target.value)
+              <div className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <SimpleCalendar
+                  selectedDate={searchState.date}
+                  onDateSelect={(date) => {
+                    updateSearchState("date", date)
                     setShowDatePicker(false)
                   }}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             )}

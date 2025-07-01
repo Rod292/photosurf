@@ -5,6 +5,7 @@ import { Search, X, Calendar, School, MapPin } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, useMotionValue, useTransform, useScroll } from "framer-motion"
 import { CollapsibleContent } from "./content-flow-animation"
+import { SimpleCalendar } from "../ui/simple-calendar"
 
 interface ExpandableSearchProps {
   variant?: "compact" | "full"
@@ -146,16 +147,14 @@ export function ExpandableSearch({ variant = "full", onStateChange }: Expandable
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50"
+                      className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
                     >
-                      <input
-                        type="date"
-                        value={formData.date}
-                        onChange={(e) => {
-                          setFormData(prev => ({ ...prev, date: e.target.value }))
+                      <SimpleCalendar
+                        selectedDate={formData.date}
+                        onDateSelect={(date) => {
+                          setFormData(prev => ({ ...prev, date }))
                           setShowDatePicker(false)
                         }}
-                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </motion.div>
                   )}
