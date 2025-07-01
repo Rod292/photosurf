@@ -36,17 +36,9 @@ Build a web application for "Arode Studio" to sell photos to surf students in La
 
             Logs into a secure /admin section of the website.
 
-            Creates a new gallery for a specific session.
+            He then uploads separately the original file with the high-quality photos. And in another file, he uploads the watermarked photos that will be available for the customers to see on the website. 
 
-            Performs a bulk upload of full-resolution, edited JPEGs.
-
-            The system MUST automatically:
-
-                Store the original, high-resolution file securely (e.g., private S3 bucket).
-
-                Generate a smaller, web-optimized, watermarked version for public display.
-
-            Views a dashboard of all orders (digital and print).
+            There are therefore two separate upload buttons in the admin page. 
 
 3. Technical Architecture & Stack (The "Canon")
 

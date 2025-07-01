@@ -8,13 +8,6 @@ import { Gallery, Photo, SurfSchool } from "@/lib/database.types"
 
 async function getGalleryWithPhotos(galleryId: string) {
   try {
-    console.log('🔍 Fetching gallery with ID:', galleryId)
-    console.log('🔑 Environment check:', {
-      hasPublicUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-      publicUrl: process.env.NEXT_PUBLIC_SUPABASE_URL
-    })
-    
     const supabase = createSupabaseAdminClient()
     
     // Fetch gallery
@@ -25,11 +18,9 @@ async function getGalleryWithPhotos(galleryId: string) {
       .single()
     
     if (galleryError) {
-      console.error("❌ Erreur galerie:", galleryError)
+      console.error("Erreur galerie:", galleryError)
       return null
     }
-    
-    console.log('✅ Gallery fetched successfully:', gallery?.name)
     
     // Fetch surf school
     let surfSchool = null
@@ -53,17 +44,12 @@ async function getGalleryWithPhotos(galleryId: string) {
       .order("created_at", { ascending: true })
     
     if (photosError) {
-      console.error("❌ Erreur photos:", photosError)
+      console.error("Erreur photos:", photosError)
       return {
         gallery,
         surfSchool,
         photos: []
       }
-    }
-    
-    console.log(`✅ Photos fetched successfully: ${photos?.length || 0} photos`)
-    if (photos && photos.length > 0) {
-      console.log('📸 First photo URL:', photos[0].preview_s3_url)
     }
     
     return {
@@ -72,11 +58,7 @@ async function getGalleryWithPhotos(galleryId: string) {
       photos: photos || []
     }
   } catch (error) {
-    console.error("💥 Fatal error in getGalleryWithPhotos:", error)
-    console.error("Error details:", {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
-    })
+    console.error("Erreur lors de la récupération des données:", error)
     return null
   }
 }
