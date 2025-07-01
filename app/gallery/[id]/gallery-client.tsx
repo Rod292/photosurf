@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Gallery, Photo } from "@/lib/database.types"
 import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
 import { CartSlideOver } from "@/components/cart-slide-over"
+import { DebugImage } from "@/components/debug-image"
 
 interface GalleryClientProps {
   photos: Photo[]
@@ -26,6 +27,16 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
         <CartSlideOver />
       </div>
 
+      {/* Debug info - will show on all environments for now */}
+      {photos.length > 0 && (
+        <div className="mb-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg">
+          <h4 className="font-bold mb-2">Debug Info:</h4>
+          <p className="text-sm">Total photos: {photos.length}</p>
+          <p className="text-sm break-all">First photo URL: {photos[0]?.preview_s3_url}</p>
+          <p className="text-sm">Environment: {typeof window !== 'undefined' ? 'client' : 'server'}</p>
+        </div>
+      )}
+
       {/* Galerie de photos */}
       {photos.length > 0 ? (
         <div className="mb-8">
@@ -37,7 +48,7 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
                 onClick={() => setLightboxIndex(index)}
               >
                 <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gray-200">
-                  <Image
+                  <DebugImage
                     src={photo.preview_s3_url}
                     alt={photo.filename}
                     fill
