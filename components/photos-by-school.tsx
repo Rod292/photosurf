@@ -72,7 +72,7 @@ export function PhotosBySchool() {
         {schoolGroups.map((schoolGroup) => (
           <Link
             key={schoolGroup.school.id}
-            href={`/gallery?school=${schoolGroup.school.slug}`}
+            href={`/gallery?school=${encodeURIComponent(schoolGroup.school.name)}`}
             className="group"
           >
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
