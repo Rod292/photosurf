@@ -100,45 +100,13 @@ export function PhotosBySchool() {
                     {schoolGroup.totalPhotos} photo{schoolGroup.totalPhotos > 1 ? 's' : ''}
                   </span>
                 </div>
-
-                {/* Nom de l'école en bas */}
-                <div className="absolute bottom-3 left-3 right-3">
-                  <h3 className="text-white font-semibold text-lg">
-                    {schoolGroup.school.name}
-                  </h3>
-                </div>
               </div>
               
-              {/* Informations */}
+              {/* Nom de l'école sous la photo */}
               <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-600">
-                    {schoolGroup.galleries.length} session{schoolGroup.galleries.length > 1 ? 's' : ''}
-                  </span>
-                  <span className="text-sm text-blue-600 font-semibold">
-                    Voir tout →
-                  </span>
-                </div>
-                
-                {/* Aperçu des dernières sessions */}
-                <div className="space-y-1">
-                  {schoolGroup.galleries.slice(0, 2).map((gallery) => (
-                    <div key={gallery.id} className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600 truncate">
-                        {gallery.name}
-                      </span>
-                      <span className="text-gray-400 text-xs ml-2">
-                        {gallery.photoCount}
-                      </span>
-                    </div>
-                  ))}
-                  
-                  {schoolGroup.galleries.length > 2 && (
-                    <div className="text-xs text-gray-400 text-center pt-1">
-                      +{schoolGroup.galleries.length - 2} autre{schoolGroup.galleries.length - 2 > 1 ? 's' : ''} session{schoolGroup.galleries.length - 2 > 1 ? 's' : ''}
-                    </div>
-                  )}
-                </div>
+                <h3 className="text-center font-semibold text-black">
+                  {schoolGroup.school.name}
+                </h3>
               </div>
             </div>
           </Link>

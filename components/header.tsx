@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Instagram, Settings, User, Menu } from "lucide-react"
+import { Instagram, Menu } from "lucide-react"
 import { useState, useEffect } from "react"
 import { CartSlideOver } from "@/components/cart-slide-over"
 import { SearchBar } from "@/components/search-bar"
@@ -13,7 +13,6 @@ interface HeaderProps {
 }
 
 export function Header({ alwaysVisible = false }: HeaderProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const router = useRouter()
@@ -36,29 +35,6 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
   const searchHeight = useTransform(scrollY, [200, 300], [40, 32])
   const searchPointerEvents = useTransform(scrollY, [150, 151], ["none", "auto"])
 
-  // Vérifier l'authentification
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/check')
-        if (response.ok) {
-          const { authenticated } = await response.json()
-          setIsAuthenticated(authenticated)
-        } else {
-          setIsAuthenticated(false)
-        }
-      } catch (error) {
-        console.error('Error checking auth:', error)
-        setIsAuthenticated(false)
-      }
-    }
-
-    checkAuth()
-    const interval = setInterval(checkAuth, 30000)
-    
-    return () => clearInterval(interval)
-  }, [])
-
   // Gérer le scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -69,44 +45,11 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const handleLogout = async () => {
-    try {
-      const response = await fetch('/api/auth/logout', { method: 'POST' })
-      if (response.ok) {
-        setIsAuthenticated(false)
-        router.push('/')
-      }
-    } catch (error) {
-      console.error('Logout error:', error)
-    }
-  }
-
   const handleNavigation = (path: string) => {
     router.push(path)
   }
 
-  const containerVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: {
-      opacity: 1,
-      y: 0
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: -10 },
-    visible: {
-      opacity: 1,
-      y: 0
-    }
-  }
-
   const navItemVariants = {
-    hidden: { opacity: 0, scale: 0.9 },
-    visible: {
-      opacity: 1,
-      scale: 1
-    },
     hover: {
       scale: 1.05
     }
@@ -115,42 +58,29 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
   return (
     <motion.header 
       className="sticky top-0 z-40 bg-white"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      transition={{
-        duration: 0.6,
-        ease: "easeOut",
-        staggerChildren: 0.1
-      }}
       style={{
         height: headerHeight,
         boxShadow: `0 4px 6px -1px rgba(0, 0, 0, ${shadowOpacity})`
       }}
-      layout
     >
       <motion.div 
         className="container mx-auto px-6 h-full flex items-center justify-between relative"
         style={{ paddingTop: headerPadding, paddingBottom: headerPadding }}
-        layout
       >
         
         {/* Logo et nom à gauche */}
         <motion.button 
           onClick={() => handleNavigation("/")} 
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          variants={itemVariants}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           style={{ scale: logoScale }}
-          layout
         >
           <motion.div
-            animate={{ 
+            style={{ 
               width: isScrolled ? 28 : 32,
               height: isScrolled ? 28 : 32
             }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
           >
             <Image
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/arodelogowhitepng-HNnXW50qCnMuNb7pxKVPk3x4zxq9mP.png"
@@ -162,10 +92,9 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
           </motion.div>
           <motion.span 
             className="font-bold text-gray-900 font-playfair"
-            animate={{ 
+            style={{ 
               fontSize: isScrolled ? "1.25rem" : "1.5rem"
             }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
           >
             Arode Studio
           </motion.span>
@@ -174,8 +103,6 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
         {/* Navigation centrale - avec Boutique parfaitement centré */}
         <motion.nav 
           className="hidden lg:flex items-center justify-center absolute left-0 right-0 mx-auto h-full pointer-events-none"
-          variants={containerVariants}
-          transition={{ duration: 0.3, ease: "easeOut" }}
           style={{
             opacity: navOpacity,
             scale: navScale,
@@ -190,22 +117,19 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
               variants={navItemVariants}
               whileHover="hover"
               whileTap={{ scale: 0.95 }}
-              animate={{ 
+              style={{ 
                 padding: isScrolled ? "0.375rem 0.75rem" : "0.5rem 1rem"
               }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
             >
             <motion.span
-              initial={{ rotate: 0 }}
               whileHover={{ rotate: 10 }}
               transition={{ duration: 0.2 }}
-              animate={{ fontSize: isScrolled ? "1.5rem" : "1.75rem" }}
+              style={{ fontSize: isScrolled ? "1.5rem" : "1.75rem" }}
             >
               📸
             </motion.span>
             <motion.span
-              animate={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              style={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
             >
               Photos
             </motion.span>
@@ -217,22 +141,19 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             variants={navItemVariants}
             whileHover="hover"
             whileTap={{ scale: 0.95 }}
-            animate={{ 
+            style={{ 
               padding: isScrolled ? "0.375rem 0.75rem" : "0.5rem 1rem"
             }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
           >
             <motion.span
-              initial={{ rotate: 0 }}
               whileHover={{ rotate: -10 }}
               transition={{ duration: 0.2 }}
-              animate={{ fontSize: isScrolled ? "1.5rem" : "1.75rem" }}
+              style={{ fontSize: isScrolled ? "1.5rem" : "1.75rem" }}
             >
               🛍️
             </motion.span>
             <motion.span
-              animate={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              style={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
             >
               Boutique
             </motion.span>
@@ -244,22 +165,19 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             variants={navItemVariants}
             whileHover="hover"
             whileTap={{ scale: 0.95 }}
-            animate={{ 
+            style={{ 
               padding: isScrolled ? "0.375rem 0.75rem" : "0.5rem 1rem"
             }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
               >
             <motion.span
-              initial={{ rotate: 0 }}
               whileHover={{ rotate: 10 }}
               transition={{ duration: 0.2 }}
-              animate={{ fontSize: isScrolled ? "1.5rem" : "1.75rem" }}
+              style={{ fontSize: isScrolled ? "1.5rem" : "1.75rem" }}
             >
               📞
             </motion.span>
             <motion.span
-              animate={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              style={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
             >
               Contact
             </motion.span>
@@ -284,7 +202,6 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
         {/* Actions à droite */}
         <motion.div 
           className="flex items-center gap-2"
-          variants={itemVariants}
         >
           {/* Instagram */}
           <motion.a 
@@ -301,36 +218,6 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
           {/* Panier */}
           <CartSlideOver headerStyle="light" />
 
-          {/* Authentication - Simple button */}
-          <AnimatePresence mode="wait">
-            {isAuthenticated ? (
-              <motion.button
-                onClick={() => handleNavigation("/admin/upload")}
-                className="p-3 rounded-full hover:bg-gray-100 transition-colors"
-                title="Admin"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <Settings className="h-5 w-5 text-gray-600" />
-              </motion.button>
-            ) : (
-              <motion.button
-                onClick={() => handleNavigation("/login")}
-                className="p-3 rounded-full hover:bg-gray-100 transition-colors"
-                title="Se connecter"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <User className="h-5 w-5 text-gray-600" />
-              </motion.button>
-            )}
-          </AnimatePresence>
         </motion.div>
         {/* Menu mobile */}
         <motion.div className="lg:hidden">
@@ -369,7 +256,6 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
                     setIsMobileMenuOpen(false)
                   }}
                   className="flex items-center gap-3 w-full px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors text-left"
-                  initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
                   whileHover={{ scale: 1.02 }}

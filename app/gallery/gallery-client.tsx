@@ -18,9 +18,10 @@ interface GalleryClientProps {
   latestPhotos: Photo[]
   galleries: any[]
   schoolName?: string
+  dateFilter?: string
 }
 
-export function GalleryClient({ latestPhotos, galleries, schoolName }: GalleryClientProps) {
+export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter }: GalleryClientProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   // Transformer les photos pour être compatibles avec PhotoLightboxModal
@@ -43,8 +44,18 @@ export function GalleryClient({ latestPhotos, galleries, schoolName }: GalleryCl
     setLightboxIndex(null)
   }
 
-  if (!schoolName) {
-    return null // Pour les cas où on n'est pas dans le mode école
+  if (!schoolName && !dateFilter) {
+    return null // Pour les cas où on n'est pas dans le mode école ou date
+  }
+
+  // Formatage de la date pour l'affichage
+  const formatDisplayDate = (date: string) => {
+    return new Date(date).toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    })
   }
 
   return (
@@ -53,13 +64,29 @@ export function GalleryClient({ latestPhotos, galleries, schoolName }: GalleryCl
         {/* Sessions horizontales */}
         <div className="bg-white py-6 border-b border-gray-200">
           <div className="container mx-auto px-4">
-            <h2 className="text-xl font-bold mb-4">
-              Sessions
-            </h2>
+            <div className="flex items-center gap-3 mb-4">
+              {schoolName === "La Torche Surf School" && (
+                <Image
+                  src="/Logos/LOGO-COULEURS.svg"
+                  alt="La Torche Surf School"
+                  width={32}
+                  height={32}
+                  className="flex-shrink-0"
+                />
+              )}
+              <h2 className="text-xl font-bold">
+                {dateFilter ? `Sessions du ${formatDisplayDate(dateFilter)}` : "Sessions"}
+              </h2>
+            </div>
             
             {galleries.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-600">Aucune session disponible pour cette école</p>
+                <p className="text-gray-600">
+                  {dateFilter 
+                    ? "Aucune session disponible pour cette date" 
+                    : "Aucune session disponible pour cette école"
+                  }
+                </p>
               </div>
             ) : (
               <div className="relative">
@@ -117,7 +144,10 @@ export function GalleryClient({ latestPhotos, galleries, schoolName }: GalleryCl
         {/* Photos récentes */}
         <div className="container mx-auto px-4 py-6">
           <h2 className="text-xl font-bold mb-4">
-            Photos récentes
+            {dateFilter 
+              ? `Photos du ${formatDisplayDate(dateFilter)}`
+              : "Photos récentes"
+            }
           </h2>
           
           {latestPhotos.length === 0 ? (

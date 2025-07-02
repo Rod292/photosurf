@@ -66,8 +66,8 @@ export function PhotosByDate() {
       
       <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-4">
         {galleryGroups.map((group) => (
-          <div key={group.date} className="flex-shrink-0">
-            <div className="w-72 bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+          <Link key={group.date} href={`/gallery?date=${group.date}`} className="flex-shrink-0">
+            <div className="w-72 bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
               {/* Image de couverture */}
               <div className="relative h-48 rounded-t-xl overflow-hidden">
                 {group.galleries[0]?.coverPhoto ? (
@@ -91,46 +91,18 @@ export function PhotosByDate() {
                 </div>
               </div>
               
-              {/* Contenu */}
+              {/* Date sous la photo */}
               <div className="p-4">
-                <h3 className="font-semibold text-lg text-gray-900 mb-2">
+                <h3 className="text-center font-semibold text-black">
                   {new Date(group.date).toLocaleDateString('fr-FR', {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'long'
                   })}
                 </h3>
-                
-                <div className="space-y-2">
-                  {group.galleries.slice(0, 2).map((gallery) => (
-                    <Link
-                      key={gallery.id}
-                      href={`/gallery/${gallery.id}`}
-                      className="block p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 truncate">
-                          {gallery.name}
-                        </span>
-                        <span className="text-xs text-gray-400 ml-2">
-                          {gallery.photoCount} photo{gallery.photoCount > 1 ? 's' : ''}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                  
-                  {group.galleries.length > 2 && (
-                    <Link
-                      href={`/gallery?date=${group.date}`}
-                      className="block p-2 text-center text-sm text-blue-600 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      +{group.galleries.length - 2} autre{group.galleries.length - 2 > 1 ? 's' : ''} session{group.galleries.length - 2 > 1 ? 's' : ''}
-                    </Link>
-                  )}
-                </div>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

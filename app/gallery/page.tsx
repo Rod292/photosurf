@@ -6,6 +6,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/server"
 import { Gallery } from "@/lib/database.types"
 import { ArrowLeft, Home } from "lucide-react"
 import { GalleryClient } from "./gallery-client"
+import { GalleryMainClient } from "./gallery-main-client"
 
 interface SearchParams {
   date?: string
@@ -28,7 +29,13 @@ async function getFilteredGalleries(searchParams: SearchParams): Promise<Gallery
         ),
         photos (
           id,
-          preview_s3_url
+          preview_s3_url,
+          created_at,
+          filename,
+          original_s3_key,
+          filesize,
+          content_type,
+          gallery_id
         )
       `)
     
@@ -114,6 +121,56 @@ async function getLatestPhotosFromSchool(schoolName: string) {
   }
 }
 
+async function getLatestPhotosFromDate(date: string) {
+  try {
+    const supabase = createSupabaseAdminClient()
+    
+    // Obtenir les galeries de cette date
+    const { data: galleries, error: galleriesError } = await supabase
+      .from("galleries")
+      .select("id")
+      .eq("date", date)
+    
+    if (galleriesError || !galleries) {
+      console.error("Erreur lors de la récupération des galeries:", galleriesError)
+      return []
+    }
+    
+    const galleryIds = galleries.map(g => g.id)
+    
+    if (galleryIds.length === 0) {
+      return []
+    }
+    
+    // Obtenir les photos les plus récentes de ces galeries
+    const { data: photos, error: photosError } = await supabase
+      .from("photos")
+      .select(`
+        id,
+        preview_s3_url,
+        created_at,
+        gallery_id,
+        galleries!inner (
+          name,
+          date
+        )
+      `)
+      .in("gallery_id", galleryIds)
+      .order("created_at", { ascending: false })
+      .limit(20)
+    
+    if (photosError) {
+      console.error("Erreur lors de la récupération des photos:", photosError)
+      return []
+    }
+    
+    return photos || []
+  } catch (error) {
+    console.error("Erreur lors de la récupération des photos de la date:", error)
+    return []
+  }
+}
+
 export const metadata: Metadata = {
   title: "Galeries Photo - Arode Studio",
   description: "Découvrez toutes nos galeries de photos de surf en Bretagne. Trouvez vos photos et commandez vos tirages professionnels.",
@@ -129,9 +186,14 @@ export default async function GalleriesListPage({
   const galleries = await getFilteredGalleries(resolvedSearchParams)
   const hasFilters = resolvedSearchParams.date || resolvedSearchParams.school
   const isSchoolFilter = !!resolvedSearchParams.school
+  const isDateFilter = !!resolvedSearchParams.date
   
-  // Récupérer les photos récentes si on filtre par école
-  const rawLatestPhotos = isSchoolFilter ? await getLatestPhotosFromSchool(resolvedSearchParams.school!) : []
+  // Récupérer les photos récentes si on filtre par école ou par date
+  const rawLatestPhotos = isSchoolFilter 
+    ? await getLatestPhotosFromSchool(resolvedSearchParams.school!) 
+    : isDateFilter 
+    ? await getLatestPhotosFromDate(resolvedSearchParams.date!)
+    : []
   
   // Transformer les données pour correspondre à l'interface attendue
   const latestPhotos = rawLatestPhotos.map((photo: any) => ({
@@ -180,7 +242,7 @@ export default async function GalleriesListPage({
               Nos Galeries Photo
             </h1>
             <p className="text-xl md:text-2xl font-varela-round opacity-95 max-w-4xl mx-auto leading-relaxed drop-shadow-md">
-              Découvrez vos photos de surf en Bretagne. Chaque session est immortalisée avec passion et professionnalisme sur ce magnifique spot de La Torche.
+              Découvre, télécharge, imprime tes photos de surf sur le spot de La Torche
             </p>
           </div>
         </div>
@@ -248,12 +310,19 @@ export default async function GalleriesListPage({
             galleries={galleries}
             schoolName={resolvedSearchParams.school}
           />
+        ) : isDateFilter ? (
+          // Layout spécial pour le filtre par date
+          <GalleryClient 
+            latestPhotos={latestPhotos}
+            galleries={galleries}
+            dateFilter={resolvedSearchParams.date}
+          />
         ) : (
-          // Layout normal pour les autres cas
+          // Layout organisé par date et école comme sur la page d'accueil
           <div className="py-8">
             <div className="container mx-auto px-4">
               <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 font-dm-sans">
-                {hasFilters ? "Résultats de recherche" : "Galeries Disponibles"}
+                {hasFilters ? "Résultats de recherche" : "Toutes nos galeries"}
               </h2>
               
               {galleries.length === 0 ? (
@@ -277,66 +346,7 @@ export default async function GalleriesListPage({
                   )}
                 </div>
               ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {galleries.map((gallery: any) => (
-                    <Link 
-                      key={gallery.id}
-                      href={`/gallery/${gallery.id}`}
-                      className="group bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-                    >
-                      <div className="aspect-video relative overflow-hidden">
-                        {/* Photo de session ou fallback */}
-                        {gallery.photos && gallery.photos.length > 0 ? (
-                          <Image
-                            src={gallery.photos[0].preview_s3_url}
-                            alt={gallery.name}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-r from-blue-400 to-blue-600" />
-                        )}
-                        
-                        {/* Overlay gradient */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                        
-                        {/* Badge photo count */}
-                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                          <span className="text-sm font-semibold text-gray-700">
-                            {gallery.photos?.length || 0} photo{(gallery.photos?.length || 0) > 1 ? 's' : ''}
-                          </span>
-                        </div>
-                        
-                        {/* Fallback content si pas de photo */}
-                        {(!gallery.photos || gallery.photos.length === 0) && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-white text-center">
-                              <div className="text-4xl mb-2">📸</div>
-                              <p className="text-sm opacity-90">Cliquez pour voir les photos</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-6">
-                        <h3 className="text-xl font-semibold mb-2 group-hover:text-blue-600 transition-colors">
-                          {gallery.name}
-                        </h3>
-                        <p className="text-gray-600 mb-4">
-                          {new Date(gallery.date).toLocaleDateString("fr-FR", {
-                            weekday: "long",
-                            year: "numeric", 
-                            month: "long",
-                            day: "numeric"
-                          })}
-                        </p>
-                        <div className="flex items-center text-blue-600 group-hover:text-blue-700 transition-colors">
-                          <span className="font-medium">Voir les photos</span>
-                          <span className="ml-2 transform group-hover:translate-x-1 transition-transform">→</span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                <GalleryMainClient galleries={galleries} />
               )}
             </div>
           </div>

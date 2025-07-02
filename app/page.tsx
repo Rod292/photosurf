@@ -76,14 +76,7 @@ export default function HomePage() {
       
       {/* Hero section avec barre de recherche */}
       <section className="bg-white border-b border-gray-200">
-        <div className="relative">
-          {/* Image de fond subtile */}
-          <div 
-            className="absolute inset-0 bg-gradient-to-r from-blue-50 to-cyan-50"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e0f2fe' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            }}
-          />
+        <div className="relative bg-white">
           
                       <motion.div
             className="relative z-10 max-w-6xl mx-auto pt-6 pb-8"
@@ -240,7 +233,7 @@ export default function HomePage() {
 
       {/* Section Call-to-Action */}
       <ContentFlowAnimation 
-        className="bg-gradient-to-r from-blue-600 to-blue-700 text-white"
+        className="bg-white text-black"
         layoutId="cta"
         staggerChildren={0.2}
       >
@@ -251,7 +244,7 @@ export default function HomePage() {
             </h2>
           </FlowItem>
           <FlowItem delay={0.2}>
-            <p className="text-xl mb-8 opacity-90">
+            <p className="text-xl mb-8">
               Contactez-nous directement et nous vous aiderons à les retrouver
             </p>
           </FlowItem>
@@ -261,7 +254,7 @@ export default function HomePage() {
                 href="https://www.instagram.com/arode.studio/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-white text-blue-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors inline-flex items-center justify-center gap-2"
+                className="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors inline-flex items-center justify-center gap-2"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -269,7 +262,7 @@ export default function HomePage() {
                 Nous contacter sur Instagram
               </motion.a>
               <motion.button 
-                className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white/10 transition-colors"
+                className="border-2 border-black text-black px-8 py-3 rounded-full font-semibold hover:bg-black/10 transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >

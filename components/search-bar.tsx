@@ -152,10 +152,10 @@ export function SearchBar({ compact = false, className = "", searchHeight }: Sea
         {/* Search button compact */}
         <motion.button
           onClick={handleSearch}
-          className="h-8 w-8 rounded-full transition-colors ml-2 mr-1 flex items-center justify-center flex-shrink-0 bg-blue-600 text-white hover:bg-blue-700"
+          className="h-8 w-8 rounded-full transition-colors ml-2 mr-1 flex items-center justify-center flex-shrink-0 bg-gray-200 text-gray-600 hover:bg-gray-300"
           whileHover={{ 
             scale: 1.1,
-            backgroundColor: "#1d4ed8"
+            backgroundColor: "#d1d5db"
           }}
           whileTap={{ scale: 0.95 }}
         >
