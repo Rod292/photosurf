@@ -5,25 +5,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
 
-interface Photo {
-  id: string
-  preview_s3_url: string
-  created_at: string
-  filename: string
-  original_s3_key: string
-  filesize: number
-  content_type: string
-  gallery_id: string
-}
-
-interface Gallery {
-  id: string
-  date: string
-  photos: Photo[]
-}
-
 interface GalleryMainClientProps {
-  galleries: Gallery[]
+  galleries: any[]
 }
 
 export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
@@ -31,8 +14,8 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
 
   // Obtenir toutes les photos triées par date
   const allPhotos = galleries
-    .flatMap(gallery => gallery.photos || [])
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .flatMap((gallery: any) => gallery.photos || [])
+    .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   const handlePhotoClick = (index: number) => {
     setLightboxIndex(index)
@@ -47,7 +30,7 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
       <div className="space-y-8">
         {/* Petites cartes de jours horizontales */}
         <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-          {[...new Map(galleries.map(gallery => [gallery.date, gallery])).values()].map((gallery) => (
+          {[...new Map(galleries.map((gallery: any) => [gallery.date, gallery])).values()].map((gallery: any) => (
             <Link key={gallery.date} href={`/gallery?date=${gallery.date}`} className="flex-shrink-0">
               <div className="w-36 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300 cursor-pointer">
                 <div className="relative h-24 rounded-t-lg overflow-hidden">
@@ -66,7 +49,7 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                   
                   <div className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
                     <span className="text-xs font-medium text-gray-700">
-                      {galleries.filter(g => g.date === gallery.date).length}
+                      {galleries.filter((g: any) => g.date === gallery.date).length}
                     </span>
                   </div>
                 </div>
@@ -97,7 +80,7 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {allPhotos.map((photo, index) => (
+              {allPhotos.map((photo: any, index: number) => (
                 <button
                   key={photo.id}
                   onClick={() => handlePhotoClick(index)}
