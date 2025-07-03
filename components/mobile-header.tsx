@@ -41,7 +41,7 @@ export function MobileHeader() {
 
       {/* Navigation Row */}
       <motion.div 
-        className="px-4 pb-0 border-b border-gray-200"
+        className="px-4 pb-2 border-b border-gray-200"
         style={{ y: textY }}
       >
         <div className="flex items-center justify-around">
@@ -49,7 +49,7 @@ export function MobileHeader() {
           <motion.button
             onClick={() => handleNavigation("/gallery")}
             className="flex flex-col items-center gap-0 px-2 py-0 rounded-lg hover:bg-gray-100 transition-colors"
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.98 }}
           >
             <motion.span
               style={{ opacity: iconOpacity }}
@@ -69,7 +69,7 @@ export function MobileHeader() {
           <motion.button
             onClick={() => handleNavigation("/boutique")}
             className="flex flex-col items-center gap-0 px-2 py-0 rounded-lg hover:bg-gray-100 transition-colors"
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.98 }}
           >
             <motion.span
               style={{ opacity: iconOpacity }}
@@ -89,7 +89,7 @@ export function MobileHeader() {
           <motion.button
             onClick={() => handleNavigation("/contact")}
             className="flex flex-col items-center gap-0 px-2 py-0 rounded-lg hover:bg-gray-100 transition-colors"
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.98 }}
           >
             <motion.span
               style={{ opacity: iconOpacity }}
