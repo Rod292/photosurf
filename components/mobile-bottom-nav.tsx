@@ -56,12 +56,12 @@ export function MobileBottomNav() {
 
           {/* Instagram */}
           <a
-            href="https://www.instagram.com/arodestudio/"
+            href="https://www.instagram.com/arode.studio/"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-3 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 transition-all active:scale-95"
+            className="p-3 rounded-full hover:bg-gray-100 transition-colors active:scale-95"
           >
-            <Instagram className="h-6 w-6 text-white" />
+            <Instagram className="h-6 w-6 text-gray-600" />
           </a>
         </div>
       </div>

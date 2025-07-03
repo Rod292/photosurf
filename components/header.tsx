@@ -15,7 +15,18 @@ interface HeaderProps {
 export function Header({ alwaysVisible = false }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const { scrollY } = useScroll()
   const headerHeight = useTransform(scrollY, [0, 100], [80, 64])
@@ -53,6 +64,11 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
     hover: {
       scale: 1.05
     }
+  }
+
+  // Hide header completely on mobile
+  if (isMobile) {
+    return null
   }
 
   return (

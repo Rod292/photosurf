@@ -15,6 +15,7 @@ import { Footer } from "@/components/footer"
 import { CursorPreload } from "@/components/cursor-preload"
 import { Toaster } from "@/components/ui/toaster"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
+import { MobileHeader } from "@/components/mobile-header"
 import Script from "next/script"
 
 const playfair = Playfair_Display({
@@ -108,6 +109,7 @@ export default function RootLayout({
       <body className="bg-gray-50 font-sans flex flex-col min-h-screen">
         <CursorPreload />
           <FilterProvider>
+            <MobileHeader />
             <div className="flex-grow pb-16 md:pb-0">{children}</div>
             <MobileBottomNav />
             <Footer />
