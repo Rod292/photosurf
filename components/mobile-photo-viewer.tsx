@@ -148,18 +148,18 @@ export function MobilePhotoViewer({
             <motion.div
               key={currentPhoto.id}
               custom={swipeDirection}
-              initial={(direction) => ({
-                x: direction === 'left' ? '100%' : direction === 'right' ? '-100%' : 0,
+              initial={{
+                x: swipeDirection === 'left' ? '100%' : swipeDirection === 'right' ? '-100%' : 0,
                 opacity: 0
-              })}
+              }}
               animate={{
                 x: 0,
                 opacity: 1
               }}
-              exit={(direction) => ({
-                x: direction === 'left' ? '-100%' : direction === 'right' ? '100%' : 0,
+              exit={{
+                x: swipeDirection === 'left' ? '-100%' : swipeDirection === 'right' ? '100%' : 0,
                 opacity: 0
-              })}
+              }}
               transition={{
                 type: "spring",
                 stiffness: 300,
