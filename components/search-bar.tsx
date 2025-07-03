@@ -11,9 +11,10 @@ interface SearchBarProps {
   compact?: boolean
   className?: string
   searchHeight?: MotionValue<number>
+  mobile?: boolean
 }
 
-export function SearchBar({ compact = false, className = "", searchHeight }: SearchBarProps) {
+export function SearchBar({ compact = false, className = "", searchHeight, mobile = false }: SearchBarProps) {
   const [selectedDate, setSelectedDate] = useState("")
   const [selectedSchool, setSelectedSchool] = useState("")
   const [showDatePicker, setShowDatePicker] = useState(false)
@@ -61,11 +62,11 @@ export function SearchBar({ compact = false, className = "", searchHeight }: Sea
     return school.replace("Surf School ", "").replace("École de Surf ", "")
   }
 
-  if (compact) {
+  if (compact || mobile) {
     return (
       <motion.div 
         className={`flex items-center bg-white/90 backdrop-blur-sm shadow-sm border border-gray-200 rounded-full ${className}`}
-        style={{ height: searchHeight }}
+        style={mobile ? {} : { height: searchHeight }}
       >
         {/* Date compact */}
         <div className="relative flex-shrink-0" ref={dateRef}>

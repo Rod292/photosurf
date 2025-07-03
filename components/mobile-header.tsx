@@ -41,7 +41,7 @@ export function MobileHeader() {
     <div className="sticky top-0 z-40 bg-white">
       {/* Search Bar - Fixed at top */}
       <div className="px-4 py-3 border-b border-gray-200">
-        <SearchBar compact={false} className="w-full" />
+        <SearchBar mobile={true} className="w-full h-10" />
       </div>
 
       {/* Navigation Row */}
