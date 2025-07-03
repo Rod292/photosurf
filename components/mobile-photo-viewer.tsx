@@ -138,26 +138,39 @@ export function MobilePhotoViewer({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full h-full"
+              className="relative w-[85%] h-[70%] max-w-md"
               onClick={(e) => e.stopPropagation()}
             >
               <Image
                 src={currentPhoto.preview_s3_url}
                 alt={currentPhoto.filename}
                 fill
-                className="object-contain"
-                sizes="100vw"
+                className="object-contain rounded-lg"
+                sizes="85vw"
                 priority
               />
             </motion.div>
           </AnimatePresence>
+
+          {/* Side areas for closing and navigation */}
+          {/* Left side area */}
+          <div
+            className="absolute left-0 top-0 w-[7.5%] h-full cursor-pointer"
+            onClick={onClose}
+          />
+
+          {/* Right side area */}
+          <div
+            className="absolute right-0 top-0 w-[7.5%] h-full cursor-pointer"
+            onClick={onClose}
+          />
 
           {/* Navigation areas */}
           {photos.length > 1 && (
             <>
               {/* Left navigation area */}
               <div
-                className="absolute left-0 top-0 w-1/3 h-full flex items-center justify-start pl-4 cursor-pointer"
+                className="absolute left-[7.5%] top-0 w-[20%] h-full flex items-center justify-center cursor-pointer"
                 onClick={handlePrevious}
               >
                 <div className="p-2 bg-white/10 backdrop-blur-sm rounded-full">
@@ -167,7 +180,7 @@ export function MobilePhotoViewer({
 
               {/* Right navigation area */}
               <div
-                className="absolute right-0 top-0 w-1/3 h-full flex items-center justify-end pr-4 cursor-pointer"
+                className="absolute right-[7.5%] top-0 w-[20%] h-full flex items-center justify-center cursor-pointer"
                 onClick={handleNext}
               >
                 <div className="p-2 bg-white/10 backdrop-blur-sm rounded-full">
