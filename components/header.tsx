@@ -203,20 +203,22 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
         <motion.div 
           className="flex items-center gap-2"
         >
-          {/* Instagram */}
+          {/* Instagram - hidden on mobile since it's in bottom nav */}
           <motion.a 
             href="https://www.instagram.com/arode.studio/" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="p-3 rounded-full hover:bg-gray-100 transition-colors"
+            className="hidden md:block p-3 rounded-full hover:bg-gray-100 transition-colors"
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.9 }}
           >
             <Instagram className="h-5 w-5 text-gray-600" />
           </motion.a>
 
-          {/* Panier */}
-          <CartSlideOver headerStyle="light" />
+          {/* Panier - hidden on mobile since it's in bottom nav */}
+          <div className="hidden md:block">
+            <CartSlideOver headerStyle="light" />
+          </div>
 
         </motion.div>
         {/* Menu mobile */}

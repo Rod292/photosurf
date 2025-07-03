@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -10,6 +10,7 @@ import Image from "next/image"
 import { useCartStore } from "@/context/cart-context"
 import { Photo } from "@/lib/database.types"
 import { toast } from "@/components/ui/use-toast"
+import { MobilePhotoViewer } from "./mobile-photo-viewer"
 
 interface PhotoLightboxModalProps {
   isOpen: boolean
@@ -48,9 +49,20 @@ export function PhotoLightboxModal({
   onNavigate
 }: PhotoLightboxModalProps) {
   const [selectedProduct, setSelectedProduct] = useState<string>('digital')
+  const [isMobile, setIsMobile] = useState(false)
   const { addItem } = useCartStore()
 
   const currentPhoto = photos[currentIndex]
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handlePrevious = () => {
     const newIndex = currentIndex > 0 ? currentIndex - 1 : photos.length - 1
@@ -90,6 +102,19 @@ export function PhotoLightboxModal({
   }
 
   if (!currentPhoto) return null
+
+  // Use mobile viewer on mobile devices
+  if (isMobile) {
+    return (
+      <MobilePhotoViewer
+        isOpen={isOpen}
+        onClose={onClose}
+        photos={photos}
+        currentIndex={currentIndex}
+        onNavigate={onNavigate}
+      />
+    )
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

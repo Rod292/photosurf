@@ -14,6 +14,7 @@ import { Analytics } from "@vercel/analytics/react"
 import { Footer } from "@/components/footer"
 import { CursorPreload } from "@/components/cursor-preload"
 import { Toaster } from "@/components/ui/toaster"
+import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 import Script from "next/script"
 
 const playfair = Playfair_Display({
@@ -107,7 +108,8 @@ export default function RootLayout({
       <body className="bg-gray-50 font-sans flex flex-col min-h-screen">
         <CursorPreload />
           <FilterProvider>
-            <div className="flex-grow">{children}</div>
+            <div className="flex-grow pb-16 md:pb-0">{children}</div>
+            <MobileBottomNav />
             <Footer />
           </FilterProvider>
         <Toaster />
