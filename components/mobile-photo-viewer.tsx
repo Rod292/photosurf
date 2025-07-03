@@ -32,6 +32,7 @@ export function MobilePhotoViewer({
   const [selectedProduct, setSelectedProduct] = useState<string>('digital')
   const [showOptions, setShowOptions] = useState(false)
   const [addedToCart, setAddedToCart] = useState(false)
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
   const { addItem, items } = useCartStore()
 
   const currentPhoto = photos[currentIndex]
@@ -59,12 +60,14 @@ export function MobilePhotoViewer({
 
   const handlePrevious = (e: React.MouseEvent) => {
     e.stopPropagation()
+    setSwipeDirection('right')
     const newIndex = currentIndex > 0 ? currentIndex - 1 : photos.length - 1
     onNavigate(newIndex)
   }
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation()
+    setSwipeDirection('left')
     const newIndex = currentIndex < photos.length - 1 ? currentIndex + 1 : 0
     onNavigate(newIndex)
   }
@@ -103,6 +106,16 @@ export function MobilePhotoViewer({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, currentIndex])
 
+  // Reset swipe direction after animation
+  useEffect(() => {
+    if (swipeDirection) {
+      const timer = setTimeout(() => {
+        setSwipeDirection(null)
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [swipeDirection])
+
   if (!isOpen || !currentPhoto) return null
 
   return (
@@ -130,14 +143,29 @@ export function MobilePhotoViewer({
         </div>
 
         {/* Main photo display */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <AnimatePresence mode="wait">
+        <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+          <AnimatePresence mode="wait" custom={swipeDirection}>
             <motion.div
               key={currentPhoto.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
+              custom={swipeDirection}
+              initial={(direction) => ({
+                x: direction === 'left' ? '100%' : direction === 'right' ? '-100%' : 0,
+                opacity: 0
+              })}
+              animate={{
+                x: 0,
+                opacity: 1
+              }}
+              exit={(direction) => ({
+                x: direction === 'left' ? '-100%' : direction === 'right' ? '100%' : 0,
+                opacity: 0
+              })}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+                duration: 0.3
+              }}
               className="relative w-[85%] h-[70%] max-w-md"
               onClick={(e) => e.stopPropagation()}
               drag="x"
@@ -147,9 +175,13 @@ export function MobilePhotoViewer({
                 const swipe = Math.abs(offset.x) > 50 || Math.abs(velocity.x) > 800
                 if (swipe) {
                   if (offset.x > 0) {
-                    handlePrevious(e as any)
+                    setSwipeDirection('right')
+                    const newIndex = currentIndex > 0 ? currentIndex - 1 : photos.length - 1
+                    onNavigate(newIndex)
                   } else {
-                    handleNext(e as any)
+                    setSwipeDirection('left')
+                    const newIndex = currentIndex < photos.length - 1 ? currentIndex + 1 : 0
+                    onNavigate(newIndex)
                   }
                 }
               }}
