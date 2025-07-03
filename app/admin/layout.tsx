@@ -10,5 +10,21 @@ export default async function AdminLayout({ children }: PropsWithChildren) {
         redirect('/login');
   }
 
-    return <>{children}</>;
+    return (
+        <div>
+            <div className="bg-gray-100 p-4 flex justify-between items-center">
+                <div>
+                    <span className="text-sm text-gray-600">Connecté en tant que: </span>
+                    <span className="font-medium">{user.email}</span>
+                </div>
+                <a 
+                    href="/logout" 
+                    className="text-sm text-red-600 hover:text-red-800 font-medium"
+                >
+                    Se déconnecter
+                </a>
+            </div>
+            {children}
+        </div>
+    );
 } 

@@ -2,8 +2,21 @@ import { Suspense } from 'react'
 import { PhotoUploadForm } from './upload-form'
 import { Loader2 } from 'lucide-react'
 import { fetchSurfSchools, fetchGalleries } from './actions'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
 export default async function AdminUploadPage() {
+  // Double-check authentication at page level
+  const supabase = await createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    console.log('[Upload Page] No authenticated user, redirecting to login')
+    redirect('/login')
+  }
+  
+  console.log('[Upload Page] User authenticated:', user.email)
+  
   const [surfSchools, galleries] = await Promise.all([
     fetchSurfSchools(),
     fetchGalleries()
