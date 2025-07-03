@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useCartStore } from "@/context/cart-context"
 import { Header } from "@/components/header"
@@ -15,7 +15,7 @@ interface SessionDetails {
   currency: string
 }
 
-export default function SuccessPage() {
+function SuccessContent() {
   const clearCart = useCartStore((state) => state.clearCart)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -147,6 +147,25 @@ export default function SuccessPage() {
         )}
       </div>
     </main>
+  )
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-background">
+        <Header alwaysVisible />
+        <div className="container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
+          <div className="animate-pulse">
+            <div className="w-40 h-40 bg-gray-200 rounded-full mx-auto mb-8"></div>
+            <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4"></div>
+            <div className="h-6 bg-gray-200 rounded w-80 mx-auto mb-8"></div>
+          </div>
+        </div>
+      </main>
+    }>
+      <SuccessContent />
+    </Suspense>
   )
 }
 
