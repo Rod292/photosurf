@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, PanInfo } from "framer-motion"
 import { ChevronLeft, ChevronRight, X, ShoppingCart, Check } from "lucide-react"
 import Image from "next/image"
 import { useCartStore } from "@/context/cart-context"
@@ -140,6 +140,19 @@ export function MobilePhotoViewer({
               transition={{ duration: 0.2 }}
               className="relative w-[85%] h-[70%] max-w-md"
               onClick={(e) => e.stopPropagation()}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(e, { offset, velocity }) => {
+                const swipe = Math.abs(offset.x) > 50 || Math.abs(velocity.x) > 800
+                if (swipe) {
+                  if (offset.x > 0) {
+                    handlePrevious(e as any)
+                  } else {
+                    handleNext(e as any)
+                  }
+                }
+              }}
             >
               <Image
                 src={currentPhoto.preview_s3_url}
@@ -173,9 +186,7 @@ export function MobilePhotoViewer({
                 className="absolute left-[7.5%] top-0 w-[20%] h-full flex items-center justify-center cursor-pointer"
                 onClick={handlePrevious}
               >
-                <div className="p-2 bg-white/10 backdrop-blur-sm rounded-full">
-                  <ChevronLeft className="h-6 w-6 text-white" />
-                </div>
+                <ChevronLeft className="h-8 w-8 text-white drop-shadow-lg" />
               </div>
 
               {/* Right navigation area */}
@@ -183,9 +194,7 @@ export function MobilePhotoViewer({
                 className="absolute right-[7.5%] top-0 w-[20%] h-full flex items-center justify-center cursor-pointer"
                 onClick={handleNext}
               >
-                <div className="p-2 bg-white/10 backdrop-blur-sm rounded-full">
-                  <ChevronRight className="h-6 w-6 text-white" />
-                </div>
+                <ChevronRight className="h-8 w-8 text-white drop-shadow-lg" />
               </div>
             </>
           )}
