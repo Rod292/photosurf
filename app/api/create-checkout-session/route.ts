@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     
     const { data: photos, error } = await supabase
       .from('photos')
-      .select('id, filename, gallery_id, galleries(name)')
+      .select('id, filename, gallery_id, galleries!inner(name)')
       .in('id', photoIds)
 
     if (error) {
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       return {
         photoId: item.photoId,
         productType: item.productType,
-        photoName: photo.filename || `Photo de ${photo.galleries?.name || 'surf'}`,
+        photoName: photo.filename || `Photo de ${(photo as any).galleries?.name || 'surf'}`,
         quantity: item.quantity || 1,
       }
     })
