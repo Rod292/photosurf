@@ -74,8 +74,8 @@ export default function HomePage() {
       {/* Header toujours visible */}
       <Header alwaysVisible={true} />
       
-      {/* Hero section avec barre de recherche */}
-      <section className="bg-white border-b border-gray-200">
+      {/* Hero section avec barre de recherche - Hidden on mobile */}
+      <section className="hidden md:block bg-white border-b border-gray-200">
         <div className="relative bg-white">
           
                       <motion.div
