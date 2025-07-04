@@ -101,7 +101,7 @@ export async function fulfillOrder({
       });
 
       const { data, error: emailError } = await resend.emails.send({
-        from: 'Arode Studio <arodestudio@gmail.com>',
+        from: 'Arode Studio <contact@arodestudio.com>',
         to: customerEmail,
         subject: '📸 Vos photos Arode Studio sont prêtes !',
         react: OrderConfirmationWithDownloadsEmail({
@@ -125,7 +125,7 @@ export async function fulfillOrder({
       );
 
       const { data, error: emailError } = await resend.emails.send({
-        from: 'Arode Studio <arodestudio@gmail.com>',
+        from: 'Arode Studio <contact@arodestudio.com>',
         to: customerEmail,
         subject: '✅ Commande confirmée - Arode Studio',
         react: SimpleOrderConfirmationEmail({
