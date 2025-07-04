@@ -72,7 +72,13 @@ export function MorphingSearch() {
               Date
             </label>
             <button
-              onClick={() => setShowDatePicker(!showDatePicker)}
+              onClick={() => {
+                setShowDatePicker(!showDatePicker)
+                // Close school dropdown when opening date picker
+                if (!showDatePicker) {
+                  setShowSchoolList(false)
+                }
+              }}
               className="w-full text-center text-sm text-gray-700 bg-transparent border-none outline-none"
             >
               {searchState.date 
@@ -100,7 +106,13 @@ export function MorphingSearch() {
               École
             </label>
             <button
-              onClick={() => setShowSchoolList(!showSchoolList)}
+              onClick={() => {
+                setShowSchoolList(!showSchoolList)
+                // Close date picker when opening school dropdown
+                if (!showSchoolList) {
+                  setShowDatePicker(false)
+                }
+              }}
               className="w-full text-center text-sm text-gray-700 bg-transparent border-none outline-none"
             >
               {searchState.school || "Quelle école ?"}

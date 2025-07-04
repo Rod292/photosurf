@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Instagram, Menu } from "lucide-react"
 import { useState, useEffect } from "react"
-import { CartSlideOver } from "@/components/cart-slide-over"
+import { CartSheet } from "@/components/cart/CartSheet"
 import { SearchBar } from "@/components/search-bar"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 
@@ -233,7 +233,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
 
           {/* Panier - hidden on mobile since it's in bottom nav */}
           <div className="hidden md:block">
-            <CartSlideOver headerStyle="light" />
+            <CartSheet />
           </div>
 
         </motion.div>

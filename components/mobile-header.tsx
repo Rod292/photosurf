@@ -35,8 +35,10 @@ export function MobileHeader() {
   return (
     <div className="sticky top-0 z-40 bg-white">
       {/* Main Search Bar - Fixed at top */}
-      <div className="px-4 py-2 pb-1">
-        <MorphingSearch />
+      <div className="px-4 py-2 pb-1 flex items-center gap-2">
+        <div className="flex-1">
+          <MorphingSearch />
+        </div>
       </div>
 
       {/* Navigation Row */}

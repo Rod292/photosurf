@@ -71,7 +71,13 @@ export function SearchBar({ compact = false, className = "", searchHeight, mobil
         {/* Date compact */}
         <div className="relative flex-shrink-0" ref={dateRef}>
           <motion.button
-            onClick={() => setShowDatePicker(!showDatePicker)}
+            onClick={() => {
+              setShowDatePicker(!showDatePicker)
+              // Close school dropdown when opening date picker
+              if (!showDatePicker) {
+                setShowSchoolList(false)
+              }
+            }}
             className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors h-full whitespace-nowrap ${
               selectedDate 
                 ? "text-blue-600 bg-blue-50" 
@@ -108,7 +114,13 @@ export function SearchBar({ compact = false, className = "", searchHeight, mobil
         {/* School compact */}
         <div className="relative flex-shrink-0" ref={schoolRef}>
           <motion.button
-            onClick={() => setShowSchoolList(!showSchoolList)}
+            onClick={() => {
+              setShowSchoolList(!showSchoolList)
+              // Close date picker when opening school dropdown
+              if (!showSchoolList) {
+                setShowDatePicker(false)
+              }
+            }}
             className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors h-full whitespace-nowrap ${
               selectedSchool 
                 ? "text-blue-600 bg-blue-50" 

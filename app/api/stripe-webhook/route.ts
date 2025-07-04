@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createSupabaseAdminClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
+import { fulfillOrder } from '@/lib/order-fulfillment'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
@@ -134,8 +135,21 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
     console.log('✅ Created', orderItems.length, 'order items for order:', order.id)
 
-    // Optional: Send confirmation email here
-    // await sendOrderConfirmationEmail(customerEmail, order, orderItems)
+    // Fulfill the order by sending download links
+    const customerName = session.customer_details?.name || undefined
+    const fulfillmentResult = await fulfillOrder({
+      orderId: order.id,
+      customerEmail,
+      customerName,
+      totalAmount: totalAmount || 0
+    })
+
+    if (fulfillmentResult.success) {
+      console.log('✅ Order fulfilled successfully:', order.id)
+    } else {
+      console.error('❌ Order fulfillment failed:', fulfillmentResult.message)
+      // Don't throw - we still want to acknowledge the webhook
+    }
 
   } catch (error) {
     console.error('❌ Error processing checkout session:', error)
@@ -146,27 +160,3 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 }
 
-// Optional: Function to send order confirmation email
-/*
-async function sendOrderConfirmationEmail(
-  customerEmail: string, 
-  order: any, 
-  orderItems: any[]
-) {
-  try {
-    // Implementation with your email service (Resend, etc.)
-    console.log('📧 Sending confirmation email to:', customerEmail)
-    
-    // Example with Resend:
-    // await resend.emails.send({
-    //   from: 'orders@arode.studio',
-    //   to: customerEmail,
-    //   subject: 'Votre commande Arode Studio',
-    //   html: generateOrderEmailHtml(order, orderItems)
-    // })
-    
-  } catch (error) {
-    console.error('❌ Failed to send confirmation email:', error)
-  }
-}
-*/

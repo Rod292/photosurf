@@ -1,4 +1,5 @@
 import { FilterProvider } from "@/context/filter-context"
+import { CartProvider } from "@/contexts/CartContext"
 import {
   Playfair_Display,
   Montserrat,
@@ -108,12 +109,14 @@ export default function RootLayout({
     >
       <body className="bg-gray-50 font-sans flex flex-col min-h-screen">
         <CursorPreload />
+        <CartProvider>
           <FilterProvider>
             <MobileHeader />
             <div className="flex-grow pb-16 md:pb-0">{children}</div>
             <MobileBottomNav />
             <Footer />
           </FilterProvider>
+        </CartProvider>
         <Toaster />
         <SpeedInsights />
         <Analytics />

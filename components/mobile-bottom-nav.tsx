@@ -37,15 +37,11 @@ export function MobileBottomNav() {
             href="/cart"
             className={cn(
               "relative p-3 rounded-full transition-all",
-              "bg-gray-100 hover:bg-gray-200 active:scale-95",
-              itemCount > 0 && "bg-blue-500 hover:bg-blue-600"
+              "bg-black hover:bg-gray-800 active:scale-95"
             )}
           >
             <ShoppingCart 
-              className={cn(
-                "h-6 w-6",
-                itemCount > 0 ? "text-white" : "text-gray-700"
-              )} 
+              className="h-6 w-6 text-white"
             />
             {itemCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">

@@ -38,9 +38,10 @@ export interface Order {
   id: string  // UUID
   customer_email: string
   stripe_checkout_id?: string
-  status: 'pending' | 'completed' | 'cancelled'
+  status: 'pending' | 'completed' | 'fulfilled' | 'cancelled'
   total_amount?: number
   created_at?: string
+  fulfilled_at?: string
 }
 
 export interface OrderItem {

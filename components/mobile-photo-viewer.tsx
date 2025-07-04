@@ -111,7 +111,7 @@ export function MobilePhotoViewer({
     if (swipeDirection) {
       const timer = setTimeout(() => {
         setSwipeDirection(null)
-      }, 300)
+      }, 0)
       return () => clearTimeout(timer)
     }
   }, [swipeDirection])
@@ -149,22 +149,16 @@ export function MobilePhotoViewer({
               key={currentPhoto.id}
               custom={swipeDirection}
               initial={{
-                x: swipeDirection === 'left' ? '100%' : swipeDirection === 'right' ? '-100%' : 0,
-                opacity: 0
+                x: swipeDirection === 'left' ? '100%' : swipeDirection === 'right' ? '-100%' : 0
               }}
               animate={{
-                x: 0,
-                opacity: 1
+                x: 0
               }}
               exit={{
-                x: swipeDirection === 'left' ? '-100%' : swipeDirection === 'right' ? '100%' : 0,
-                opacity: 0
+                x: swipeDirection === 'left' ? '-100%' : swipeDirection === 'right' ? '100%' : 0
               }}
               transition={{
-                type: "spring",
-                stiffness: 300,
-                damping: 30,
-                duration: 0.3
+                duration: 0
               }}
               className="relative w-[85%] h-[70%] max-w-md"
               onClick={(e) => e.stopPropagation()}

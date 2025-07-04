@@ -8,6 +8,7 @@ import Image from "next/image"
 import { Trash2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { PhotoModal } from "@/components/photo-modal"
+import { createCheckoutSession } from "@/app/actions/checkout"
 
 export function CartContent() {
   const items = useCartStore((state) => state.items)
@@ -31,10 +32,34 @@ export function CartContent() {
   const totalItems = getItemCount()
 
   const handleCheckout = async () => {
-    toast({
-      title: "En construction",
-      description: "Le système de paiement est en cours de reconstruction.",
-    })
+    setIsLoading(true);
+    
+    try {
+      // Use the same logic as CartSheet
+      const result = await createCheckoutSession(items);
+      
+      if (result.error) {
+        toast({
+          title: "Erreur",
+          description: result.error,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (result.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = result.url;
+      }
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la création de la session de paiement",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const handleApplyPromo = () => {
@@ -162,7 +187,7 @@ export function CartContent() {
               </p>
             </div>
             <Button className="w-full font-lexend-deca" onClick={handleCheckout} disabled={isLoading}>
-              {isLoading ? "Chargement..." : "Accéder au paiement"}
+              {isLoading ? "Chargement..." : "Passer au paiement"}
             </Button>
           </div>
         </>

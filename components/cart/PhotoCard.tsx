@@ -1,0 +1,135 @@
+'use client';
+
+import { useState } from 'react';
+import Image from 'next/image';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Eye, ShoppingCart } from 'lucide-react';
+import { AddToCartButton } from './AddToCartButton';
+import { ProductSelection } from './ProductSelection';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import type { Photo } from '@/lib/database.types';
+import { formatPrice } from '@/lib/utils';
+
+interface PhotoCardProps {
+  photo: Photo;
+  className?: string;
+}
+
+export function PhotoCard({ photo, className }: PhotoCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  return (
+    <>
+      <Card 
+        className={`group overflow-hidden transition-all duration-300 hover:shadow-lg ${className}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <CardContent className="p-0">
+          <div className="relative aspect-[4/3] overflow-hidden">
+            <Image
+              src={photo.preview_s3_url}
+              alt={photo.filename}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+            
+            {/* Overlay with actions */}
+            <div className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${
+              isHovered ? 'opacity-100' : 'opacity-0'
+            }`}>
+              <div className="absolute bottom-4 left-4 right-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-white">
+                    <p className="text-lg font-semibold">
+                      À partir de {formatPrice(1500)}
+                    </p>
+                    <p className="text-sm opacity-90">
+                      {photo.filename}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Voir
+                  </Button>
+                  
+                  <AddToCartButton
+                    photo={photo}
+                    productType="digital"
+                    price={1500}
+                    size="sm"
+                    className="flex-1"
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Ajouter
+                  </AddToCartButton>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Photo Detail Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-4xl h-[90vh] p-0 overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+            {/* Photo */}
+            <div className="relative bg-black">
+              <Image
+                src={photo.preview_s3_url}
+                alt={photo.filename}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            
+            {/* Product Selection */}
+            <div className="p-6 overflow-y-auto">
+              <DialogHeader className="mb-6">
+                <DialogTitle className="text-xl">
+                  {photo.filename}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <ProductSelection photo={photo} />
+              
+              <div className="mt-6 pt-6 border-t text-sm text-muted-foreground">
+                <p>
+                  • Photos en haute résolution (3000+ pixels)
+                </p>
+                <p>
+                  • Retouches professionnelles incluses
+                </p>
+                <p>
+                  • Livraison immédiate par email
+                </p>
+                <p>
+                  • Liens de téléchargement valides 48h
+                </p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
