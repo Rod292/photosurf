@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     ];
 
     const { data, error } = await resend.emails.send({
-      from: 'Arode Studio <onboarding@resend.dev>',
+      from: 'Arode Studio <contact@arodestudio.com>',
       to: email,
       subject: '✅ Commande confirmée - Arode Studio',
       react: SimpleOrderConfirmationEmail({
