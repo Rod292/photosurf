@@ -13,6 +13,12 @@ export function MobileHeader() {
   // Animations for navigation icons and text
   const iconOpacity = useTransform(scrollY, [0, 100], [1, 0])
   const textY = useTransform(scrollY, [0, 100], [0, -12])
+  
+  // Animation for tagline - smoother transitions
+  const taglineScale = useTransform(scrollY, [0, 80], [1, 0.3])
+  const taglineOpacity = useTransform(scrollY, [0, 60], [1, 0])
+  const taglineY = useTransform(scrollY, [0, 80], [0, -20])
+  const taglineHeight = useTransform(scrollY, [0, 80], ["28px", "0px"])
 
   useEffect(() => {
     const checkMobile = () => {
@@ -107,6 +113,27 @@ export function MobileHeader() {
             </motion.span>
           </motion.button>
         </div>
+      </motion.div>
+      
+      {/* Tagline */}
+      <motion.div
+        className="overflow-hidden border-b border-gray-200 transition-all"
+        style={{ 
+          opacity: taglineOpacity,
+          height: taglineHeight
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
+        <motion.p
+          className="text-center text-xs text-black py-1"
+          style={{ 
+            scale: taglineScale,
+            y: taglineY
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
+          Vos photos de surf à la Torche
+        </motion.p>
       </motion.div>
     </div>
   )
