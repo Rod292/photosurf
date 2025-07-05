@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- NEVER expose secret keys on the client-side. `STRIPE_SECRET_KEY`, `RESEND_API_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` must ONLY be used in Server Components, Server Actions, or Route Handlers.
+   - All sensitive operations (payment processing, database writes, generating secure download links) MUST occur on the server.
+   - ALWAYS validate Stripe webhook signatures using the `stripe.webhooks.constructEvent` method before processing the event.
+   - ALL data received from the client (forms, API requests) MUST be validated using a Zod schema before being processed or saved to the database.

@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- Language: **TypeScript**. Be strict with types. Avoid `any` wherever possible. Define clear types/interfaces for all data models (e.g., `Photo`, `Order`).
+   - Components: Build small, single-responsibility components. Use Shadcn/UI as the base for all UI elements.
+   - Styling: Use **Tailwind CSS**. ALWAYS use `clsx` for conditional classes and `tailwind-merge` to handle class conflicts, especially when extending Shadcn components. The `cn` utility from `/lib/utils.ts` must be used for this.
+   - Forms: Use **React Hook Form** with the **Zod resolver** for all forms. This is non-negotiable.
+   - Environment Variables: Use `.env.local`. All environment variables exposed to the browser MUST be prefixed with `NEXT_PUBLIC_`. All others should not have the prefix.

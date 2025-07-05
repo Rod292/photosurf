@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- Strictly follow Next.js App Router conventions (`/app` directory, `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`).
+   - Distinguish clearly between Server Components (default) and Client Components (`'use client'`). Fetch data in Server Components whenever possible.
+   - Server-side logic should be implemented in **Server Actions** (`/actions.ts`) for form mutations, and **Route Handlers** (`/app/api/.../route.ts`) for webhooks or client-side fetch requests.
+   - Place reusable utility functions and Supabase/Stripe client initializations in a `/lib` directory.
+   - Organize components into `/components/ui` (for Shadcn components) and `/components/shared` (for application-wide components like Navbar) and `/components/features` (for feature-specific composite components).

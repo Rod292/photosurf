@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- Use `try/catch` blocks for all async operations (API calls, DB queries).
+   - Implement custom error pages using `error.tsx` in the App Router to provide a good user experience on failure.
+   - For forms, provide clear, user-friendly error messages tied to specific fields.
