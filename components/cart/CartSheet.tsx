@@ -10,13 +10,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { ShoppingCart, X, Plus, Minus } from 'lucide-react';
+import { X, Plus, Minus } from 'lucide-react';
 import Image from 'next/image';
 import { formatPrice } from '@/lib/utils';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCheckoutSession } from '@/app/actions/checkout';
 import { useToast } from '@/components/ui/use-toast';
+import { motion } from 'framer-motion';
 
 export function CartSheet() {
   const { items, removeItem, clearCart, getTotalPrice, getItemCount } = useCartStore();
@@ -62,14 +63,36 @@ export function CartSheet() {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <ShoppingCart className="h-5 w-5" />
-          {totalItems > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-[11px] font-medium text-primary-foreground flex items-center justify-center">
-              {totalItems}
-            </span>
-          )}
-        </Button>
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        >
+          <Button variant="ghost" size="icon" className="relative">
+            <motion.div
+              whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+              transition={{ duration: 0.5 }}
+            >
+              <Image
+                src="/Logos/shopping-cart.svg"
+                alt="Shopping Cart"
+                width={20}
+                height={20}
+                className="h-5 w-5"
+              />
+            </motion.div>
+            {totalItems > 0 && (
+              <motion.span 
+                className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-[11px] font-medium text-primary-foreground flex items-center justify-center"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 15 }}
+              >
+                {totalItems}
+              </motion.span>
+            )}
+          </Button>
+        </motion.div>
       </SheetTrigger>
       <SheetContent className="w-full sm:w-[400px] lg:w-[500px]">
         <SheetHeader>
@@ -85,7 +108,13 @@ export function CartSheet() {
         <div className="mt-8 flex-1 overflow-y-auto">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
-              <ShoppingCart className="h-12 w-12 mb-4" />
+              <Image
+                src="/Logos/shopping-cart.svg"
+                alt="Empty Cart"
+                width={48}
+                height={48}
+                className="h-12 w-12 mb-4"
+              />
               <p>Aucun article dans votre panier</p>
             </div>
           ) : (

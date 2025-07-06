@@ -55,7 +55,7 @@ export async function LatestPhotosSection() {
         <div className="text-center py-16">
           <div className="mb-4 flex justify-center">
             <Image
-              src="/Logos/camera-icon.svg"
+              src="/Logos/camera2.svg"
               alt="Camera"
               width={96}
               height={96}

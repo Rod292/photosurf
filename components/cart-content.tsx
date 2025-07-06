@@ -132,7 +132,18 @@ export function CartContent() {
                 <div className="flex-grow">
                   <h3 className="font-semibold font-lexend-deca">{item.filename}</h3>
                   <p className="text-sm text-gray-600 font-lexend-deca">
-                    {item.product_type === 'digital' ? '📱 Numérique' : item.product_type === 'print' ? '🖼️ Tirage A4' : '🎁 Pack Complet'}
+                    {item.product_type === 'digital' ? (
+                      <span className="flex items-center gap-1">
+                        <Image
+                          src="/Logos/phone-logo.svg"
+                          alt="Phone"
+                          width={16}
+                          height={16}
+                          className="w-4 h-4"
+                        />
+                        Numérique
+                      </span>
+                    ) : item.product_type === 'print' ? '🖼️ Tirage A4' : '🎁 Pack Complet'}
                   </p>
                   <p className="text-sm text-gray-600 font-lexend-deca">
                     {item.price === 0 ? "Gratuit" : `${item.price.toFixed(2)}€`}

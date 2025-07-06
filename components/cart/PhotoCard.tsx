@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, ShoppingCart } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { AddToCartButton } from './AddToCartButton';
 import { ProductSelection } from './ProductSelection';
 import {
@@ -77,7 +77,13 @@ export function PhotoCard({ photo, className }: PhotoCardProps) {
                     size="sm"
                     className="flex-1"
                   >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    <Image
+                      src="/Logos/shopping-cart.svg"
+                      alt="Shopping Cart"
+                      width={16}
+                      height={16}
+                      className="h-4 w-4 mr-2 inline-block"
+                    />
                     Ajouter
                   </AddToCartButton>
                 </div>

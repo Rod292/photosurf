@@ -125,7 +125,14 @@ export default async function GalleryPage({ params }: { params: Promise<{ id: st
             </h1>
             <div className="flex flex-col md:flex-row md:items-center gap-6 text-lg">
               <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <span className="opacity-90">📅</span>
+                <Image
+                  src="/Logos/Calendar.svg"
+                  alt="Calendar"
+                  width={20}
+                  height={20}
+                  className="w-5 h-5 opacity-90"
+                  style={{ filter: 'brightness(0) invert(1)' }}
+                />
                 <span className="ml-2 font-varela-round">
                   {new Date(gallery.date).toLocaleDateString("fr-FR", {
                     weekday: "long",

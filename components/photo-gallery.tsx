@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { PhotoModal } from "./photo-modal"
 import { useCartStore, CartItem } from "@/context/cart-context"
-import { ShoppingCart, Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react"
+import { Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface Photo {
@@ -188,7 +188,15 @@ export function PhotoGallery({
                         ${isInCart(photo.id) ? "bg-green-500 text-white" : "bg-white text-gray-900 hover:bg-gray-100"}
                       `}
                     >
-                      {isInCart(photo.id) ? <Check className="h-5 w-5" /> : <ShoppingCart className="h-5 w-5" />}
+                      {isInCart(photo.id) ? <Check className="h-5 w-5" /> : (
+                        <Image
+                          src="/Logos/shopping-cart.svg"
+                          alt="Add to Cart"
+                          width={20}
+                          height={20}
+                          className="h-5 w-5"
+                        />
+                      )}
                     </button>
                   </div>
                 </div>

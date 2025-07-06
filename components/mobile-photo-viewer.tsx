@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence, PanInfo } from "framer-motion"
-import { ChevronLeft, ChevronRight, X, ShoppingCart, Check } from "lucide-react"
+import { ChevronLeft, ChevronRight, X, Check } from "lucide-react"
 import Image from "next/image"
 import { useCartStore } from "@/context/cart-context"
 import { Photo } from "@/lib/database.types"
@@ -258,7 +258,13 @@ export function MobilePhotoViewer({
                   </>
                 ) : (
                   <>
-                    <ShoppingCart className="h-4 w-4 inline mr-2" />
+                    <Image
+                      src="/Logos/shopping-cart.svg"
+                      alt="Shopping Cart"
+                      width={16}
+                      height={16}
+                      className="h-4 w-4 inline mr-2"
+                    />
                     Ajouter
                   </>
                 )}

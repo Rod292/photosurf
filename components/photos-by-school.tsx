@@ -44,8 +44,15 @@ export function PhotosBySchool() {
   if (loading) {
     return (
       <div className="px-6 py-4">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">
-          🏄‍♂️ Écoles de surf {'>'}
+        <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+          <Image
+            src="/Logos/surfer.svg"
+            alt="Surfer"
+            width={24}
+            height={24}
+            className="w-6 h-6"
+          />
+          Écoles de surf {'>'}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
@@ -63,8 +70,15 @@ export function PhotosBySchool() {
   return (
     <div className="px-6 py-4">
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">
-          🏄‍♂️ Écoles de surf {'>'}
+        <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <Image
+            src="/Logos/surfer.svg"
+            alt="Surfer"
+            width={24}
+            height={24}
+            className="w-6 h-6"
+          />
+          Écoles de surf {'>'}
         </h2>
       </div>
       
@@ -87,7 +101,14 @@ export function PhotosBySchool() {
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
-                    <span className="text-white text-4xl">🏄‍♂️</span>
+                    <Image
+                      src="/Logos/surfer.svg"
+                      alt="Surfer"
+                      width={48}
+                      height={48}
+                      className="w-12 h-12"
+                      style={{ filter: 'brightness(0) invert(1)' }}
+                    />
                   </div>
                 )}
                 

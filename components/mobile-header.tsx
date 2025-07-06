@@ -65,7 +65,7 @@ export function MobileHeader() {
               className="w-6 h-6 flex items-center justify-center"
             >
               <Image
-                src="/Logos/camera-icon.svg"
+                src="/Logos/camera2.svg"
                 alt="Camera"
                 width={24}
                 height={24}
@@ -106,12 +106,18 @@ export function MobileHeader() {
             className="flex flex-col items-center gap-0 px-2 py-0 rounded-lg hover:bg-gray-100 transition-colors"
             whileTap={{ scale: 0.98 }}
           >
-            <motion.span
+            <motion.div
               style={{ opacity: iconOpacity }}
-              className="text-xl"
+              className="w-6 h-6 flex items-center justify-center"
             >
-              📞
-            </motion.span>
+              <Image
+                src="/Logos/Call-gesture.svg"
+                alt="Contact"
+                width={24}
+                height={24}
+                className="w-full h-full"
+              />
+            </motion.div>
             <motion.span
               style={{ y: textY }}
               className="text-sm font-medium text-gray-700"
@@ -131,16 +137,55 @@ export function MobileHeader() {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <motion.p
-          className="text-center text-xs text-black py-1"
+        <motion.div
+          className="flex items-center justify-center gap-4 text-xs text-black py-1 relative"
           style={{ 
             scale: taglineScale,
             y: taglineY
           }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
-          Vos photos de surf à la Torche
-        </motion.p>
+          <motion.div
+            animate={{ 
+              x: [-8, -4, 0, -4, -8],
+              y: [0, -2, 0, -2, 0]
+            }}
+            transition={{ 
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <Image
+              src="/Logos/surfer.svg"
+              alt="Surfer"
+              width={16}
+              height={16}
+              className="w-4 h-4"
+            />
+          </motion.div>
+          <span className="mx-2 font-bold">Vos photos de surf à la Torche</span>
+          <motion.div
+            animate={{ 
+              x: [8, 4, 0, 4, 8],
+              y: [0, -2, 0, -2, 0]
+            }}
+            transition={{ 
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.5
+            }}
+          >
+            <Image
+              src="/Logos/surfer.svg"
+              alt="Surfer"
+              width={16}
+              height={16}
+              className="w-4 h-4"
+            />
+          </motion.div>
+        </motion.div>
       </motion.div>
     </div>
   )

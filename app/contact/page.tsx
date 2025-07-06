@@ -1,6 +1,7 @@
 import { Header } from "@/components/header"
 import Link from "next/link"
 import { ArrowLeft, Home } from "lucide-react"
+import Image from "next/image"
 
 export default function ContactPage() {
   return (
@@ -23,8 +24,15 @@ export default function ContactPage() {
       
       <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            📞 Contactez-nous
+          <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
+            <Image
+              src="/Logos/Call-gesture.svg"
+              alt="Contact"
+              width={40}
+              height={40}
+              className="w-10 h-10"
+            />
+            Contactez-nous
           </h1>
           <p className="text-xl text-gray-600">
             Une question ? Besoin d'aide ? Nous sommes là pour vous !
@@ -39,7 +47,13 @@ export default function ContactPage() {
             </h2>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <span className="text-2xl">📱</span>
+                <Image
+                  src="/Logos/phone-logo.svg"
+                  alt="Phone"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8"
+                />
                 <div>
                   <p className="font-semibold">Instagram</p>
                   <a
@@ -53,7 +67,13 @@ export default function ContactPage() {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-2xl">📧</span>
+                <Image
+                  src="/Logos/mail-logo.svg"
+                  alt="Email"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8"
+                />
                 <div>
                   <p className="font-semibold">Email</p>
                   <a
@@ -65,7 +85,13 @@ export default function ContactPage() {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-2xl">📍</span>
+                <Image
+                  src="/Logos/maps.svg"
+                  alt="Location"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8"
+                />
                 <div>
                   <p className="font-semibold">Localisation</p>
                   <p className="text-gray-600">La Torche, Bretagne</p>

@@ -46,7 +46,7 @@ export const SimpleOrderConfirmationEmail: React.FC<SimpleOrderConfirmationEmail
           </Section>
 
           <Text style={text}>
-            <strong>📧 Prochaines étapes :</strong>
+            <strong>✉️ Prochaines étapes :</strong>
           </Text>
           <Text style={text}>
             Vos photos en haute résolution vous seront envoyées par email dans les prochaines heures. 

@@ -254,8 +254,15 @@ export default async function GalleriesListPage({
               <div className="flex items-center justify-center gap-4 flex-wrap">
                 <span className="text-gray-700">Filtres actifs :</span>
                 {resolvedSearchParams.date && (
-                  <span className="bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
-                    📅 {new Date(resolvedSearchParams.date).toLocaleDateString("fr-FR")}
+                  <span className="bg-white px-3 py-1 rounded-full text-sm border border-blue-200 flex items-center gap-1">
+                    <Image
+                      src="/Logos/Calendar.svg"
+                      alt="Calendar"
+                      width={16}
+                      height={16}
+                      className="w-4 h-4"
+                    />
+                    {new Date(resolvedSearchParams.date).toLocaleDateString("fr-FR")}
                   </span>
                 )}
                 {resolvedSearchParams.school && (
@@ -283,7 +290,15 @@ export default async function GalleriesListPage({
               </h2>
               <div className="grid md:grid-cols-3 gap-4">
                 <div className="bg-white p-3 rounded-lg shadow-md">
-                  <div className="text-blue-600 text-2xl mb-2">📅</div>
+                  <div className="flex justify-center mb-2">
+                    <Image
+                      src="/Logos/Calendar.svg"
+                      alt="Calendar"
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 text-blue-600"
+                    />
+                  </div>
                   <h3 className="text-lg font-semibold mb-1">1. Trouvez votre date</h3>
                   <p className="text-gray-600 text-sm">Recherchez la galerie correspondant à votre date de session</p>
                 </div>
@@ -329,7 +344,7 @@ export default async function GalleriesListPage({
                 <div className="text-center py-8">
                   <div className="mb-4 flex justify-center">
                     <Image
-                      src="/Logos/camera-icon.svg"
+                      src="/Logos/camera2.svg"
                       alt="Camera"
                       width={96}
                       height={96}

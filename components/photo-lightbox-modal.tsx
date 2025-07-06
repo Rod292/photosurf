@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { useCartStore } from "@/context/cart-context"
 import { Photo } from "@/lib/database.types"
@@ -201,7 +201,13 @@ export function PhotoLightboxModal({
                 className="w-full mt-6"
                 size="lg"
               >
-                <ShoppingCart className="h-4 w-4 mr-2" />
+                <Image
+                  src="/Logos/shopping-cart.svg"
+                  alt="Shopping Cart"
+                  width={16}
+                  height={16}
+                  className="h-4 w-4 mr-2 inline-block"
+                />
                 Ajouter au panier
               </Button>
 

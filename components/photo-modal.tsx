@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import Image from "next/image"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { X, ShoppingCart, ChevronLeft, ChevronRight, Check } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Check } from "lucide-react"
 import { useCartStore, CartItem } from "@/context/cart-context"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
@@ -153,7 +153,15 @@ export function PhotoModal({ isOpen, onClose, photo, onPrevious, onNext, hasPrev
                         )}
                         disabled={isInCart(photo.id)}
                       >
-                        {isInCart(photo.id) ? <Check className="h-5 w-5" /> : <ShoppingCart className="h-5 w-5" />}
+                        {isInCart(photo.id) ? <Check className="h-5 w-5" /> : (
+                          <Image
+                            src="/Logos/shopping-cart.svg"
+                            alt="Add to Cart"
+                            width={20}
+                            height={20}
+                            className="h-5 w-5"
+                          />
+                        )}
                       </Button>
                     </div>
                   </div>

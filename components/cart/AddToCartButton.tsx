@@ -1,11 +1,12 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useCart, ProductType } from '@/contexts/CartContext';
 import type { Photo } from '@/lib/database.types';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface AddToCartButtonProps {
   photo: Photo;
@@ -53,7 +54,15 @@ export function AddToCartButton({
 
   const getButtonIcon = () => {
     if (isAdded) return <Check className="h-4 w-4" />;
-    return <ShoppingCart className="h-4 w-4" />;
+    return (
+      <Image
+        src="/Logos/shopping-cart.svg"
+        alt="Shopping Cart"
+        width={16}
+        height={16}
+        className="h-4 w-4"
+      />
+    );
   };
 
   return (

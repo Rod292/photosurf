@@ -1,17 +1,24 @@
 "use client"
 
-import { Suspense, useState } from "react"
+import { Suspense, useState, useRef, useEffect } from "react"
 import { MorphingSearch } from "@/components/morphing-search"
 import { ContentFlowAnimation, FlowItem } from "@/components/animations/content-flow-animation"
 import { LatestPhotosSectionClient } from "@/components/latest-photos-section-client"
 import { PhotosByDate } from "@/components/photos-by-date"
 import { PhotosBySchool } from "@/components/photos-by-school"
 import { Header } from "@/components/header"
-import { motion, useScroll, useTransform } from "framer-motion"
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import Image from "next/image"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { SimpleCalendar } from "@/components/ui/simple-calendar"
 
 export default function HomePage() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [selectedDate, setSelectedDate] = useState("")
+  const router = useRouter()
+  const dateRef = useRef<HTMLDivElement>(null)
   const { scrollY } = useScroll()
   
   // Animations de réduction du titre et de la search bar au scroll
@@ -68,6 +75,28 @@ export default function HomePage() {
         duration: 0.8
       }
     }
+  }
+
+  // Gestion du calendrier
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dateRef.current && !dateRef.current.contains(event.target as Node)) {
+        setShowDatePicker(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleDateSelect = (date: string) => {
+    setSelectedDate(date)
+    setShowDatePicker(false)
+    router.push(`/gallery?date=${date}`)
+  }
+
+  const handleCalendarClick = () => {
+    setShowDatePicker(!showDatePicker)
   }
   
   return (
@@ -139,16 +168,18 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="px-6 py-4">
             <FlowItem className="mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <Image
-                  src="/Logos/camera-icon.svg"
-                  alt="Camera"
-                  width={24}
-                  height={24}
-                  className="w-6 h-6"
-                />
-                Photos récentes {'>'}
-              </h2>
+              <Link href="/gallery">
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2 hover:text-gray-700 transition-colors cursor-pointer">
+                  <Image
+                    src="/Logos/camera2.svg"
+                    alt="Camera"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
+                  Photos récentes {'>'}
+                </h2>
+              </Link>
             </FlowItem>
             <FlowItem>
               <Suspense fallback={
@@ -181,9 +212,37 @@ export default function HomePage() {
           <Suspense fallback={
             <div className="px-6 py-4">
               <FlowItem>
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                  📅 Sessions par jour {'>'}
-                </h2>
+                <div className="relative mb-6" ref={dateRef}>
+                  <button 
+                    onClick={handleCalendarClick}
+                    className="text-xl font-semibold text-gray-900 flex items-center gap-2 hover:text-gray-700 transition-colors cursor-pointer"
+                  >
+                    <Image
+                      src="/Logos/Calendar.svg"
+                      alt="Calendar"
+                      width={24}
+                      height={24}
+                      className="w-6 h-6"
+                    />
+                    Sessions par jour {'>'}
+                  </button>
+                  
+                  <AnimatePresence>
+                    {showDatePicker && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute top-full left-0 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4 mt-2"
+                      >
+                        <SimpleCalendar
+                          selectedDate={selectedDate}
+                          onDateSelect={handleDateSelect}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </FlowItem>
               <FlowItem>
                 <div className="flex gap-6 overflow-x-auto scrollbar-hide">
@@ -266,7 +325,13 @@ export default function HomePage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span>📱</span>
+                <Image
+                  src="/Logos/phone-logo.svg"
+                  alt="Phone"
+                  width={20}
+                  height={20}
+                  className="w-5 h-5 inline"
+                />
                 Nous contacter sur Instagram
               </motion.a>
               <motion.button 
@@ -274,7 +339,14 @@ export default function HomePage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                📞 Par téléphone
+                <Image
+                  src="/Logos/phone-logo.svg"
+                  alt="Phone"
+                  width={20}
+                  height={20}
+                  className="w-5 h-5 inline mr-2"
+                />
+                Par téléphone
               </motion.button>
             </div>
           </FlowItem>
