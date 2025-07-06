@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Download, Image as ImageIcon, Package } from 'lucide-react';
+import Image from 'next/image';
 import { AddToCartButton } from './AddToCartButton';
 import { ProductType } from '@/contexts/CartContext';
 import type { Photo } from '@/lib/database.types';
@@ -37,7 +38,7 @@ const productOptions: ProductOption[] = [
     name: 'Tirage Photo',
     description: 'Impression professionnelle A4 (21x29.7cm)',
     price: 2500, // 25€ in cents
-    icon: <Image src="/Logos/Imprimante.svg" alt="Print" width={20} height={20} className="h-5 w-5" />,
+    icon: <Image src="/Logos/Imprimante.svg" alt="Print" width={20} height={20} className="h-5 w-5" />
   },
 ];
 
