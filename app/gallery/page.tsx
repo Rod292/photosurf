@@ -267,7 +267,14 @@ export default async function GalleriesListPage({
                 )}
                 {resolvedSearchParams.school && (
                   <span className="bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
-                    🏄‍♂️ {resolvedSearchParams.school}
+                    <Image
+                      src="/Logos/surfer.svg"
+                      alt="Surfer"
+                      width={16}
+                      height={16}
+                      className="w-4 h-4 mr-1"
+                    />
+                    {resolvedSearchParams.school}
                   </span>
                 )}
                 <Link 
@@ -288,7 +295,8 @@ export default async function GalleriesListPage({
               <h2 className="text-xl md:text-2xl font-bold font-dm-sans mb-6">
                 Comment retrouver vos photos ?
               </h2>
-              <div className="grid md:grid-cols-3 gap-4">
+              {/* Desktop version */}
+              <div className="hidden md:grid md:grid-cols-3 gap-4">
                 <div className="bg-white p-3 rounded-lg shadow-md">
                   <div className="flex justify-center mb-2">
                     <Image
@@ -303,14 +311,70 @@ export default async function GalleriesListPage({
                   <p className="text-gray-600 text-sm">Recherchez la galerie correspondant à votre date de session</p>
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-md">
-                  <div className="text-blue-600 text-2xl mb-2">🔍</div>
+                  <div className="flex justify-center mb-2">
+                    <Image
+                      src="/Logos/camera2.svg"
+                      alt="Search"
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 text-blue-600"
+                    />
+                  </div>
                   <h3 className="text-lg font-semibold mb-1">2. Parcourez les photos</h3>
                   <p className="text-gray-600 text-sm">Explorez toutes les photos de votre session</p>
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-md">
-                  <div className="text-blue-600 text-2xl mb-2">🛒</div>
+                  <div className="flex justify-center mb-2">
+                    <Image
+                      src="/Logos/shopping-cart.svg"
+                      alt="Shopping"
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 text-blue-600"
+                    />
+                  </div>
                   <h3 className="text-lg font-semibold mb-1">3. Commandez</h3>
                   <p className="text-gray-600 text-sm">Sélectionnez vos photos favorites et passez commande</p>
+                </div>
+              </div>
+              
+              {/* Mobile version - horizontal */}
+              <div className="md:hidden flex justify-between gap-2">
+                <div className="flex-1 bg-white p-2 rounded-lg shadow-md text-center">
+                  <div className="flex justify-center mb-1">
+                    <Image
+                      src="/Logos/Calendar.svg"
+                      alt="Calendar"
+                      width={20}
+                      height={20}
+                      className="w-5 h-5 text-blue-600"
+                    />
+                  </div>
+                  <h3 className="text-xs font-semibold">1. Trouvez votre date</h3>
+                </div>
+                <div className="flex-1 bg-white p-2 rounded-lg shadow-md text-center">
+                  <div className="flex justify-center mb-1">
+                    <Image
+                      src="/Logos/camera2.svg"
+                      alt="Search"
+                      width={20}
+                      height={20}
+                      className="w-5 h-5 text-blue-600"
+                    />
+                  </div>
+                  <h3 className="text-xs font-semibold">2. Parcourez les photos</h3>
+                </div>
+                <div className="flex-1 bg-white p-2 rounded-lg shadow-md text-center">
+                  <div className="flex justify-center mb-1">
+                    <Image
+                      src="/Logos/shopping-cart.svg"
+                      alt="Shopping"
+                      width={20}
+                      height={20}
+                      className="w-5 h-5 text-blue-600"
+                    />
+                  </div>
+                  <h3 className="text-xs font-semibold">3. Commandez</h3>
                 </div>
               </div>
             </div>

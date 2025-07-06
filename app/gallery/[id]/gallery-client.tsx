@@ -30,23 +30,35 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
       {/* Galerie de photos */}
       {photos.length > 0 ? (
         <div className="mb-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {photos.map((photo, index) => (
               <div 
                 key={photo.id} 
                 className="cursor-pointer group"
                 onClick={() => setLightboxIndex(index)}
               >
-                <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gray-200">
-                  <Image
-                    src={photo.preview_s3_url}
-                    alt={photo.filename}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  />
-                  {/* Overlay avec watermark */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="relative w-full pt-[150%] overflow-hidden rounded-lg bg-gray-200">
+                  <div className="absolute inset-0">
+                    <Image
+                      src={photo.preview_s3_url}
+                      alt={photo.filename}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                    />
+                  </div>
+                  {/* Overlay avec date */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
+                    <div className="text-white text-center">
+                      <p className="text-sm font-medium">
+                        {new Date(photo.created_at || gallery.date).toLocaleDateString('fr-FR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  </div>
                   <div className="absolute bottom-2 right-2 bg-white/90 px-2 py-1 rounded text-xs font-medium opacity-70">
                     Arode Studio
                   </div>
@@ -92,14 +104,32 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
             <p className="font-semibold text-blue-600">15€</p>
           </div>
           <div className="bg-white p-4 rounded-lg">
-            <h4 className="font-medium mb-2">🖼️ Tirage A4</h4>
+            <h4 className="font-medium mb-2 flex items-center gap-2">
+              <Image
+                src="/Logos/Imprimante.svg"
+                alt="Print"
+                width={20}
+                height={20}
+                className="w-5 h-5"
+              />
+              Tirage A4
+            </h4>
             <p className="text-sm text-gray-600 mb-2">
               Impression professionnelle sur papier photo
             </p>
             <p className="font-semibold text-blue-600">25€</p>
           </div>
           <div className="bg-white p-4 rounded-lg border-2 border-blue-200">
-            <h4 className="font-medium mb-2">🎁 Pack Complet</h4>
+            <h4 className="font-medium mb-2 flex items-center gap-2">
+              <Image
+                src="/Logos/shopping-cart.svg"
+                alt="Bundle"
+                width={20}
+                height={20}
+                className="w-5 h-5"
+              />
+              Pack Complet
+            </h4>
             <p className="text-sm text-gray-600 mb-2">
               Numérique + Tirage A4 (économie de 5€)
             </p>

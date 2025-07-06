@@ -39,7 +39,7 @@ export function LatestPhotosSectionClient() {
     return (
       <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="w-64 h-48 bg-gray-200 rounded-lg animate-pulse flex-shrink-0" />
+          <div key={i} className="w-48 h-72 bg-gray-200 rounded-lg animate-pulse flex-shrink-0" />
         ))}
       </div>
     )
@@ -48,7 +48,15 @@ export function LatestPhotosSectionClient() {
   if (error || photos.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className="text-6xl mb-4">📸</div>
+        <div className="mb-4">
+          <Image
+            src="/Logos/camera2.svg"
+            alt="Camera"
+            width={64}
+            height={64}
+            className="w-16 h-16 mx-auto opacity-60"
+          />
+        </div>
         <h3 className="text-2xl font-semibold mb-4">Aucune photo disponible</h3>
         <p className="text-gray-600">Les premières photos seront bientôt disponibles !</p>
       </div>
@@ -64,7 +72,7 @@ export function LatestPhotosSectionClient() {
           href={`/gallery/${photo.gallery_id}`}
           className="group flex-shrink-0 relative"
         >
-          <div className="w-64 h-48 relative rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+          <div className="w-40 h-60 sm:w-48 sm:h-72 relative rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105">
             <Image
               src={photo.preview_s3_url}
               alt={photo.filename}

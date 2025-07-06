@@ -102,7 +102,7 @@ export function PhotosByDate() {
         </div>
         <div className="flex gap-4 overflow-x-auto scrollbar-hide">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="w-64 h-48 bg-gray-200 rounded-xl animate-pulse flex-shrink-0" />
+            <div key={i} className="w-48 h-80 bg-gray-200 rounded-xl animate-pulse flex-shrink-0" />
           ))}
         </div>
       </div>
@@ -150,9 +150,9 @@ export function PhotosByDate() {
       <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-4">
         {galleryGroups.map((group) => (
           <Link key={group.date} href={`/gallery?date=${group.date}`} className="flex-shrink-0">
-            <div className="w-72 bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+            <div className="w-48 bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
               {/* Image de couverture */}
-              <div className="relative h-48 rounded-t-xl overflow-hidden">
+              <div className="relative h-72 rounded-t-xl overflow-hidden">
                 {group.galleries[0]?.coverPhoto ? (
                   <Image
                     src={group.galleries[0].coverPhoto}
@@ -162,7 +162,14 @@ export function PhotosByDate() {
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                    <span className="text-white text-4xl">📸</span>
+                    <Image
+                      src="/Logos/camera2.svg"
+                      alt="Camera"
+                      width={48}
+                      height={48}
+                      className="w-12 h-12"
+                      style={{ filter: 'brightness(0) invert(1)' }}
+                    />
                   </div>
                 )}
                 

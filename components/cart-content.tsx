@@ -143,7 +143,18 @@ export function CartContent() {
                         />
                         Numérique
                       </span>
-                    ) : item.product_type === 'print' ? '🖼️ Tirage A4' : '🎁 Pack Complet'}
+                    ) : item.product_type === 'print' ? (
+                      <span className="flex items-center gap-1">
+                        <Image
+                          src="/Logos/Imprimante.svg"
+                          alt="Print"
+                          width={16}
+                          height={16}
+                          className="w-4 h-4"
+                        />
+                        Tirage A4
+                      </span>
+                    ) : '🎁 Pack Complet'}
                   </p>
                   <p className="text-sm text-gray-600 font-lexend-deca">
                     {item.price === 0 ? "Gratuit" : `${item.price.toFixed(2)}€`}

@@ -32,8 +32,8 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
         <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
           {[...new Map(galleries.map((gallery: any) => [gallery.date, gallery])).values()].map((gallery: any) => (
             <Link key={gallery.date} href={`/gallery?date=${gallery.date}`} className="flex-shrink-0">
-              <div className="w-36 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300 cursor-pointer">
-                <div className="relative h-24 rounded-t-lg overflow-hidden">
+              <div className="w-32 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300 cursor-pointer">
+                <div className="relative h-32 rounded-t-lg overflow-hidden">
                   {gallery.photos && gallery.photos.length > 0 ? (
                     <Image
                       src={gallery.photos[0].preview_s3_url}
@@ -43,7 +43,14 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                      <span className="text-white text-xl">📸</span>
+                      <Image
+                        src="/Logos/camera2.svg"
+                        alt="Camera"
+                        width={24}
+                        height={24}
+                        className="w-6 h-6"
+                        style={{ filter: 'brightness(0) invert(1)' }}
+                      />
                     </div>
                   )}
                   
@@ -75,7 +82,15 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
           
           {allPhotos.length === 0 ? (
             <div className="text-center py-8 bg-gray-50 rounded-lg">
-              <div className="text-5xl mb-4">📷</div>
+              <div className="mb-4">
+                <Image
+                  src="/Logos/camera2.svg"
+                  alt="Camera"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 mx-auto opacity-60"
+                />
+              </div>
               <p className="text-gray-600">Aucune photo disponible pour le moment</p>
             </div>
           ) : (
@@ -84,15 +99,27 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                 <button
                   key={photo.id}
                   onClick={() => handlePhotoClick(index)}
-                  className="group relative aspect-square overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
+                  className="group relative w-full pt-[150%] overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
                 >
-                  <Image
-                    src={photo.preview_s3_url}
-                    alt="Photo de surf"
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0">
+                    <Image
+                      src={photo.preview_s3_url}
+                      alt="Photo de surf"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
+                    <div className="text-white text-center">
+                      <p className="text-sm font-medium">
+                        {new Date(photo.created_at).toLocaleDateString('fr-FR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                  </div>
                 </button>
               ))}
             </div>

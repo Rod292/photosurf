@@ -249,7 +249,7 @@ export default function HomePage() {
                   {[...Array(5)].map((_, i) => (
                     <motion.div
                       key={i} 
-                      className="w-72 h-80 bg-white rounded-xl animate-pulse flex-shrink-0"
+                      className="w-48 h-72 bg-white rounded-xl animate-pulse flex-shrink-0"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: i * 0.1 }}

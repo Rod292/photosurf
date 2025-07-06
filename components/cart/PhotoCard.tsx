@@ -34,14 +34,16 @@ export function PhotoCard({ photo, className }: PhotoCardProps) {
         onMouseLeave={() => setIsHovered(false)}
       >
         <CardContent className="p-0">
-          <div className="relative aspect-[4/3] overflow-hidden">
-            <Image
-              src={photo.preview_s3_url}
-              alt={photo.filename}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
+          <div className="relative w-full pt-[150%] overflow-hidden">
+            <div className="absolute inset-0">
+              <Image
+                src={photo.preview_s3_url}
+                alt={photo.filename}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              />
+            </div>
             
             {/* Overlay with actions */}
             <div className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${

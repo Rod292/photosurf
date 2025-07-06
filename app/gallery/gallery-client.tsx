@@ -97,7 +97,7 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                       href={`/gallery/${gallery.id}`}
                       className="group flex-shrink-0"
                     >
-                      <div className="w-32 h-32 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-gray-200">
+                      <div className="w-28 h-40 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-gray-200">
                         <div className="w-full h-full relative">
                           {/* Photo de session ou fallback */}
                           {gallery.photos && gallery.photos.length > 0 ? (
@@ -152,31 +152,43 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
           
           {latestPhotos.length === 0 ? (
             <div className="text-center py-8 bg-gray-50 rounded-lg">
-              <div className="text-5xl mb-4">📷</div>
+              <div className="mb-4">
+                <Image
+                  src="/Logos/camera2.svg"
+                  alt="Camera"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 mx-auto opacity-60"
+                />
+              </div>
               <p className="text-gray-600">Aucune photo disponible pour le moment</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {latestPhotos.map((photo: any, index: number) => (
                 <button
                   key={photo.id}
                   onClick={() => handlePhotoClick(index)}
-                  className="group relative aspect-square overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+                  className="group relative w-full pt-[150%] overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
                 >
-                  <Image
-                    src={photo.preview_s3_url}
-                    alt={`Photo de ${photo.galleries.name || 'surf'}`}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-0 left-0 right-0 p-2 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                    <p className="text-xs font-medium truncate">
-                      {photo.galleries.name}
-                    </p>
-                    <p className="text-xs opacity-80">
-                      {new Date(photo.galleries.date).toLocaleDateString("fr-FR")}
-                    </p>
+                  <div className="absolute inset-0">
+                    <Image
+                      src={photo.preview_s3_url}
+                      alt={`Photo de ${photo.galleries.name || 'surf'}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
+                    <div className="text-white text-center">
+                      <p className="text-sm font-medium">
+                        {new Date(photo.galleries.date).toLocaleDateString('fr-FR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        })}
+                      </p>
+                    </div>
                   </div>
                 </button>
               ))}

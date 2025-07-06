@@ -151,7 +151,7 @@ export function PhotoGallery({
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
         {paginatedPhotos.map((photo, index) => {
           const potentialPrice = calculatePotentialPrice(photo)
           const displayPrice = potentialPrice.toFixed(2)
@@ -159,7 +159,7 @@ export function PhotoGallery({
           return (
             <div
               key={photo.id}
-              className="cursor-pointer group relative w-full pt-[75%] rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              className="cursor-pointer group relative w-full pt-[150%] rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl"
               onClick={() => handlePhotoClick(photo)}
             >
               <div className="absolute inset-0">
@@ -167,37 +167,22 @@ export function PhotoGallery({
                   src={photo.src || "/placeholder.svg"}
                   alt={photo.title}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-110"
+                  className="object-cover"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   priority={index < 4}
                   loading={index < 8 ? "eager" : "lazy"}
                   placeholder="blur"
                   blurDataURL="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzIyMjIyMiI+PC9yZWN0Pjwvc3ZnPg=="
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white font-bold text-lg font-lexend-deca">
-                      {potentialPrice === 0 ? "Gratuit" : `${displayPrice}€`}
-                    </span>
-                    <button
-                      onClick={(e) => handleAddToCart(e, photo)}
-                      disabled={isInCart(photo.id)}
-                      className={`
-                        flex items-center justify-center w-10 h-10 rounded-full
-                        transition-all duration-300 ease-out
-                        ${isInCart(photo.id) ? "bg-green-500 text-white" : "bg-white text-gray-900 hover:bg-gray-100"}
-                      `}
-                    >
-                      {isInCart(photo.id) ? <Check className="h-5 w-5" /> : (
-                        <Image
-                          src="/Logos/shopping-cart.svg"
-                          alt="Add to Cart"
-                          width={20}
-                          height={20}
-                          className="h-5 w-5"
-                        />
-                      )}
-                    </button>
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
+                  <div className="text-white text-center">
+                    <p className="text-sm font-medium">
+                      {new Date(photo.date).toLocaleDateString('fr-FR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      })}
+                    </p>
                   </div>
                 </div>
               </div>

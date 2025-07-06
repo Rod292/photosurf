@@ -54,9 +54,9 @@ export function PhotosBySchool() {
           />
           Écoles de surf {'>'}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-gray-200 rounded-xl h-64 animate-pulse" />
+            <div key={i} className="bg-gray-200 rounded-xl h-80 animate-pulse" />
           ))}
         </div>
       </div>
@@ -82,7 +82,7 @@ export function PhotosBySchool() {
         </h2>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
         {schoolGroups.map((schoolGroup) => (
           <Link
             key={schoolGroup.school.id}
@@ -91,7 +91,7 @@ export function PhotosBySchool() {
           >
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
               {/* Image de couverture */}
-              <div className="relative h-48 overflow-hidden">
+              <div className="relative h-72 overflow-hidden">
                 {schoolGroup.galleries[0]?.coverPhoto ? (
                   <Image
                     src={schoolGroup.galleries[0].coverPhoto}

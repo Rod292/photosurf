@@ -37,7 +37,7 @@ const productOptions: ProductOption[] = [
     name: 'Tirage Photo',
     description: 'Impression professionnelle A4 (21x29.7cm)',
     price: 2500, // 25€ in cents
-    icon: <ImageIcon className="h-5 w-5" />,
+    icon: <Image src="/Logos/Imprimante.svg" alt="Print" width={20} height={20} className="h-5 w-5" />,
   },
 ];
 
