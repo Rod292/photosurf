@@ -327,7 +327,15 @@ export default async function GalleriesListPage({
               
               {galleries.length === 0 ? (
                 <div className="text-center py-8">
-                  <div className="text-6xl mb-4">📸</div>
+                  <div className="mb-4 flex justify-center">
+                    <Image
+                      src="/Logos/camera-icon.svg"
+                      alt="Camera"
+                      width={96}
+                      height={96}
+                      className="w-24 h-24"
+                    />
+                  </div>
                   <h3 className="text-2xl font-semibold mb-4">
                     {hasFilters ? "Aucun résultat trouvé" : "Aucune galerie disponible"}
                   </h3>

@@ -53,7 +53,15 @@ export async function LatestPhotosSection() {
         </h2>
         
         <div className="text-center py-16">
-          <div className="text-6xl mb-4">📸</div>
+          <div className="mb-4 flex justify-center">
+            <Image
+              src="/Logos/camera-icon.svg"
+              alt="Camera"
+              width={96}
+              height={96}
+              className="w-24 h-24"
+            />
+          </div>
           <h3 className="text-2xl font-semibold mb-4">Aucune photo disponible</h3>
           <p className="text-gray-600">Les premières photos seront bientôt disponibles !</p>
         </div>

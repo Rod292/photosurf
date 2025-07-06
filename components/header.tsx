@@ -137,13 +137,23 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
                 padding: isScrolled ? "0.375rem 0.75rem" : "0.5rem 1rem"
               }}
             >
-            <motion.span
+            <motion.div
               whileHover={{ rotate: 10 }}
               transition={{ duration: 0.2 }}
-              style={{ fontSize: isScrolled ? "1.5rem" : "1.75rem" }}
+              className="flex items-center justify-center"
+              style={{ 
+                width: isScrolled ? "1.5rem" : "1.75rem",
+                height: isScrolled ? "1.5rem" : "1.75rem"
+              }}
             >
-              📸
-            </motion.span>
+              <Image
+                src="/Logos/camera-icon.svg"
+                alt="Camera"
+                width={28}
+                height={28}
+                className="w-full h-full"
+              />
+            </motion.div>
             <motion.span
               style={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
             >
@@ -263,7 +273,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
           >
             <div className="px-6 py-4 space-y-2">
               {[
-                { name: "Photos", icon: "📸", path: "/gallery" },
+                { name: "Photos", icon: "/Logos/camera-icon.svg", path: "/gallery", isImage: true },
                 { name: "Boutique", icon: "🛍️", path: "/boutique" },
                 { name: "Contact", icon: "📞", path: "/contact" }
               ].map((item, index) => (
@@ -279,7 +289,17 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <span>{item.icon}</span>
+                  {item.isImage ? (
+                    <Image
+                      src={item.icon}
+                      alt={item.name}
+                      width={24}
+                      height={24}
+                      className="w-6 h-6"
+                    />
+                  ) : (
+                    <span>{item.icon}</span>
+                  )}
                   <span className="font-medium text-gray-700">{item.name}</span>
                 </motion.button>
               ))}

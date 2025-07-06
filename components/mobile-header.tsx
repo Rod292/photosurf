@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, useScroll, useTransform } from "framer-motion"
 import { MorphingSearch } from "@/components/morphing-search"
+import Image from "next/image"
 
 export function MobileHeader() {
   const [isMobile, setIsMobile] = useState(false)
@@ -59,12 +60,18 @@ export function MobileHeader() {
             className="flex flex-col items-center gap-0 px-2 py-0 rounded-lg hover:bg-gray-100 transition-colors"
             whileTap={{ scale: 0.98 }}
           >
-            <motion.span
+            <motion.div
               style={{ opacity: iconOpacity }}
-              className="text-xl"
+              className="w-6 h-6 flex items-center justify-center"
             >
-              📸
-            </motion.span>
+              <Image
+                src="/Logos/camera-icon.svg"
+                alt="Camera"
+                width={24}
+                height={24}
+                className="w-full h-full"
+              />
+            </motion.div>
             <motion.span
               style={{ y: textY }}
               className="text-sm font-medium text-gray-700"

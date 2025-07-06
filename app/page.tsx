@@ -8,6 +8,7 @@ import { PhotosByDate } from "@/components/photos-by-date"
 import { PhotosBySchool } from "@/components/photos-by-school"
 import { Header } from "@/components/header"
 import { motion, useScroll, useTransform } from "framer-motion"
+import Image from "next/image"
 
 export default function HomePage() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
@@ -138,8 +139,15 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="px-6 py-4">
             <FlowItem className="mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                📸 Photos récentes {'>'}
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <Image
+                  src="/Logos/camera-icon.svg"
+                  alt="Camera"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+                Photos récentes {'>'}
               </h2>
             </FlowItem>
             <FlowItem>
