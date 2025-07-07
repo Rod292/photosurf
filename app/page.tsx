@@ -334,20 +334,21 @@ export default function HomePage() {
                 />
                 Nous contacter sur Instagram
               </motion.a>
-              <motion.button 
-                className="border-2 border-black text-black px-8 py-3 rounded-full font-semibold hover:bg-black/10 transition-colors"
+              <motion.a 
+                href="mailto:contact@arodestudio.com"
+                className="border-2 border-black text-black px-8 py-3 rounded-full font-semibold hover:bg-black/10 transition-colors inline-flex items-center gap-2"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Image
                   src="/Logos/phone-logo.svg"
-                  alt="Phone"
+                  alt="Email"
                   width={20}
                   height={20}
-                  className="w-5 h-5 inline mr-2"
+                  className="w-5 h-5"
                 />
-                Par téléphone
-              </motion.button>
+                Par email
+              </motion.a>
             </div>
           </FlowItem>
         </div>
