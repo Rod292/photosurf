@@ -230,16 +230,6 @@ export default async function DemoPage({
       <Header />
       
       <main className="flex-1">
-        {/* Demo mode banner */}
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-center gap-2 text-sm font-medium">
-              <Eye className="w-4 h-4" />
-              <span>MODE DÉMONSTRATION - Photos haute qualité sans watermark</span>
-              <Eye className="w-4 h-4" />
-            </div>
-          </div>
-        </div>
 
         {/* Navigation */}
         <div className="bg-white py-4 border-b border-gray-200">

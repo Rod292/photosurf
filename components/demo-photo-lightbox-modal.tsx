@@ -17,8 +17,6 @@ interface DemoPhoto {
   preview_s3_url: string
   original_s3_key: string
   filename: string
-  demoUrl?: string
-  expiresAt?: string
   gallery?: {
     id: string
     name: string
@@ -126,18 +124,6 @@ export function DemoPhotoLightboxModal({
     })
   }
 
-  const handleDownloadDemo = () => {
-    if (currentPhoto.demoUrl) {
-      // Ouvrir l'URL signée dans un nouvel onglet pour téléchargement
-      window.open(currentPhoto.demoUrl, '_blank')
-      
-      toast({
-        title: "Téléchargement démarré",
-        description: "Photo haute qualité sans watermark",
-        duration: 3000,
-      })
-    }
-  }
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -174,18 +160,12 @@ export function DemoPhotoLightboxModal({
             )}
             
             <Image
-              src={currentPhoto.demoUrl || currentPhoto.preview_s3_url}
+              src={currentPhoto.preview_s3_url}
               alt={currentPhoto.filename}
               fill
               className="object-contain"
               onLoad={() => setImageLoading(false)}
             />
-            
-            {/* Badge démonstration */}
-            <div className="absolute top-4 left-4 bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
-              <Eye className="w-4 h-4" />
-              Mode Démonstration
-            </div>
 
             {/* Navigation */}
             {photos.length > 1 && (
@@ -220,27 +200,6 @@ export function DemoPhotoLightboxModal({
             <h3 className="text-lg font-semibold mb-4">Options d'achat</h3>
             
             {/* Bouton de téléchargement démo */}
-            {currentPhoto.demoUrl && (
-              <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                <h4 className="font-medium text-purple-900 mb-2">Mode Démonstration</h4>
-                <p className="text-sm text-purple-700 mb-3">
-                  Photo haute qualité sans watermark disponible pour téléchargement temporaire
-                </p>
-                <Button 
-                  onClick={handleDownloadDemo}
-                  className="w-full bg-purple-600 hover:bg-purple-700"
-                  size="sm"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Télécharger HD
-                </Button>
-                {currentPhoto.expiresAt && (
-                  <p className="text-xs text-purple-600 mt-2">
-                    Expire le {new Date(currentPhoto.expiresAt).toLocaleString('fr-FR')}
-                  </p>
-                )}
-              </div>
-            )}
             
             <RadioGroup 
               value={selectedProduct} 
