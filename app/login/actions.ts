@@ -24,7 +24,7 @@ export async function login(formData: FormData) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 3600 // 1 heure
+    maxAge: 7 * 24 * 3600 // 7 jours (604800 secondes)
   })
   
   console.log('[Login Action] Login successful, redirecting to:', redirect_to || '/demo')
