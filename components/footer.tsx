@@ -28,11 +28,6 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/cooking" className="text-sm text-gray-400 hover:text-white transition-colors">
-                  Cooking Summer 2025
-                </Link>
-              </li>
-              <li>
                 <Link href="/a-propos" className="text-sm text-gray-400 hover:text-white transition-colors">
                   À propos
                 </Link>
