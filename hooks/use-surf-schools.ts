@@ -25,9 +25,7 @@ export function useSurfSchools() {
         setError(err instanceof Error ? err.message : 'Unknown error')
         // Fallback vers les écoles par défaut en cas d'erreur
         setSchools([
-          { id: 1, name: 'ESB', slug: 'esb' },
-          { id: 2, name: 'Rise Up', slug: 'rise-up' },
-          { id: 3, name: 'La Torche Surf School', slug: 'la-torche-surf-school' }
+          { id: 1, name: 'La Torche Surf School', slug: 'la-torche-surf-school' }
         ])
       } finally {
         setLoading(false)

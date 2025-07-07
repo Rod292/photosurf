@@ -19,14 +19,11 @@ export const SimpleOrderConfirmationEmail: React.FC<SimpleOrderConfirmationEmail
       <Container style={container}>
         <Section style={logoSection}>
           <Img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/arodelogo2-3rLHVrTg3M1BwmO55e2Bd3rfphyoKU.png"
+            src="https://photosurf.vercel.app/Logos/arodelogo.png"
             width="80"
             height="80"
             alt="Arode Studio"
-            style={{
-              ...logo,
-              filter: "brightness(0)", // Makes the white logo black for light backgrounds
-            }}
+            style={logo}
           />
         </Section>
         <Section style={contentSection}>
