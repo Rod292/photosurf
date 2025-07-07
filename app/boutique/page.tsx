@@ -88,7 +88,10 @@ export default function BoutiquePage() {
               </div>
               
               <div className="text-center">
-                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl shadow-lg">
+                <Link 
+                  href="/gallery"
+                  className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 cursor-pointer"
+                >
                   <Image
                     src="/Logos/camera-icon.svg"
                     alt="Prix"
@@ -97,7 +100,7 @@ export default function BoutiquePage() {
                     className="w-6 h-6 invert"
                   />
                   15€ par photo
-                </div>
+                </Link>
                 
                 <div className="mt-6 p-4 bg-blue-50 rounded-xl border-l-4 border-blue-500">
                   <p className="text-sm text-blue-700 font-medium mb-3">
