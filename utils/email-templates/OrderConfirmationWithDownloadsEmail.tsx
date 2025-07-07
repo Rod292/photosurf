@@ -234,7 +234,7 @@ const photoName = {
   color: "#1a1a1a",
   fontSize: "14px",
   fontWeight: "500",
-  margin: "0 0 8px 0",
+  margin: "0 0 12px 0",
 }
 
 const downloadButton = {
@@ -244,9 +244,9 @@ const downloadButton = {
   display: "inline-block",
   fontSize: "14px",
   fontWeight: "500",
-  padding: "8px 16px",
+  padding: "10px 20px",
   textDecoration: "none",
-  margin: "0 0 8px 0",
+  margin: "0 0 16px 0",
 }
 
 const expiryText = {
