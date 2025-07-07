@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Instagram, Menu } from "lucide-react"
+import { Instagram, Menu, Eye } from "lucide-react"
 import { useState, useEffect } from "react"
 import { CartSheet } from "@/components/cart/CartSheet"
 import { SearchBar } from "@/components/search-bar"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
+import { createSupabaseClient } from "@/lib/supabase/client"
 
 interface HeaderProps {
   alwaysVisible?: boolean
@@ -16,6 +17,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -26,6 +28,30 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Check authentication status
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const supabase = createSupabaseClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        setIsAuthenticated(!!user)
+      } catch (error) {
+        console.error('Auth check error:', error)
+        setIsAuthenticated(false)
+      }
+    }
+    
+    checkAuth()
+    
+    // Listen for auth changes
+    const supabase = createSupabaseClient()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session?.user)
+    })
+    
+    return () => subscription.unsubscribe()
   }, [])
 
   const { scrollY } = useScroll()
@@ -194,6 +220,37 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
               Nos produits
             </motion.span>
             </motion.button>
+            
+            {/* Lien Mode Démonstration - seulement pour les utilisateurs authentifiés */}
+            {isAuthenticated && (
+              <motion.button 
+                onClick={() => handleNavigation("/demo")}
+                className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-purple-100 transition-colors font-medium text-purple-700 hover:text-purple-900 pointer-events-auto border border-purple-200"
+                variants={navItemVariants}
+                whileHover="hover"
+                whileTap={{ scale: 0.95 }}
+                style={{ 
+                  padding: isScrolled ? "0.375rem 0.75rem" : "0.5rem 1rem"
+                }}
+              >
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-center"
+                  style={{ 
+                    width: isScrolled ? "1.5rem" : "1.75rem",
+                    height: isScrolled ? "1.5rem" : "1.75rem"
+                  }}
+                >
+                  <Eye className="w-full h-full" />
+                </motion.div>
+                <motion.span
+                  style={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
+                >
+                  Démo
+                </motion.span>
+              </motion.button>
+            )}
             
             <motion.button 
             onClick={() => handleNavigation("/contact")}

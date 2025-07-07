@@ -10,18 +10,41 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/app/login/actions";
 
-export default function LoginPage() {
+interface LoginPageProps {
+  searchParams: Promise<{
+    redirect?: string
+    message?: string
+  }>
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { redirect: redirectTo, message } = await searchParams
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-950">
       <Card className="w-full max-w-sm mx-auto">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Connexion Admin</CardTitle>
+          <CardTitle className="text-2xl font-bold">
+            {redirectTo === '/demo' ? 'Accès Mode Démonstration' : 'Connexion Admin'}
+          </CardTitle>
           <CardDescription>
-            Entrez votre email pour vous connecter à votre compte
+            {redirectTo === '/demo' 
+              ? 'Authentifiez-vous pour accéder aux photos sans watermark'
+              : 'Entrez votre email pour vous connecter à votre compte'
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {message && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{message}</p>
+            </div>
+          )}
+          
           <form action={login} className="space-y-4">
+            {redirectTo && (
+              <input type="hidden" name="redirect" value={redirectTo} />
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -37,7 +60,7 @@ export default function LoginPage() {
               <Input id="password" name="password" type="password" required />
             </div>
             <Button type="submit" className="w-full">
-              Se connecter
+              {redirectTo === '/demo' ? 'Accéder à la démonstration' : 'Se connecter'}
             </Button>
           </form>
         </CardContent>
