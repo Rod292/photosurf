@@ -144,7 +144,7 @@ export default async function DemoGalleryPage({
         <div className="relative pt-16 pb-20 overflow-hidden">
           <div className="absolute inset-0">
             <Image
-              src="/latorche-aerial.jpg"
+              src="/Logos/DJI_03862025LaTorche-3.jpg"
               alt="Vue aérienne de La Torche"
               fill
               className="object-cover"

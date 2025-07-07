@@ -123,7 +123,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ id: st
           {/* Image de fond */}
           <div className="absolute inset-0">
             <Image
-              src="/latorche-aerial.jpg"
+              src="/Logos/DJI_03862025LaTorche-3.jpg"
               alt="Vue aérienne de La Torche"
               fill
               className="object-cover"
