@@ -27,9 +27,9 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
       <Container style={container}>
         <Section style={logoSection}>
           <Img
-            src="https://www.arodestudio.com/images/logo-white.svg"
-            width="80"
-            height="80"
+            src="https://www.arodestudio.com/images/arode-logo-white.png"
+            width="120"
+            height="120"
             alt="Arode Studio"
             style={logo}
           />
@@ -148,8 +148,6 @@ const logoSection = {
   textAlign: "center" as const,
   padding: "0 48px",
   marginBottom: "32px",
-  backgroundColor: "#1a1a1a",
-  borderRadius: "12px",
   paddingTop: "16px",
   paddingBottom: "16px",
 }
@@ -157,8 +155,8 @@ const logoSection = {
 const logo = {
   margin: "0 auto",
   display: "block",
-  width: "80px",
-  height: "80px",
+  width: "120px",
+  height: "120px",
   objectFit: "contain" as const,
 }
 

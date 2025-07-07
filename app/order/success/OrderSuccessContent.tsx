@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle, Mail, Download, Home } from 'lucide-react';
+import { CheckCircle, Mail, Download, Home, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
@@ -57,6 +57,20 @@ export function OrderSuccessContent() {
                 <h3 className="font-medium text-blue-900">Email de confirmation</h3>
                 <p className="text-sm text-blue-700">
                   Vous recevrez un email avec vos liens de téléchargement dans quelques minutes.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg border border-orange-200">
+              <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium text-orange-900">⚠️ Important : Vérifiez vos spams</h3>
+                <p className="text-sm text-orange-700">
+                  L'email de téléchargement peut parfois arriver dans votre dossier spam ou courrier indésirable. 
+                  <span className="font-medium"> Pensez à vérifier tous vos dossiers</span> si vous ne recevez pas l'email dans les 10 minutes.
+                </p>
+                <p className="text-xs text-orange-600 mt-2">
+                  💡 Astuce : Ajoutez contact@arodestudio.com à vos contacts pour éviter ce problème à l'avenir.
                 </p>
               </div>
             </div>
