@@ -101,13 +101,13 @@ export function PhotosBySchool() {
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     {schoolGroup.school.name.toLowerCase().includes('la torche') && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-white/90 backdrop-blur-sm">
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/30">
                         <Image
                           src="/Logos/LOGO-COULEURS.svg"
                           alt="La Torche Surf School"
                           width={120}
                           height={120}
-                          className="w-30 h-30"
+                          className="w-30 h-30 drop-shadow-lg"
                         />
                       </div>
                     )}
