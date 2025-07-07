@@ -33,12 +33,60 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
   )
 
   useEffect(() => {
-    console.log('Demo photos disponibles:', allPhotos.length)
-    console.log('Première photo:', allPhotos[0])
-    
-    // Juste initialiser avec les photos normales (preview_s3_url)
-    setDemoPhotos(allPhotos)
-    setLoading(false)
+    async function loadDemoUrls() {
+      console.log('Demo photos disponibles:', allPhotos.length)
+      console.log('Première photo:', allPhotos[0])
+      
+      if (allPhotos.length === 0) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        // Charger les URLs demo par batch de 10 photos
+        const batchSize = 10
+        const photoBatches = []
+        
+        for (let i = 0; i < allPhotos.length; i += batchSize) {
+          photoBatches.push(allPhotos.slice(i, i + batchSize))
+        }
+
+        const updatedPhotos = [...allPhotos]
+
+        // Charger les URLs par batch pour éviter de surcharger l'API
+        for (const batch of photoBatches) {
+          const photoIds = batch.map(p => p.id).join(',')
+          
+          const response = await fetch(`/api/demo-photos?photoIds=${photoIds}`)
+          
+          if (response.ok) {
+            const data = await response.json()
+            
+            // Mettre à jour les URLs demo
+            data.photos.forEach((demoPhoto: any) => {
+              const index = updatedPhotos.findIndex(p => p.id === demoPhoto.photoId)
+              if (index !== -1) {
+                updatedPhotos[index] = {
+                  ...updatedPhotos[index],
+                  demoUrl: demoPhoto.demoUrl,
+                  expiresAt: demoPhoto.expiresAt
+                }
+              }
+            })
+          }
+        }
+
+        setDemoPhotos(updatedPhotos)
+      } catch (error) {
+        console.error('Erreur lors du chargement des URLs demo:', error)
+        // En cas d'erreur, utiliser les photos sans URLs demo
+        setDemoPhotos(allPhotos)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadDemoUrls()
   }, [galleries])
 
   const handlePhotoClick = (index: number) => {
@@ -84,17 +132,17 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
             className="group relative aspect-[2/3] overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
           >
             <Image
-              src={photo.preview_s3_url}
+              src={photo.demoUrl || photo.preview_s3_url}
               alt="Photo de surf"
               fill
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
-                console.error('Erreur de chargement image:', photo.preview_s3_url)
+                console.error('Erreur de chargement image:', photo.demoUrl || photo.preview_s3_url)
                 console.error('Photo complète:', photo)
               }}
               onLoad={() => {
-                console.log('Image chargée avec succès:', photo.preview_s3_url)
+                console.log('Image chargée avec succès:', photo.demoUrl || photo.preview_s3_url)
               }}
             />
             

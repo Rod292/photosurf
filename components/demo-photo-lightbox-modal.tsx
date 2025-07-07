@@ -17,6 +17,8 @@ interface DemoPhoto {
   preview_s3_url: string
   original_s3_key: string
   filename: string
+  demoUrl?: string
+  expiresAt?: string
   gallery?: {
     id: string
     name: string
@@ -160,7 +162,7 @@ export function DemoPhotoLightboxModal({
             )}
             
             <Image
-              src={currentPhoto.preview_s3_url}
+              src={currentPhoto.demoUrl || currentPhoto.preview_s3_url}
               alt={currentPhoto.filename}
               fill
               className="object-contain"
