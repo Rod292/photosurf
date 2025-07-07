@@ -12,7 +12,7 @@ import "./globals.css"
 import type { ReactNode } from "react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
-import { Footer } from "@/components/footer"
+import { ConditionalFooter } from "@/components/conditional-footer"
 import { CursorPreload } from "@/components/cursor-preload"
 import { Toaster } from "@/components/ui/toaster"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
@@ -114,7 +114,7 @@ export default function RootLayout({
             <MobileHeader />
             <div className="flex-grow pb-16 md:pb-0">{children}</div>
             <MobileBottomNav />
-            <Footer />
+            <ConditionalFooter />
           </FilterProvider>
         </CartProvider>
         <Toaster />
