@@ -42,6 +42,11 @@ export function Footer() {
                   Panier
                 </Link>
               </li>
+              <li>
+                <Link href="/mentions-legales" className="text-sm text-gray-400 hover:text-white transition-colors">
+                  Mentions légales
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -50,10 +55,10 @@ export function Footer() {
               <li className="flex items-center space-x-2">
                 <Mail size={16} className="text-gray-400" />
                 <a
-                  href="mailto:arodestudio@gmail.com"
+                  href="mailto:contact@arodestudio.com"
                   className="text-sm text-gray-400 hover:text-white transition-colors"
                 >
-                  arodestudio@gmail.com
+                  contact@arodestudio.com
                 </a>
               </li>
               <li className="flex items-center space-x-2">
@@ -80,6 +85,11 @@ export function Footer() {
         <div className="mt-6 pt-6 border-t border-gray-800 text-center">
           <p className="text-xs text-gray-400 font-lexend-deca">
             © {new Date().getFullYear()} Arode Studio. Tous droits réservés.
+          </p>
+          <p className="text-xs text-gray-500 mt-2 font-lexend-deca">
+            <Link href="/mentions-legales" className="hover:text-gray-300 transition-colors">
+              Mentions légales
+            </Link>
           </p>
         </div>
       </div>
