@@ -245,44 +245,13 @@ export default async function DemoPage({
                 <span className="font-medium">Retour à l'accueil</span>
               </Link>
               
-              <div className="flex items-center gap-4">
-                <Link 
-                  href="/gallery"
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  Galerie publique
-                </Link>
-                <Link 
-                  href="/admin/upload"
-                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  Admin Upload
-                </Link>
-              </div>
+              <Link 
+                href="/gallery"
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Galerie publique
+              </Link>
             </div>
-          </div>
-        </div>
-
-        {/* Hero Section */}
-        <div className="relative pt-20 pb-24 overflow-hidden">
-          <div className="absolute inset-0">
-            <Image
-              src="/latorche-aerial.jpg"
-              alt="Vue aérienne de La Torche"
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
-          </div>
-          
-          <div className="relative z-10 container mx-auto px-4 text-center text-white">
-            <h1 className="text-5xl md:text-7xl font-bold font-playfair mb-8 drop-shadow-lg">
-              Nos Galeries Photo
-            </h1>
-            <p className="text-xl md:text-2xl font-varela-round opacity-95 max-w-4xl mx-auto leading-relaxed drop-shadow-md">
-              Découvre, télécharge, imprime tes photos de surf sur le spot de La Torche
-            </p>
           </div>
         </div>
 
@@ -327,107 +296,6 @@ export default async function DemoPage({
           </div>
         )}
 
-        {/* Instructions */}
-        <div className="bg-gray-50 py-6">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-xl md:text-2xl font-bold font-dm-sans mb-6">
-                Comment retrouver vos photos ?
-              </h2>
-              {/* Desktop version */}
-              <div className="hidden md:grid md:grid-cols-3 gap-4">
-                <div className="bg-white p-3 rounded-lg shadow-md">
-                  <div className="flex justify-center mb-2">
-                    <Image
-                      src="/Logos/Calendar.svg"
-                      alt="Calendar"
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 text-blue-600"
-                    />
-                  </div>
-                  <h3 className="font-bold text-base font-dm-sans mb-1">1. Trouvez votre date</h3>
-                  <p className="text-gray-600 text-sm font-varela-round">
-                    Recherchez la galerie correspondant à votre date de session
-                  </p>
-                </div>
-                <div className="bg-white p-3 rounded-lg shadow-md">
-                  <div className="flex justify-center mb-2">
-                    <Image
-                      src="/Logos/camera2.svg"
-                      alt="Search"
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 text-blue-600"
-                    />
-                  </div>
-                  <h3 className="font-bold text-base font-dm-sans mb-1">2. Parcourez les photos</h3>
-                  <p className="text-gray-600 text-sm font-varela-round">
-                    Explorez toutes les photos de votre session
-                  </p>
-                </div>
-                <div className="bg-white p-3 rounded-lg shadow-md">
-                  <div className="flex justify-center mb-2">
-                    <Image
-                      src="/Logos/shopping-cart.svg"
-                      alt="Shopping"
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 text-blue-600"
-                    />
-                  </div>
-                  <h3 className="font-bold text-base font-dm-sans mb-1">3. Commandez</h3>
-                  <p className="text-gray-600 text-sm font-varela-round">
-                    Sélectionnez vos photos favorites et passez commande
-                  </p>
-                </div>
-              </div>
-              {/* Mobile version */}
-              <div className="md:hidden space-y-3">
-                <div className="bg-white p-3 rounded-lg shadow-md flex items-center">
-                  <Image
-                    src="/Logos/Calendar.svg"
-                    alt="Calendar"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6 mr-3 flex-shrink-0"
-                  />
-                  <div className="text-left">
-                    <h3 className="font-bold text-sm font-dm-sans">1. Trouvez votre date</h3>
-                    <p className="text-gray-600 text-xs font-varela-round">Recherchez votre session</p>
-                  </div>
-                </div>
-                <div className="bg-white p-3 rounded-lg shadow-md flex items-center">
-                  <Image
-                    src="/Logos/camera2.svg"
-                    alt="Search"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6 mr-3 flex-shrink-0"
-                  />
-                  <div className="text-left">
-                    <h3 className="font-bold text-sm font-dm-sans">2. Parcourez</h3>
-                    <p className="text-gray-600 text-xs font-varela-round">Explorez vos photos</p>
-                  </div>
-                </div>
-                <div className="bg-white p-3 rounded-lg shadow-md flex items-center">
-                  <Image
-                    src="/Logos/shopping-cart.svg"
-                    alt="Shopping"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6 mr-3 flex-shrink-0"
-                  />
-                  <div className="text-left">
-                    <h3 className="font-bold text-sm font-dm-sans">3. Commandez</h3>
-                    <p className="text-gray-600 text-xs font-varela-round">Passez commande</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Content */}
         {isSchoolFilter ? (
           <DemoClient 
@@ -444,9 +312,6 @@ export default async function DemoPage({
         ) : (
           <div className="py-8">
             <div className="container mx-auto px-4">
-              <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 font-dm-sans">
-                {hasFilters ? "Résultats de recherche" : "Toutes nos galeries"}
-              </h2>
               
               {galleries.length === 0 ? (
                 <div className="text-center py-8">
