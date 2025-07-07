@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion"
 import { ReactNode } from "react"
+import { useOptimizedAnimations, getMobileAnimationConfig } from "@/hooks/use-optimized-animations"
 
 interface PhotoGridProps {
   children: ReactNode
@@ -10,13 +11,16 @@ interface PhotoGridProps {
 }
 
 export function PhotoGrid({ children, className = "", columns = 6 }: PhotoGridProps) {
+  const { shouldAnimate, isMobile } = useOptimizedAnimations()
+  const animConfig = getMobileAnimationConfig(isMobile, shouldAnimate)
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05,
-        delayChildren: 0.1
+        staggerChildren: animConfig.staggerDelay,
+        delayChildren: animConfig.enabled ? 0.1 : 0
       }
     }
   }
@@ -27,9 +31,9 @@ export function PhotoGrid({ children, className = "", columns = 6 }: PhotoGridPr
       style={{
         gridTemplateColumns: `repeat(auto-fit, minmax(150px, 1fr))`,
       }}
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+      variants={animConfig.enabled ? containerVariants : undefined}
+      initial={animConfig.enabled ? "hidden" : undefined}
+      animate={animConfig.enabled ? "visible" : undefined}
     >
       {children}
     </motion.div>
@@ -44,74 +48,80 @@ interface PhotoCardProps {
 }
 
 export function PhotoCard({ children, className = "", onClick, index = 0 }: PhotoCardProps) {
+  const { shouldAnimate, isMobile } = useOptimizedAnimations()
+  const animConfig = getMobileAnimationConfig(isMobile, shouldAnimate)
+
   const itemVariants = {
     hidden: { 
       opacity: 0, 
-      y: 20,
-      scale: 0.95
+      y: isMobile ? 10 : 20,
+      scale: isMobile ? 0.98 : 0.95
     },
     visible: {
       opacity: 1,
       y: 0,
       scale: 1,
       transition: {
-        duration: 0.4
+        duration: animConfig.duration
       }
     }
   }
 
-  const hoverVariants = {
-    scale: 1.05,
-    y: -8,
+  // Optimisations mobiles : réduire ou désactiver certains effets
+  const hoverVariants = animConfig.enabled && !animConfig.disableScale ? {
+    scale: isMobile ? 1.02 : 1.05,
+    y: isMobile ? -4 : -8,
     transition: {
-      duration: 0.2
+      duration: animConfig.duration * 0.7
     }
-  }
+  } : {}
 
-  const tapVariants = {
-    scale: 0.98,
+  const tapVariants = animConfig.enabled ? {
+    scale: isMobile ? 0.99 : 0.98,
     transition: {
-      duration: 0.1
+      duration: 0.05
     }
-  }
+  } : {}
 
   return (
     <motion.div
       className={`cursor-pointer group relative w-full pt-[150%] rounded-lg overflow-hidden shadow-md ${className}`}
-      variants={itemVariants}
-      whileHover={hoverVariants}
-      whileTap={tapVariants}
+      variants={animConfig.enabled ? itemVariants : undefined}
+      whileHover={animConfig.enabled ? hoverVariants : undefined}
+      whileTap={animConfig.enabled ? tapVariants : undefined}
       onClick={onClick}
-      layout
-      layoutId={`photo-${index}`}
+      layout={!isMobile} // Désactiver layout animations sur mobile
+      layoutId={!isMobile ? `photo-${index}` : undefined}
     >
       {children}
       
-      {/* Hover overlay avec animation */}
-      <motion.div
-        className="absolute inset-0 bg-black/30 opacity-0 flex items-center justify-center"
-        initial={{ opacity: 0 }}
-        whileHover={{ 
-          opacity: 1,
-          transition: { duration: 0.2 }
-        }}
-      >
+      {/* Hover overlay avec animation - Optimisé pour mobile */}
+      {animConfig.enabled && (
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          whileHover={{ 
-            scale: 1, 
+          className="absolute inset-0 bg-black/30 opacity-0 flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          whileHover={!isMobile ? { 
             opacity: 1,
-            transition: { delay: 0.1, duration: 0.2 }
-          }}
-          className="text-white text-center"
+            transition: { duration: animConfig.duration }
+          } : undefined}
         >
-          <div className="w-12 h-12 border-2 border-white rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-            </svg>
-          </div>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            whileHover={!isMobile ? { 
+              scale: 1, 
+              opacity: 1,
+              transition: { delay: 0.05, duration: animConfig.duration }
+            } : undefined}
+            className="text-white text-center"
+          >
+            <div className="w-12 h-12 border-2 border-white rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
     </motion.div>
   )
 }

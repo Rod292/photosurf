@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { StaggerContainer, StaggerItem } from "@/components/animations/page-transition"
+import { useOptimizedAnimations, getMobileAnimationConfig } from "@/hooks/use-optimized-animations"
 
 interface PhotosBySchool {
   school: {
@@ -24,6 +25,8 @@ interface PhotosBySchool {
 export function PhotosBySchool() {
   const [schoolGroups, setSchoolGroups] = useState<PhotosBySchool[]>([])
   const [loading, setLoading] = useState(true)
+  const { shouldAnimate, isMobile } = useOptimizedAnimations()
+  const animConfig = getMobileAnimationConfig(isMobile, shouldAnimate)
 
   useEffect(() => {
     async function fetchPhotosBySchool() {
@@ -93,13 +96,13 @@ export function PhotosBySchool() {
             >
               <motion.div 
                 className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300"
-                whileHover={{ 
-                  scale: 1.03,
-                  y: -8,
-                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
-                }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                whileHover={animConfig.enabled ? { 
+                  scale: isMobile ? 1.01 : 1.03,
+                  y: isMobile ? -4 : -8,
+                  boxShadow: !animConfig.disableShadow ? "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" : undefined
+                } : undefined}
+                whileTap={animConfig.enabled ? { scale: isMobile ? 0.99 : 0.98 } : undefined}
+                transition={{ duration: animConfig.duration }}
               >
               {/* Image de couverture */}
               <div className="relative h-72 overflow-hidden">

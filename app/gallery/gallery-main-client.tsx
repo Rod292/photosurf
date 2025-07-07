@@ -67,8 +67,8 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-    // Scroll to top of photos section
-    window.scrollTo({ top: 200, behavior: 'smooth' })
+    // Scroll to top of photos section - instantané pour éviter les animations de page
+    window.scrollTo({ top: 200, behavior: 'instant' })
   }
 
   return (
@@ -177,7 +177,10 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
               </p>
             </div>
           ) : (
-            <PhotoGrid className="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            <PhotoGrid 
+              key={`page-${currentPage}`} // Force remount sans animation lors du changement de page
+              className="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+            >
               {currentPhotos.map((photo: any, index: number) => (
                 <PhotoCard
                   key={photo.id}

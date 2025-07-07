@@ -2,6 +2,7 @@
 
 import { motion, MotionProps } from "framer-motion"
 import { ReactNode, forwardRef } from "react"
+import { useOptimizedAnimations, getMobileAnimationConfig } from "@/hooks/use-optimized-animations"
 
 interface AnimatedButtonProps extends MotionProps {
   children: ReactNode
@@ -13,31 +14,38 @@ interface AnimatedButtonProps extends MotionProps {
 
 export const AnimatedButton = forwardRef<HTMLButtonElement, AnimatedButtonProps>(
   ({ children, className = "", variant = "default", disabled = false, onClick, ...props }, ref) => {
+    const { shouldAnimate, isMobile } = useOptimizedAnimations()
+    const animConfig = getMobileAnimationConfig(isMobile, shouldAnimate)
+
     const variants = {
       default: {
-        whileHover: { scale: 1.05 },
-        whileTap: { scale: 0.95 },
-        transition: { duration: 0.2 }
+        whileHover: { scale: isMobile ? 1.02 : 1.05 },
+        whileTap: { scale: isMobile ? 0.98 : 0.95 },
+        transition: { duration: animConfig.duration }
       },
       subtle: {
-        whileHover: { scale: 1.02, y: -1 },
-        whileTap: { scale: 0.98, y: 0 },
-        transition: { duration: 0.15 }
+        whileHover: { scale: isMobile ? 1.01 : 1.02, y: isMobile ? 0 : -1 },
+        whileTap: { scale: isMobile ? 0.99 : 0.98, y: 0 },
+        transition: { duration: animConfig.duration * 0.75 }
       },
       spring: {
-        whileHover: { scale: 1.05 },
-        whileTap: { scale: 0.95 },
-        transition: { type: "spring" as const, stiffness: 300, damping: 20 }
+        whileHover: { scale: isMobile ? 1.02 : 1.05 },
+        whileTap: { scale: isMobile ? 0.98 : 0.95 },
+        transition: isMobile 
+          ? { duration: animConfig.duration }
+          : { type: "spring" as const, stiffness: 300, damping: 20 }
       },
       scale: {
-        whileHover: { scale: 1.1 },
-        whileTap: { scale: 0.9 },
-        transition: { duration: 0.2 }
+        whileHover: { scale: isMobile ? 1.03 : 1.1 },
+        whileTap: { scale: isMobile ? 0.97 : 0.9 },
+        transition: { duration: animConfig.duration }
       },
       bounce: {
-        whileHover: { scale: 1.05, y: -2 },
-        whileTap: { scale: 0.95, y: 0 },
-        transition: { type: "spring" as const, stiffness: 400, damping: 10 }
+        whileHover: { scale: isMobile ? 1.02 : 1.05, y: isMobile ? 0 : -2 },
+        whileTap: { scale: isMobile ? 0.98 : 0.95, y: 0 },
+        transition: isMobile 
+          ? { duration: animConfig.duration }
+          : { type: "spring" as const, stiffness: 400, damping: 10 }
       }
     }
 
@@ -47,9 +55,9 @@ export const AnimatedButton = forwardRef<HTMLButtonElement, AnimatedButtonProps>
       <motion.button
         ref={ref}
         className={`${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-        whileHover={disabled ? {} : currentVariant.whileHover}
-        whileTap={disabled ? {} : currentVariant.whileTap}
-        transition={currentVariant.transition}
+        whileHover={disabled || !animConfig.enabled ? {} : currentVariant.whileHover}
+        whileTap={disabled || !animConfig.enabled ? {} : currentVariant.whileTap}
+        transition={animConfig.enabled ? currentVariant.transition : undefined}
         disabled={disabled}
         onClick={onClick}
         {...props}
