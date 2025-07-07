@@ -130,24 +130,26 @@ export function PhotoLightboxModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-full h-[95vh] p-0">
+      <DialogContent className="max-w-4xl w-full h-[95vh] md:h-[90vh] p-0">
         <div className="flex flex-col h-full">
           {/* Main content */}
-          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
             {/* Image section */}
-            <div className="flex-1 relative bg-black flex items-center justify-center">
+            <div className="flex-1 relative bg-gray-100 flex items-center justify-center min-h-0">
               {/* Photo counter overlay */}
-              <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full z-10">
+              <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 md:px-3 md:py-1.5 rounded-full z-10">
                 {currentIndex + 1} / {photos.length}
               </div>
-              <Image
-                src={currentPhoto.preview_s3_url}
-                alt={currentPhoto.filename}
-                fill
-                className="object-contain"
-                sizes="(max-width: 1024px) 100vw, 66vw"
-                priority
-              />
+              <div className="relative w-full h-full max-w-none max-h-none">
+                <Image
+                  src={currentPhoto.preview_s3_url}
+                  alt={currentPhoto.filename}
+                  fill
+                  className="object-cover md:object-contain"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 70vw, 66vw"
+                  priority
+                />
+              </div>
               
               {/* Navigation arrows */}
               {photos.length > 1 && (
@@ -173,13 +175,13 @@ export function PhotoLightboxModal({
             </div>
 
             {/* Purchase options sidebar */}
-            <div className="w-full lg:w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l shadow-inner">
-              <div className="mb-6">
-                <div className="mb-3">
+            <div className="w-full lg:w-80 bg-gradient-to-b from-white to-gray-50 p-4 md:p-6 border-l lg:border-l lg:border-t-0 border-t shadow-inner overflow-y-auto max-h-[40vh] lg:max-h-none">
+              <div className="mb-4 md:mb-6">
+                <div className="mb-2 md:mb-3">
                   <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Galerie</h4>
                   <p className="text-sm font-medium text-gray-800">{currentPhoto.filename}</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Options d'achat</h3>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">Options d'achat</h3>
                 <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
               </div>
               
