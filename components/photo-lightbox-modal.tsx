@@ -57,12 +57,22 @@ export function PhotoLightboxModal({
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+      // Considérer comme mobile si largeur < 768px OU si c'est un appareil tactile en mode portrait
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+      const isPortrait = window.innerWidth < window.innerHeight
+      const isSmallScreen = window.innerWidth < 768
+      const isTabletPortrait = window.innerWidth < 1024 && isPortrait && isTouchDevice
+      
+      setIsMobile(isSmallScreen || isTabletPortrait)
     }
     
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    window.addEventListener('orientationchange', checkMobile)
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+      window.removeEventListener('orientationchange', checkMobile)
+    }
   }, [])
 
   const handlePrevious = () => {
