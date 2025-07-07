@@ -308,4 +308,134 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
       error: error instanceof Error ? error.message : 'Erreur inconnue lors de l\'upload'
     }
   }
+}
+
+// Type de retour pour la suppression de galerie
+interface DeleteGalleryResult {
+  success: boolean
+  error?: string
+  deletedPhotosCount?: number
+}
+
+export async function deleteGallery(galleryId: string): Promise<DeleteGalleryResult> {
+  try {
+    // Vérifier l'authentification avec cookies
+    const cookieStore = await cookies()
+    const adminSession = cookieStore.get('admin-session')
+    
+    if (!adminSession || adminSession.value !== 'authenticated') {
+      redirect('/login')
+    }
+
+    // Use admin client to bypass RLS for admin operations
+    const supabase = createSupabaseAdminClient()
+
+    console.log(`🗑️ Starting deletion of gallery ${galleryId}`)
+
+    // 1. Récupérer toutes les photos de la galerie
+    const { data: photos, error: photosError } = await supabase
+      .from('photos')
+      .select('id, original_s3_key, preview_s3_url')
+      .eq('gallery_id', galleryId)
+
+    if (photosError) {
+      console.error('Error fetching photos:', photosError)
+      return {
+        success: false,
+        error: 'Erreur lors de la récupération des photos: ' + photosError.message
+      }
+    }
+
+    const photosCount = photos?.length || 0
+    console.log(`📷 Found ${photosCount} photos to delete`)
+
+    // 2. Supprimer les fichiers de stockage pour chaque photo
+    if (photos && photos.length > 0) {
+      for (const photo of photos) {
+        try {
+          // Supprimer le fichier original
+          if (photo.original_s3_key) {
+            const { error: originalDeleteError } = await supabase.storage
+              .from('originals')
+              .remove([photo.original_s3_key])
+            
+            if (originalDeleteError) {
+              console.warn(`Warning: Could not delete original file ${photo.original_s3_key}:`, originalDeleteError)
+            }
+          }
+
+          // Supprimer le fichier preview (extraire le path de l'URL)
+          if (photo.preview_s3_url) {
+            try {
+              const url = new URL(photo.preview_s3_url)
+              const pathParts = url.pathname.split('/')
+              const bucketIndex = pathParts.findIndex(part => part === 'web-previews')
+              if (bucketIndex !== -1 && bucketIndex < pathParts.length - 1) {
+                const previewPath = pathParts.slice(bucketIndex + 1).join('/')
+                
+                const { error: previewDeleteError } = await supabase.storage
+                  .from('web-previews')
+                  .remove([previewPath])
+                
+                if (previewDeleteError) {
+                  console.warn(`Warning: Could not delete preview file ${previewPath}:`, previewDeleteError)
+                }
+              }
+            } catch (urlError) {
+              console.warn(`Warning: Could not parse preview URL ${photo.preview_s3_url}:`, urlError)
+            }
+          }
+        } catch (error) {
+          console.warn(`Warning: Error deleting files for photo ${photo.id}:`, error)
+        }
+      }
+    }
+
+    // 3. Supprimer les enregistrements de photos de la base de données
+    const { error: deletePhotosError } = await supabase
+      .from('photos')
+      .delete()
+      .eq('gallery_id', galleryId)
+
+    if (deletePhotosError) {
+      console.error('Error deleting photos from database:', deletePhotosError)
+      return {
+        success: false,
+        error: 'Erreur lors de la suppression des photos: ' + deletePhotosError.message
+      }
+    }
+
+    // 4. Supprimer la galerie elle-même
+    const { error: deleteGalleryError } = await supabase
+      .from('galleries')
+      .delete()
+      .eq('id', galleryId)
+
+    if (deleteGalleryError) {
+      console.error('Error deleting gallery:', deleteGalleryError)
+      return {
+        success: false,
+        error: 'Erreur lors de la suppression de la galerie: ' + deleteGalleryError.message
+      }
+    }
+
+    console.log(`✅ Gallery ${galleryId} deleted successfully with ${photosCount} photos`)
+
+    // Invalider le cache des pages concernées
+    revalidatePath('/admin/upload')
+    revalidatePath('/gallery')
+    revalidatePath('/demo')
+
+    return {
+      success: true,
+      deletedPhotosCount: photosCount
+    }
+
+  } catch (error) {
+    console.error('Delete gallery action error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur inconnue lors de la suppression'
+    }
+  }
 } 
