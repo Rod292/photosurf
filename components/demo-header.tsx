@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { motion, useScroll, useTransform } from "framer-motion"
+import { CartSheet } from "@/components/cart/CartSheet"
 
 interface DemoHeaderProps {
   alwaysVisible?: boolean
@@ -30,11 +31,11 @@ export function DemoHeader({ alwaysVisible = false }: DemoHeaderProps) {
       }}
     >
       <motion.div 
-        className="container mx-auto px-6 h-full flex items-center justify-center"
+        className="container mx-auto px-6 h-full flex items-center justify-between"
         style={{ paddingTop: headerPadding, paddingBottom: headerPadding }}
       >
         
-        {/* Logo et nom centrés */}
+        {/* Logo et nom */}
         <motion.div 
           className="flex items-center gap-2"
           style={{ scale: logoScale }}
@@ -58,6 +59,11 @@ export function DemoHeader({ alwaysVisible = false }: DemoHeaderProps) {
           >
             Arode Studio
           </motion.span>
+        </motion.div>
+
+        {/* Panier à droite */}
+        <motion.div className="flex items-center">
+          <CartSheet />
         </motion.div>
 
       </motion.div>
