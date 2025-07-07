@@ -131,6 +131,9 @@ export function PhotoLightboxModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full h-[95vh] md:h-[90vh] p-0">
+        <DialogTitle className="sr-only">
+          Aperçu de la photo {currentPhoto.filename}
+        </DialogTitle>
         <div className="flex flex-col h-full">
           {/* Main content */}
           <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
