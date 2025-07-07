@@ -83,7 +83,7 @@
 
 /* Custom cursor styles */
 :root {
-  cursor: url("/cursors/surfing-default.ani"), url("/cursors/surfing-default.cur"), auto;
+  cursor: auto;
 }
 
 /* Interactive elements */
@@ -98,7 +98,7 @@ select,
 details summary,
 [onclick],
 .interactive {
-  cursor: url("/cursors/surfing-pointer.ani"), url("/cursors/surfing-pointer.cur"), pointer;
+  cursor: pointer;
 }
 
 /* Ensure text selection cursor remains default */

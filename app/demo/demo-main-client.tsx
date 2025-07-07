@@ -34,6 +34,9 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
 
   useEffect(() => {
     async function loadDemoUrls() {
+      console.log('Demo photos disponibles:', allPhotos.length)
+      console.log('Première photo:', allPhotos[0])
+      
       if (allPhotos.length === 0) {
         setLoading(false)
         return
@@ -134,6 +137,13 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
               fill
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                console.error('Erreur de chargement image:', photo.preview_s3_url)
+                console.error('Photo complète:', photo)
+              }}
+              onLoad={() => {
+                console.log('Image chargée avec succès:', photo.preview_s3_url)
+              }}
             />
             
             {/* Overlay avec info demo */}

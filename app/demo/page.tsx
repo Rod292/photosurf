@@ -200,6 +200,12 @@ export default async function DemoPage({
   
   const resolvedSearchParams = await searchParams
   const galleries = await getFilteredGalleries(resolvedSearchParams)
+  
+  console.log('Galleries récupérées:', galleries.length)
+  if (galleries.length > 0) {
+    console.log('Première galerie:', galleries[0])
+    console.log('Photos dans première galerie:', (galleries[0] as any)?.photos?.length)
+  }
   const hasFilters = resolvedSearchParams.date || resolvedSearchParams.school
   const isSchoolFilter = !!resolvedSearchParams.school
   const isDateFilter = !!resolvedSearchParams.date
