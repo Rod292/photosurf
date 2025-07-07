@@ -171,17 +171,27 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
               padding: isScrolled ? "0.375rem 0.75rem" : "0.5rem 1rem"
             }}
           >
-            <motion.span
+            <motion.div
               whileHover={{ rotate: -10 }}
               transition={{ duration: 0.2 }}
-              style={{ fontSize: isScrolled ? "1.5rem" : "1.75rem" }}
+              className="flex items-center justify-center"
+              style={{ 
+                width: isScrolled ? "1.5rem" : "1.75rem",
+                height: isScrolled ? "1.5rem" : "1.75rem"
+              }}
             >
-              🛍️
-            </motion.span>
+              <Image
+                src="/Logos/Nos-produits.svg"
+                alt="Nos produits"
+                width={28}
+                height={28}
+                className="w-full h-full"
+              />
+            </motion.div>
             <motion.span
               style={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
             >
-              Boutique
+              Nos produits
             </motion.span>
             </motion.button>
             
@@ -284,7 +294,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             <div className="px-6 py-4 space-y-2">
               {[
                 { name: "Photos", icon: "/Logos/camera2.svg", path: "/gallery", isImage: true },
-                { name: "Boutique", icon: "🛍️", path: "/boutique" },
+                { name: "Nos produits", icon: "/Logos/Nos-produits.svg", path: "/boutique", isImage: true },
                 { name: "Contact", icon: "/Logos/Call-gesture.svg", path: "/contact", isImage: true }
               ].map((item, index) => (
                 <motion.button

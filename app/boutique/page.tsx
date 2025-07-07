@@ -1,5 +1,6 @@
 import { Header } from "@/components/header"
 import Link from "next/link"
+import Image from "next/image"
 import { ArrowLeft, Home } from "lucide-react"
 
 export default function BoutiquePage() {
@@ -23,8 +24,15 @@ export default function BoutiquePage() {
       
       <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            🛍️ Boutique Arode Studio
+          <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
+            <Image
+              src="/Logos/Nos-produits.svg"
+              alt="Nos produits"
+              width={64}
+              height={64}
+              className="w-16 h-16"
+            />
+            Boutique Arode Studio
           </h1>
           <p className="text-xl text-gray-600 mb-8">
             Bientôt disponible

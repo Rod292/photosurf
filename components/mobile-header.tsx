@@ -80,23 +80,29 @@ export function MobileHeader() {
             </motion.span>
           </motion.button>
 
-          {/* Boutique */}
+          {/* Nos produits */}
           <motion.button
             onClick={() => handleNavigation("/boutique")}
             className="flex flex-col items-center gap-0 px-2 py-0 rounded-lg hover:bg-gray-100 transition-colors"
             whileTap={{ scale: 0.98 }}
           >
-            <motion.span
+            <motion.div
               style={{ opacity: iconOpacity }}
-              className="text-xl"
+              className="w-6 h-6 flex items-center justify-center"
             >
-              🛍️
-            </motion.span>
+              <Image
+                src="/Logos/Nos-produits.svg"
+                alt="Nos produits"
+                width={24}
+                height={24}
+                className="w-full h-full"
+              />
+            </motion.div>
             <motion.span
               style={{ y: textY }}
               className="text-sm font-medium text-gray-700"
             >
-              Boutique
+              Nos produits
             </motion.span>
           </motion.button>
 
