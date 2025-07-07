@@ -8,6 +8,7 @@ import { PhotoModal } from "./photo-modal"
 import { useCartStore, CartItem } from "@/context/cart-context"
 import { Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 
 interface Photo {
   id: string
@@ -44,6 +45,7 @@ export function PhotoGallery({
   const addItem = useCartStore((state) => state.addItem)
   const items = useCartStore((state) => state.items)
   const [isMobile, setIsMobile] = useState(false)
+  const { toast } = useToast()
 
   const isInCart = (photoId: string) => {
     return items.some(item => item.photo_id === photoId)
@@ -126,6 +128,13 @@ export function PhotoGallery({
       filename: photo.title
     }
     addItem(cartItem)
+    
+    // Show confirmation toast
+    toast({
+      title: "Photo ajoutée au panier !",
+      description: `Photo numérique - ${price}€`,
+      duration: 3000,
+    })
   }
 
   const handlePageChange = (newPage: number) => {

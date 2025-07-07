@@ -8,6 +8,7 @@ import { X, ChevronLeft, ChevronRight, Check } from "lucide-react"
 import { useCartStore, CartItem } from "@/context/cart-context"
 import { cn } from "@/lib/utils"
 import { motion, AnimatePresence } from "framer-motion"
+import { useToast } from "@/hooks/use-toast"
 
 interface PhotoModalProps {
   isOpen: boolean
@@ -31,6 +32,7 @@ export function PhotoModal({ isOpen, onClose, photo, onPrevious, onNext, hasPrev
   const [isLoading, setIsLoading] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLDivElement>(null)
+  const { toast } = useToast()
 
   const isInCart = (photoId: string) => {
     return items.some(item => item.photo_id === photoId)
@@ -45,6 +47,13 @@ export function PhotoModal({ isOpen, onClose, photo, onPrevious, onNext, hasPrev
       filename: photo.title
     }
     addItem(cartItem)
+    
+    // Show confirmation toast
+    toast({
+      title: "Photo ajoutée au panier !",
+      description: `Photo numérique - ${photo.price}€`,
+      duration: 3000,
+    })
   }
 
   const handleKeyDown = useCallback(

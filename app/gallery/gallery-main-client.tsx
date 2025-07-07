@@ -106,6 +106,7 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                       src={photo.preview_s3_url}
                       alt="Photo de surf"
                       fill
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                       className="object-cover"
                     />
                   </div>

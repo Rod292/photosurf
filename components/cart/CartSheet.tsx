@@ -13,21 +13,26 @@ import {
 import { X, Plus, Minus } from 'lucide-react';
 import Image from 'next/image';
 import { formatPrice } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCheckoutSession } from '@/app/actions/checkout';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 
 export function CartSheet() {
   const { items, removeItem, clearCart, getTotalPrice, getItemCount } = useCartStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
   
   const totalItems = getItemCount();
   const totalPrice = getTotalPrice();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleCheckout = async () => {
     setIsLoading(true);
@@ -81,7 +86,7 @@ export function CartSheet() {
                 className="h-5 w-5"
               />
             </motion.div>
-            {totalItems > 0 && (
+            {isMounted && totalItems > 0 && (
               <motion.span 
                 className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-[11px] font-medium text-primary-foreground flex items-center justify-center"
                 initial={{ scale: 0 }}

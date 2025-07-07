@@ -7,6 +7,7 @@ import Image from "next/image"
 import { useCartStore } from "@/context/cart-context"
 import { Photo } from "@/lib/database.types"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 interface MobilePhotoViewerProps {
   isOpen: boolean
@@ -34,6 +35,7 @@ export function MobilePhotoViewer({
   const [addedToCart, setAddedToCart] = useState(false)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
   const { addItem, items } = useCartStore()
+  const { toast } = useToast()
 
   const currentPhoto = photos[currentIndex]
 
@@ -84,6 +86,12 @@ export function MobilePhotoViewer({
       price: selectedOption.price,
       preview_url: currentPhoto.preview_s3_url,
       filename: currentPhoto.filename
+    })
+
+    toast({
+      title: "Photo ajoutée au panier !",
+      description: `${selectedOption.label} - ${selectedOption.price}€`,
+      duration: 3000,
     })
 
     setAddedToCart(true)

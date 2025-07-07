@@ -9,7 +9,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { useCartStore } from "@/context/cart-context"
 import { Photo } from "@/lib/database.types"
-import { toast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { MobilePhotoViewer } from "./mobile-photo-viewer"
 
 interface PhotoLightboxModalProps {
@@ -51,6 +51,7 @@ export function PhotoLightboxModal({
   const [selectedProduct, setSelectedProduct] = useState<string>('digital')
   const [isMobile, setIsMobile] = useState(false)
   const { addItem } = useCartStore()
+  const { toast } = useToast()
 
   const currentPhoto = photos[currentIndex]
 
@@ -89,8 +90,9 @@ export function PhotoLightboxModal({
     })
 
     toast({
-      title: "Photo ajoutée au panier",
-      description: `${selectedOption.label} - ${currentPhoto.filename}`,
+      title: "Photo ajoutée au panier !",
+      description: `${selectedOption.label} - ${selectedOption.price}€`,
+      duration: 4000,
     })
   }
 

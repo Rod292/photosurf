@@ -25,7 +25,7 @@ import {
 import { Upload, Loader2, ImageIcon, CheckCircle, AlertTriangle } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { uploadPhotos } from './actions'
-import { useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import { SurfSchool, Gallery, FileMatch } from '@/lib/database.types'
 
 // Schéma de validation avec Zod - utilise any pour FileList côté serveur

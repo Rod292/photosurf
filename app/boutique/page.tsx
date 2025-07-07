@@ -22,40 +22,173 @@ export default function BoutiquePage() {
         </div>
       </div>
       
-      <div className="max-w-4xl mx-auto px-6 py-16">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        {/* Header Section */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-4 mb-6">
             <Image
               src="/Logos/Nos-produits.svg"
               alt="Nos produits"
-              width={64}
-              height={64}
-              className="w-16 h-16"
+              width={48}
+              height={48}
+              className="w-12 h-12"
             />
-            Boutique Arode Studio
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Bientôt disponible
+            <h1 className="text-5xl font-bold text-gray-900">
+              Boutique <span className="text-blue-600">Arode Studio</span>
+            </h1>
+          </div>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Découvrez nos services photo professionnels pour immortaliser vos moments de surf
           </p>
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <p className="text-gray-600 mb-6">
-              Notre boutique en ligne sera bientôt disponible avec :
-            </p>
-            <ul className="text-left space-y-3 text-gray-700 max-w-md mx-auto">
-              <li>• Tirages photo haute qualité</li>
-              <li>• Formats personnalisés</li>
-              <li>• Objets dérivés</li>
-              <li>• Packs sessions complètes</li>
-            </ul>
-            <div className="mt-8">
-              <a
-                href="https://www.instagram.com/arode.studio/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors"
-              >
-                Nous suivre pour les nouveautés
-              </a>
+        </div>
+        
+        {/* Services Grid */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Section PHOTOS NUMÉRIQUES */}
+          <div className="group relative bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+            
+            <div className="p-8">
+              <div className="flex items-center gap-4 mb-6">
+                <Image
+                  src="/Logos/camera2.svg"
+                  alt="Photos numériques"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8"
+                />
+                <h2 className="text-2xl font-bold text-gray-900">PHOTOS NUMÉRIQUES</h2>
+              </div>
+              
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                Recevez vos photos instantanément par email en haute résolution, sans filigrane. Parfait pour vos réseaux sociaux et souvenirs numériques.
+              </p>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 font-bold">✓</span>
+                  </div>
+                  <span>Envoi instantané par email 📧✨</span>
+                </div>
+                
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 font-bold">✓</span>
+                  </div>
+                  <span>Haute résolution sans filigrane 📸🔥</span>
+                </div>
+                
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 font-bold">✓</span>
+                  </div>
+                  <span>Idéal pour les réseaux sociaux 📱💫</span>
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl shadow-lg">
+                  <Image
+                    src="/Logos/camera-icon.svg"
+                    alt="Prix"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6 invert"
+                  />
+                  15€ par photo
+                </div>
+                
+                <div className="mt-6 p-4 bg-blue-50 rounded-xl border-l-4 border-blue-500">
+                  <p className="text-sm text-blue-700 font-medium mb-3">
+                    💡 Vous voulez toutes les photos de votre session ? Contactez-nous pour un pack personnalisé avec un tarif préférentiel !
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                    <a
+                      href="https://www.instagram.com/arode.studio/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:from-pink-600 hover:to-purple-700 transition-all duration-300 text-sm"
+                    >
+                      📸 Instagram
+                    </a>
+                    <a
+                      href="mailto:contact@arodestudio.com"
+                      className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-300 text-sm"
+                    >
+                      ✉️ Email
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Section TIRAGES PHOTO */}
+          <div className="group relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-200">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-gray-700 to-gray-900"></div>
+            
+            <div className="p-8">
+              <div className="flex items-center gap-4 mb-6">
+                <Image
+                  src="/Logos/Imprimante.svg"
+                  alt="Tirages photo"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8"
+                />
+                <h2 className="text-2xl font-bold text-gray-900">TIRAGES PHOTO</h2>
+              </div>
+              
+              <div className="mb-6">
+                <div className="relative overflow-hidden rounded-2xl shadow-lg">
+                  <Image
+                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Beige%20Minimalist%20Picture%20Frame%20Mockup%20Instagram%20Post-1qtGHkoHXu1DX4vj6NlRbO5b1nORxP.png"
+                    alt="Exemple de tirage photo encadré"
+                    width={500}
+                    height={375}
+                    className="w-full h-auto transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+              </div>
+              
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                Vous souhaitez imprimer vos photos ? Nous proposons des tirages professionnels sur papier photo haute qualité.
+              </p>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-gray-700 font-bold">✓</span>
+                  </div>
+                  <span>Formats disponibles jusqu'à A2 📄✅</span>
+                </div>
+                
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-gray-700 font-bold">✓</span>
+                  </div>
+                  <span>Papier photo haute qualité 📸✨</span>
+                </div>
+                
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-gray-700 font-bold">✓</span>
+                  </div>
+                  <span>Rendu des couleurs exceptionnel 🎨🔥</span>
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <a
+                  href="https://www.instagram.com/arode.studio/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-gradient-to-r from-gray-800 to-black text-white px-8 py-4 rounded-2xl font-semibold hover:from-gray-700 hover:to-gray-900 transition-all duration-300 shadow-lg"
+                >
+                  📸 Contactez nous pour vos tirages
+                </a>
+              </div>
             </div>
           </div>
         </div>
