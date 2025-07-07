@@ -6,16 +6,17 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export default async function AdminUploadPage() {
-  // Double-check authentication at page level
-  const supabase = await createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  // Double-check authentication at page level using cookie
+  const { cookies } = await import('next/headers')
+  const cookieStore = await cookies()
+  const adminSession = cookieStore.get('admin-session')
   
-  if (!user) {
-    console.log('[Upload Page] No authenticated user, redirecting to login')
-    redirect('/login')
+  if (!adminSession || adminSession.value !== 'authenticated') {
+    console.log('[Upload Page] No admin session, redirecting to login')
+    redirect('/login?redirect=/admin/upload')
   }
   
-  console.log('[Upload Page] User authenticated:', user.email)
+  console.log('[Upload Page] Admin authenticated via cookie')
   
   const [surfSchools, galleries] = await Promise.all([
     fetchSurfSchools(),

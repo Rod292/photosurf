@@ -1,14 +1,16 @@
-import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 
 export async function GET() {
-  const supabase = await createSupabaseServerClient()
+  const cookieStore = await cookies()
   const headersList = await headers()
   const host = headersList.get('host') || 'localhost:3000'
   const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
   
-  await supabase.auth.signOut()
+  // Supprimer le cookie de session
+  cookieStore.delete('admin-session')
   
-  return NextResponse.redirect(new URL('/', `${protocol}://${host}`))
+  console.log('[Logout] Admin session cleared')
+  
+  return NextResponse.redirect(new URL('/login', `${protocol}://${host}`))
 }

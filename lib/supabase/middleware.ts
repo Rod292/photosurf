@@ -54,12 +54,14 @@ export async function updateSession(request: NextRequest) {
   if (isAdminRoute || isDemoRoute) {
     console.log('[Middleware] Protected route detected:', request.nextUrl.pathname);
     console.log('[Middleware] Admin session cookie:', adminSession?.value || 'NOT FOUND');
+    console.log('[Middleware] All cookies:', request.cookies.getAll().map(c => c.name + '=' + c.value));
     
     // Si pas de session valide, rediriger vers login
     if (!adminSession || adminSession.value !== 'authenticated') {
       console.log('[Middleware] No valid session, redirecting to /login');
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirect', request.nextUrl.pathname)
+      console.log('[Middleware] Login URL with redirect:', loginUrl.toString());
       return NextResponse.redirect(loginUrl)
     }
     
@@ -70,6 +72,17 @@ export async function updateSession(request: NextRequest) {
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
     response.headers.set('Surrogate-Control', 'no-store');
+    
+    // Ensure cookie is preserved in response
+    if (adminSession) {
+      response.cookies.set('admin-session', adminSession.value, {
+        path: '/',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 3600
+      })
+    }
   }
 
   return response

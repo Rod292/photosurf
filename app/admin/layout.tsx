@@ -1,21 +1,21 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { PropsWithChildren } from "react";
+import { cookies } from "next/headers";
 
 export default async function AdminLayout({ children }: PropsWithChildren) {
-    const supabase = await createSupabaseServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const cookieStore = await cookies();
+    const adminSession = cookieStore.get('admin-session');
 
-    if (!user) {
+    if (!adminSession || adminSession.value !== 'authenticated') {
         redirect('/login');
-  }
+    }
 
     return (
         <div>
             <div className="bg-gray-100 p-4 flex justify-between items-center">
                 <div>
                     <span className="text-sm text-gray-600">Connecté en tant que: </span>
-                    <span className="font-medium">{user.email}</span>
+                    <span className="font-medium">Administrateur</span>
                 </div>
                 <a 
                     href="/logout" 

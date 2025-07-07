@@ -19,6 +19,9 @@ interface LoginPageProps {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { redirect: redirectTo, message } = await searchParams
+  
+  console.log('[Login Page] Redirect parameter:', redirectTo)
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-950">
       <Card className="w-full max-w-sm mx-auto">
