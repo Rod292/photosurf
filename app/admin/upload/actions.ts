@@ -438,4 +438,87 @@ export async function deleteGallery(galleryId: string): Promise<DeleteGalleryRes
       error: error instanceof Error ? error.message : 'Erreur inconnue lors de la suppression'
     }
   }
+}
+
+// Schema pour la validation du renommage
+const renameGallerySchema = z.object({
+  galleryId: z.string().uuid(),
+  newName: z.string().min(1, 'Le nom de la galerie ne peut pas être vide').max(100, 'Le nom ne peut pas dépasser 100 caractères')
+})
+
+interface RenameGalleryResult {
+  success: boolean
+  error?: string
+}
+
+export async function renameGallery(galleryId: string, newName: string): Promise<RenameGalleryResult> {
+  try {
+    console.log(`🏷️ Renaming gallery ${galleryId} to "${newName}"`)
+
+    // Validation
+    const validation = renameGallerySchema.safeParse({ galleryId, newName })
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error.errors[0]?.message || 'Données invalides'
+      }
+    }
+
+    // Vérifier l'authentification
+    const cookieStore = await cookies()
+    const adminSession = cookieStore.get('admin-session')
+    
+    if (!adminSession || adminSession.value !== 'authenticated') {
+      return {
+        success: false,
+        error: 'Non autorisé'
+      }
+    }
+
+    const supabase = createSupabaseAdminClient()
+
+    // Vérifier que la galerie existe
+    const { data: gallery, error: fetchError } = await supabase
+      .from('galleries')
+      .select('id, name')
+      .eq('id', galleryId)
+      .single()
+
+    if (fetchError || !gallery) {
+      return {
+        success: false,
+        error: 'Galerie non trouvée'
+      }
+    }
+
+    // Renommer la galerie
+    const { error: updateError } = await supabase
+      .from('galleries')
+      .update({ name: newName.trim() })
+      .eq('id', galleryId)
+
+    if (updateError) {
+      console.error('Error renaming gallery:', updateError)
+      return {
+        success: false,
+        error: 'Erreur lors du renommage de la galerie'
+      }
+    }
+
+    console.log(`✅ Gallery ${galleryId} renamed from "${gallery.name}" to "${newName}"`)
+
+    // Invalider le cache des pages concernées
+    revalidatePath('/admin/upload')
+    revalidatePath('/gallery')
+    revalidatePath('/demo')
+
+    return { success: true }
+
+  } catch (error) {
+    console.error('Rename gallery action error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur inconnue lors du renommage'
+    }
+  }
 } 

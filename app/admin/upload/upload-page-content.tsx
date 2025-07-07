@@ -25,6 +25,16 @@ export function UploadPageContent({ initialSurfSchools, initialGalleries }: Uplo
     }
   }
 
+  const handleGalleryRenamed = async () => {
+    // Refetch galleries after rename
+    try {
+      const updatedGalleries = await fetchGalleries()
+      setGalleries(updatedGalleries)
+    } catch (error) {
+      console.error('Error refetching galleries:', error)
+    }
+  }
+
   return (
     <div className="space-y-8">
       {/* Upload Form */}
@@ -35,7 +45,7 @@ export function UploadPageContent({ initialSurfSchools, initialGalleries }: Uplo
       
       {/* Gallery List */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
-        <GalleryList galleries={galleries} onGalleryDeleted={handleGalleryDeleted} />
+        <GalleryList galleries={galleries} onGalleryDeleted={handleGalleryDeleted} onGalleryRenamed={handleGalleryRenamed} />
       </div>
     </div>
   )

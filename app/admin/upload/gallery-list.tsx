@@ -3,7 +3,8 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trash2, AlertTriangle, Calendar, Image } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Trash2, AlertTriangle, Calendar, Image, Edit3, Check, X } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,16 +17,20 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
-import { deleteGallery } from './actions'
+import { deleteGallery, renameGallery } from './actions'
 import { Gallery } from '@/lib/database.types'
 
 interface GalleryListProps {
   galleries: Gallery[]
   onGalleryDeleted: () => void
+  onGalleryRenamed: () => void
 }
 
-export function GalleryList({ galleries, onGalleryDeleted }: GalleryListProps) {
+export function GalleryList({ galleries, onGalleryDeleted, onGalleryRenamed }: GalleryListProps) {
   const [deletingGalleryId, setDeletingGalleryId] = useState<string | null>(null)
+  const [editingGalleryId, setEditingGalleryId] = useState<string | null>(null)
+  const [newName, setNewName] = useState('')
+  const [renamingGalleryId, setRenamingGalleryId] = useState<string | null>(null)
   const { toast } = useToast()
 
   const handleDeleteGallery = async (gallery: Gallery) => {
@@ -58,6 +63,61 @@ export function GalleryList({ galleries, onGalleryDeleted }: GalleryListProps) {
     }
   }
 
+  const handleStartRename = (gallery: Gallery) => {
+    setEditingGalleryId(gallery.id)
+    setNewName(gallery.name)
+  }
+
+  const handleCancelRename = () => {
+    setEditingGalleryId(null)
+    setNewName('')
+  }
+
+  const handleConfirmRename = async (gallery: Gallery) => {
+    if (!newName.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Le nom de la galerie ne peut pas être vide",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (newName.trim() === gallery.name) {
+      handleCancelRename()
+      return
+    }
+
+    setRenamingGalleryId(gallery.id)
+    
+    try {
+      const result = await renameGallery(gallery.id, newName.trim())
+      
+      if (result.success) {
+        toast({
+          title: "Galerie renommée",
+          description: `La galerie a été renommée en "${newName.trim()}" avec succès.`,
+        })
+        onGalleryRenamed()
+        handleCancelRename()
+      } else {
+        toast({
+          title: "Erreur",
+          description: result.error || "Une erreur est survenue lors du renommage",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue est survenue",
+        variant: "destructive",
+      })
+    } finally {
+      setRenamingGalleryId(null)
+    }
+  }
+
   if (galleries.length === 0) {
     return (
       <Card>
@@ -77,56 +137,110 @@ export function GalleryList({ galleries, onGalleryDeleted }: GalleryListProps) {
           <Card key={gallery.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{gallery.name}</CardTitle>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+                {editingGalleryId === gallery.id ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <Input
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      className="flex-1"
+                      placeholder="Nom de la galerie"
+                      disabled={renamingGalleryId === gallery.id}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleConfirmRename(gallery)
+                        } else if (e.key === 'Escape') {
+                          handleCancelRename()
+                        }
+                      }}
+                    />
                     <Button
-                      variant="outline"
                       size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      disabled={deletingGalleryId === gallery.id}
+                      onClick={() => handleConfirmRename(gallery)}
+                      disabled={renamingGalleryId === gallery.id}
+                      className="shrink-0"
                     >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Supprimer
+                      {renamingGalleryId === gallery.id ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Check className="h-4 w-4" />
+                      )}
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="flex items-center gap-2">
-                        <AlertTriangle className="h-5 w-5 text-red-500" />
-                        Supprimer la galerie
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="space-y-2">
-                        <p>
-                          Êtes-vous sûr de vouloir supprimer la galerie <strong>"{gallery.name}"</strong> ?
-                        </p>
-                        <div className="bg-red-50 p-3 rounded-md border border-red-200">
-                          <p className="text-red-700 text-sm font-medium">
-                            ⚠️ Cette action est irréversible !
-                          </p>
-                          <p className="text-red-600 text-sm mt-1">
-                            Toutes les photos de cette galerie seront définitivement supprimées 
-                            du stockage et de la base de données.
-                          </p>
-                        </div>
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Annuler</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDeleteGallery(gallery)}
-                        className="bg-red-600 hover:bg-red-700"
-                        disabled={deletingGalleryId === gallery.id}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCancelRename}
+                      disabled={renamingGalleryId === gallery.id}
+                      className="shrink-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <CardTitle className="text-lg">{gallery.name}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleStartRename(gallery)}
+                        disabled={deletingGalleryId === gallery.id || editingGalleryId !== null}
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                       >
-                        {deletingGalleryId === gallery.id ? (
-                          <>Suppression...</>
-                        ) : (
-                          <>Supprimer définitivement</>
-                        )}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                        <Edit3 className="h-4 w-4 mr-1" />
+                        Renommer
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            disabled={deletingGalleryId === gallery.id || editingGalleryId !== null}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Supprimer
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="flex items-center gap-2">
+                              <AlertTriangle className="h-5 w-5 text-red-500" />
+                              Supprimer la galerie
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="space-y-2">
+                              <p>
+                                Êtes-vous sûr de vouloir supprimer la galerie <strong>"{gallery.name}"</strong> ?
+                              </p>
+                              <div className="bg-red-50 p-3 rounded-md border border-red-200">
+                                <p className="text-red-700 text-sm font-medium">
+                                  ⚠️ Cette action est irréversible !
+                                </p>
+                                <p className="text-red-600 text-sm mt-1">
+                                  Toutes les photos de cette galerie seront définitivement supprimées 
+                                  du stockage et de la base de données.
+                                </p>
+                              </div>
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteGallery(gallery)}
+                              className="bg-red-600 hover:bg-red-700"
+                              disabled={deletingGalleryId === gallery.id}
+                            >
+                              {deletingGalleryId === gallery.id ? (
+                                <>Suppression...</>
+                              ) : (
+                                <>Supprimer définitivement</>
+                              )}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </>
+                )}
               </div>
             </CardHeader>
             <CardContent className="pt-0">
