@@ -192,24 +192,27 @@ export function PhotoLightboxModal({
               >
                 {PRODUCT_OPTIONS.map((option, index) => (
                   <div key={option.id} className="group relative">
-                    <div className="flex items-start space-x-4 p-4 border-2 rounded-xl bg-white hover:bg-gray-50 transition-all duration-200 hover:shadow-md cursor-pointer group-hover:border-blue-300">
-                      <RadioGroupItem value={option.id} id={option.id} className="mt-1.5 scale-110" />
+                    <div 
+                      className="flex items-start space-x-4 p-4 border-2 rounded-xl bg-white hover:bg-gray-50 transition-all duration-200 hover:shadow-md cursor-pointer group-hover:border-blue-300"
+                      onClick={() => setSelectedProduct(option.id)}
+                    >
+                      <RadioGroupItem value={option.id} id={option.id} className="mt-1.5 scale-110 pointer-events-none" />
                       <div className="flex-1">
                         <Label 
                           htmlFor={option.id} 
-                          className="text-base font-semibold cursor-pointer text-gray-900 group-hover:text-blue-700 transition-colors"
+                          className="text-base font-semibold cursor-pointer text-gray-900 group-hover:text-blue-700 transition-colors pointer-events-none"
                         >
                           {option.label}
                         </Label>
-                        <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                        <p className="text-sm text-gray-600 mt-1 leading-relaxed pointer-events-none">
                           {option.description}
                         </p>
                         <div className="flex items-center justify-between mt-2">
-                          <p className="text-xl font-bold text-blue-600">
+                          <p className="text-xl font-bold text-blue-600 pointer-events-none">
                             {formatPrice(option.price)}
                           </p>
                           {index === 2 && (
-                            <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                            <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full pointer-events-none">
                               Économie 5€
                             </span>
                           )}
