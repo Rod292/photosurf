@@ -179,30 +179,42 @@ export function PhotoLightboxModal({
             </div>
 
             {/* Purchase options sidebar */}
-            <div className="w-full lg:w-80 bg-gray-50 p-6 border-l">
-              <h3 className="text-lg font-semibold mb-4">Options d'achat</h3>
+            <div className="w-full lg:w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l shadow-inner">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Options d'achat</h3>
+                <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+              </div>
               
               <RadioGroup 
                 value={selectedProduct} 
                 onValueChange={setSelectedProduct}
-                className="space-y-4"
+                className="space-y-3"
               >
-                {PRODUCT_OPTIONS.map((option) => (
-                  <div key={option.id} className="flex items-start space-x-3 p-3 border rounded-lg bg-white">
-                    <RadioGroupItem value={option.id} id={option.id} className="mt-1" />
-                    <div className="flex-1">
-                      <Label 
-                        htmlFor={option.id} 
-                        className="font-medium cursor-pointer"
-                      >
-                        {option.label}
-                      </Label>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {option.description}
-                      </p>
-                      <p className="text-lg font-semibold text-blue-600 mt-1">
-                        {formatPrice(option.price)}
-                      </p>
+                {PRODUCT_OPTIONS.map((option, index) => (
+                  <div key={option.id} className="group relative">
+                    <div className="flex items-start space-x-4 p-4 border-2 rounded-xl bg-white hover:bg-gray-50 transition-all duration-200 hover:shadow-md cursor-pointer group-hover:border-blue-300">
+                      <RadioGroupItem value={option.id} id={option.id} className="mt-1.5 scale-110" />
+                      <div className="flex-1">
+                        <Label 
+                          htmlFor={option.id} 
+                          className="text-base font-semibold cursor-pointer text-gray-900 group-hover:text-blue-700 transition-colors"
+                        >
+                          {option.label}
+                        </Label>
+                        <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                          {option.description}
+                        </p>
+                        <div className="flex items-center justify-between mt-2">
+                          <p className="text-xl font-bold text-blue-600">
+                            {formatPrice(option.price)}
+                          </p>
+                          {index === 2 && (
+                            <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                              Économie 5€
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -210,23 +222,31 @@ export function PhotoLightboxModal({
 
               <Button 
                 onClick={handleAddToCart}
-                className="w-full mt-6"
+                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 size="lg"
               >
                 <Image
                   src="/Logos/shopping-cart.svg"
                   alt="Shopping Cart"
-                  width={16}
-                  height={16}
-                  className="h-4 w-4 mr-2 inline-block"
+                  width={18}
+                  height={18}
+                  className="h-5 w-5 mr-3 inline-block"
                 />
                 Ajouter au panier
               </Button>
 
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>💡 Astuce :</strong> Le pack Numérique + Tirage vous fait économiser 5€ !
-                </p>
+              <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
+                <div className="flex items-start space-x-3">
+                  <div className="text-2xl">💡</div>
+                  <div>
+                    <p className="text-sm font-medium text-blue-900 mb-1">
+                      Astuce
+                    </p>
+                    <p className="text-sm text-blue-800">
+                      Le pack Numérique + Tirage vous fait économiser 5€ !
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
