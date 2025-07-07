@@ -227,7 +227,7 @@ export default async function DemoPage({
   }))
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col">
       <DemoHeader />
       
       <main className="flex-1">
