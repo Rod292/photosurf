@@ -127,7 +127,7 @@ export default function ContactPage() {
                   Délais de livraison ?
                 </h3>
                 <p className="text-gray-600 text-sm">
-                  Photos numériques immédiatement, tirages dans les 48h.
+                  Photos numériques immédiatement, tirages dans les 7 jours.
                 </p>
               </div>
             </div>
