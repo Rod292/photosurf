@@ -92,7 +92,17 @@ export function PhotosBySchool() {
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
               {/* Image de couverture */}
               <div className="relative h-72 overflow-hidden">
-                {schoolGroup.galleries[0]?.coverPhoto ? (
+                {schoolGroup.school.name.toLowerCase().includes('la torche') ? (
+                  <div className="w-full h-full bg-white flex items-center justify-center">
+                    <Image
+                      src="/Logos/LOGO-COULEURS.svg"
+                      alt="La Torche Surf School"
+                      width={120}
+                      height={120}
+                      className="w-30 h-30"
+                    />
+                  </div>
+                ) : schoolGroup.galleries[0]?.coverPhoto ? (
                   <Image
                     src={schoolGroup.galleries[0].coverPhoto}
                     alt={`Photos ${schoolGroup.school.name}`}
@@ -100,27 +110,15 @@ export function PhotosBySchool() {
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
-                  <div className="w-full h-full bg-white flex items-center justify-center">
-                    {schoolGroup.school.name.toLowerCase().includes('la torche') ? (
-                      <Image
-                        src="/Logos/LOGO-COULEURS.svg"
-                        alt="La Torche Surf School"
-                        width={120}
-                        height={120}
-                        className="w-30 h-30"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
-                        <Image
-                          src="/Logos/surfer.svg"
-                          alt="Surfer"
-                          width={48}
-                          height={48}
-                          className="w-12 h-12"
-                          style={{ filter: 'brightness(0) invert(1)' }}
-                        />
-                      </div>
-                    )}
+                  <div className="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                    <Image
+                      src="/Logos/surfer.svg"
+                      alt="Surfer"
+                      width={48}
+                      height={48}
+                      className="w-12 h-12"
+                      style={{ filter: 'brightness(0) invert(1)' }}
+                    />
                   </div>
                 )}
                 
