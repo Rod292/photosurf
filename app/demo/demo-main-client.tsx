@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Gallery, Photo } from "@/lib/database.types"
 import { DemoPhotoLightboxModal } from "@/components/demo-photo-lightbox-modal"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface DemoMainClientProps {
   galleries: any[]
@@ -14,10 +15,13 @@ interface DemoPhoto extends Photo {
   expiresAt?: string
 }
 
+const PHOTOS_PER_PAGE = 50
+
 export function DemoMainClient({ galleries }: DemoMainClientProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [demoPhotos, setDemoPhotos] = useState<DemoPhoto[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Extraire toutes les photos de toutes les galeries
   const allPhotos: DemoPhoto[] = galleries.flatMap((gallery: any) => 
@@ -89,18 +93,31 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
     loadDemoUrls()
   }, [galleries])
 
+  // Pagination
+  const totalPages = Math.ceil(demoPhotos.length / PHOTOS_PER_PAGE)
+  const startIndex = (currentPage - 1) * PHOTOS_PER_PAGE
+  const endIndex = startIndex + PHOTOS_PER_PAGE
+  const currentPhotos = demoPhotos.slice(startIndex, endIndex)
+
   const handlePhotoClick = (index: number) => {
-    setLightboxIndex(index)
+    // Ajuster l'index pour tenir compte de la pagination
+    const actualIndex = startIndex + index
+    setLightboxIndex(actualIndex)
   }
 
   const handleCloseModal = () => {
     setLightboxIndex(null)
   }
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 200, behavior: 'smooth' })
+  }
+
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 animate-pulse">
-        {Array.from({ length: 12 }).map((_, i) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 animate-pulse">
+        {Array.from({ length: 10 }).map((_, i) => (
           <div key={i} className="aspect-[2/3] bg-gray-200 rounded-lg" />
         ))}
       </div>
@@ -124,8 +141,8 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {demoPhotos.map((photo, index) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {currentPhotos.map((photo, index) => (
           <div
             key={photo.id}
             onClick={() => handlePhotoClick(index)}
@@ -160,6 +177,58 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
           </div>
         ))}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex items-center justify-center gap-2">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          
+          <div className="flex gap-1">
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 7) {
+                pageNum = i + 1;
+              } else if (currentPage <= 4) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 3) {
+                pageNum = totalPages - 6 + i;
+              } else {
+                pageNum = currentPage - 3 + i;
+              }
+              
+              if (pageNum < 1 || pageNum > totalPages) return null;
+              
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePageChange(pageNum)}
+                  className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                    currentPage === pageNum
+                      ? 'bg-blue-600 text-white'
+                      : 'border border-gray-300 hover:bg-gray-100'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+          
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+      )}
 
       {/* Modal Lightbox */}
       {lightboxIndex !== null && (

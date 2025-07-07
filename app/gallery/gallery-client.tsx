@@ -4,6 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface Photo {
   id: string
@@ -21,8 +22,11 @@ interface GalleryClientProps {
   dateFilter?: string
 }
 
+const PHOTOS_PER_PAGE = 50
+
 export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter }: GalleryClientProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Transformer les photos pour être compatibles avec PhotoLightboxModal
   const formattedPhotos = latestPhotos.map(photo => ({
@@ -36,12 +40,24 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
     gallery_id: ""
   }))
 
+  // Pagination
+  const totalPages = Math.ceil(latestPhotos.length / PHOTOS_PER_PAGE)
+  const startIndex = (currentPage - 1) * PHOTOS_PER_PAGE
+  const endIndex = startIndex + PHOTOS_PER_PAGE
+  const currentPhotos = latestPhotos.slice(startIndex, endIndex)
+
   const handlePhotoClick = (index: number) => {
-    setLightboxIndex(index)
+    const actualIndex = startIndex + index
+    setLightboxIndex(actualIndex)
   }
 
   const handleCloseModal = () => {
     setLightboxIndex(null)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 200, behavior: 'smooth' })
   }
 
   if (!schoolName && !dateFilter) {
@@ -164,35 +180,89 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
               <p className="text-gray-600">Aucune photo disponible pour le moment</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {latestPhotos.map((photo: any, index: number) => (
-                <button
-                  key={photo.id}
-                  onClick={() => handlePhotoClick(index)}
-                  className="group relative w-full pt-[150%] overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-                >
-                  <div className="absolute inset-0">
-                    <Image
-                      src={photo.preview_s3_url}
-                      alt={`Photo de ${photo.galleries.name || 'surf'}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
-                    <div className="text-white text-center">
-                      <p className="text-sm font-medium">
-                        {new Date(photo.galleries.date).toLocaleDateString('fr-FR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric'
-                        })}
-                      </p>
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {currentPhotos.map((photo: any, index: number) => (
+                  <button
+                    key={photo.id}
+                    onClick={() => handlePhotoClick(index)}
+                    className="group relative w-full pt-[150%] overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+                  >
+                    <div className="absolute inset-0">
+                      <Image
+                        src={photo.preview_s3_url}
+                        alt={`Photo de ${photo.galleries.name || 'surf'}`}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
+                      <div className="text-white text-center">
+                        <p className="text-sm font-medium">
+                          {new Date(photo.galleries.date).toLocaleDateString('fr-FR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-8 flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  
+                  <div className="flex gap-1">
+                    {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 7) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 4) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 3) {
+                        pageNum = totalPages - 6 + i;
+                      } else {
+                        pageNum = currentPage - 3 + i;
+                      }
+                      
+                      if (pageNum < 1 || pageNum > totalPages) return null;
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                            currentPage === pageNum
+                              ? 'bg-blue-600 text-white'
+                              : 'border border-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
                   </div>
-                </button>
-              ))}
-            </div>
+                  
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
