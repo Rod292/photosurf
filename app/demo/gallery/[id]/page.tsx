@@ -123,14 +123,6 @@ export default async function DemoGalleryPage({
                   <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                   <span className="font-medium">Retour aux galeries</span>
                 </Link>
-                <span className="text-gray-300">|</span>
-                <Link 
-                  href="/"
-                  className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  <Home className="w-4 h-4" />
-                  <span className="font-medium">Accueil</span>
-                </Link>
               </div>
               
               <div className="flex items-center gap-4">

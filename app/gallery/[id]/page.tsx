@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation"
 import { Metadata } from "next"
 import Image from "next/image"
+import Link from "next/link"
 import { Header } from "@/components/header"
 import { GalleryClient } from "./gallery-client"
 import { createSupabaseAdminClient } from "@/lib/supabase/server"
 import { Gallery, Photo, SurfSchool } from "@/lib/database.types"
+import { ArrowLeft, Home } from "lucide-react"
 
 async function getGalleryWithPhotos(galleryId: string) {
   try {
@@ -103,6 +105,19 @@ export default async function GalleryPage({ params }: { params: Promise<{ id: st
       <Header />
       
       <main className="flex-1">
+        {/* Bouton retour accueil */}
+        <div className="bg-white py-4 border-b border-gray-200">
+          <div className="container mx-auto px-4">
+            <Link 
+              href="/"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <Home className="w-4 h-4" />
+              <span className="font-medium">Retour à l'accueil</span>
+            </Link>
+          </div>
+        </div>
         {/* Header de la galerie avec image de fond */}
         <div className="relative pt-20 pb-24 overflow-hidden">
           {/* Image de fond */}
