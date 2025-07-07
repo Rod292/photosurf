@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "app/admin/upload/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "serverless": true
+}

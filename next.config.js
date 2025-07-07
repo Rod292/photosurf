@@ -2,7 +2,7 @@
 const nextConfig = {
   experimental: {
     serverActions: {
-      bodySizeLimit: '50mb',
+      bodySizeLimit: '1gb', // Limite maximum pour photos haute résolution
     },
   },
   images: {

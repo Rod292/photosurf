@@ -42,8 +42,16 @@ const uploadFormSchema = z.object({
       "Seuls les fichiers image sont autorisés pour les originaux"
     )
     .refine(
-      (files) => files && Array.from(files as FileList).every((file) => (file as File).size <= 50 * 1024 * 1024),
-      "Chaque fichier original doit faire moins de 50MB"
+      (files) => files && Array.from(files as FileList).every((file) => (file as File).size <= 200 * 1024 * 1024),
+      "Chaque fichier original doit faire moins de 200MB"
+    )
+    .refine(
+      (files) => {
+        if (!files) return true
+        const totalSize = Array.from(files as FileList).reduce((sum, file) => sum + (file as File).size, 0)
+        return totalSize <= 1024 * 1024 * 1024 // 1GB total
+      },
+      "La taille totale des fichiers originaux ne doit pas dépasser 1GB"
     ),
   previewFiles: z
     .any()
@@ -53,8 +61,16 @@ const uploadFormSchema = z.object({
       "Seuls les fichiers image sont autorisés pour les previews"
     )
     .refine(
-      (files) => files && Array.from(files as FileList).every((file) => (file as File).size <= 50 * 1024 * 1024),
-      "Chaque fichier preview doit faire moins de 50MB"
+      (files) => files && Array.from(files as FileList).every((file) => (file as File).size <= 200 * 1024 * 1024),
+      "Chaque fichier preview doit faire moins de 200MB"
+    )
+    .refine(
+      (files) => {
+        if (!files) return true
+        const totalSize = Array.from(files as FileList).reduce((sum, file) => sum + (file as File).size, 0)
+        return totalSize <= 1024 * 1024 * 1024 // 1GB total
+      },
+      "La taille totale des fichiers preview ne doit pas dépasser 1GB"
     ),
 })
 
@@ -63,6 +79,21 @@ type UploadFormData = z.infer<typeof uploadFormSchema>
 interface PhotoUploadFormProps {
   surfSchools: SurfSchool[]
   galleries: Gallery[]
+}
+
+// Fonction utilitaire pour formater les tailles de fichiers
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+}
+
+// Fonction pour calculer la taille totale des fichiers
+function getTotalFileSize(fileList: FileList | null): number {
+  if (!fileList) return 0
+  return Array.from(fileList).reduce((total, file) => total + file.size, 0)
 }
 
 export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps) {
@@ -254,10 +285,30 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
       console.error("Upload error:", error)
       clearProgressInterval()
       setUploadProgress(0)
+      
+      // Gestion spécifique des erreurs connues
+      let errorMessage = "Une erreur inattendue est survenue."
+      
+      if (error instanceof Error) {
+        if (error.message.includes('413') || error.message.includes('Content Too Large')) {
+          errorMessage = "Les fichiers sont trop volumineux. Réduisez la taille ou le nombre de fichiers (max 200MB par fichier, 1GB total)."
+        } else if (error.message.includes('timeout')) {
+          errorMessage = "L'upload a pris trop de temps. Essayez avec moins de fichiers ou une connexion plus rapide."
+        } else if (error.message.includes('network')) {
+          errorMessage = "Problème de connexion réseau. Vérifiez votre connexion internet."
+        }
+      }
+      
+      // Si c'est une erreur fetch avec status 413
+      if (typeof error === 'object' && error !== null && 'status' in error && error.status === 413) {
+        errorMessage = "Les fichiers sont trop volumineux pour le serveur. Réduisez la taille des images avant l'upload."
+      }
+      
       toast({
         title: "Erreur d'upload",
-        description: "Une erreur inattendue est survenue.",
+        description: errorMessage,
         variant: "destructive",
+        duration: 8000, // Plus long pour les erreurs détaillées
       })
     } finally {
       setIsUploading(false)
@@ -458,9 +509,17 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
                   </FormControl>
                   {originalFileCount > 0 && (
                     <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="flex items-center gap-2 text-blue-700">
+                      <div className="flex items-center justify-between text-blue-700">
                         <span className="font-medium">{originalFileCount} fichier(s)</span>
+                        <span className="text-sm">
+                          {formatFileSize(getTotalFileSize(watchedOriginalFiles))}
+                        </span>
                       </div>
+                      {getTotalFileSize(watchedOriginalFiles) > 1024 * 1024 * 1024 && (
+                        <div className="mt-2 text-red-600 text-xs">
+                          ⚠️ Taille totale trop importante (max 1GB)
+                        </div>
+                      )}
                     </div>
                   )}
                   <FormMessage />
@@ -526,9 +585,17 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
                   </FormControl>
                   {previewFileCount > 0 && (
                     <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2 text-green-700">
+                      <div className="flex items-center justify-between text-green-700">
                         <span className="font-medium">{previewFileCount} fichier(s)</span>
+                        <span className="text-sm">
+                          {formatFileSize(getTotalFileSize(watchedPreviewFiles))}
+                        </span>
                       </div>
+                      {getTotalFileSize(watchedPreviewFiles) > 1024 * 1024 * 1024 && (
+                        <div className="mt-2 text-red-600 text-xs">
+                          ⚠️ Taille totale trop importante (max 1GB)
+                        </div>
+                      )}
                     </div>
                   )}
                   <FormMessage />
