@@ -74,13 +74,16 @@ interface UploadResult {
 
 export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
   try {
-    // Vérifier l'authentification
-    const supabase = await createSupabaseServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    // Vérifier l'authentification avec cookies
+    const { cookies } = await import('next/headers')
+    const cookieStore = await cookies()
+    const adminSession = cookieStore.get('admin-session')
     
-    if (authError || !user) {
+    if (!adminSession || adminSession.value !== 'authenticated') {
       redirect('/login')
     }
+
+    const supabase = await createSupabaseServerClient()
 
     // Extraire et valider les données du FormData
     const schoolId = parseInt(formData.get('school_id') as string)
