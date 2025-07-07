@@ -239,7 +239,7 @@ export default async function GalleriesListPage({
           {/* Contenu */}
           <div className="relative z-10 container mx-auto px-4 text-center text-white">
             <h1 className="text-5xl md:text-7xl font-bold font-playfair mb-8 drop-shadow-lg">
-              Nos Galeries Photo
+              Nos dernières photos
             </h1>
             <p className="text-xl md:text-2xl font-varela-round opacity-95 max-w-4xl mx-auto leading-relaxed drop-shadow-md">
               Découvre, télécharge, imprime tes photos de surf sur le spot de La Torche
