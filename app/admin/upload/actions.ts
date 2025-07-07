@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { SurfSchool, Gallery } from '@/lib/database.types'
+import { cookies } from 'next/headers'
 
 // Server Actions pour récupérer les données - SIMPLIFIÉ
 export async function fetchSurfSchools(): Promise<SurfSchool[]> {
@@ -75,7 +76,6 @@ interface UploadResult {
 export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
   try {
     // Vérifier l'authentification avec cookies
-    const { cookies } = await import('next/headers')
     const cookieStore = await cookies()
     const adminSession = cookieStore.get('admin-session')
     
