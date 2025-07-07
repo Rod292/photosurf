@@ -226,7 +226,7 @@ export default async function GalleriesListPage({
           {/* Image de fond */}
           <div className="absolute inset-0">
             <Image
-              src="/Logos/DJI_03862025LaTorche-2.jpg"
+              src="/Logos/DJI_03862025LaTorche-3.jpg"
               alt="Vue aérienne de La Torche"
               fill
               className="object-cover"
