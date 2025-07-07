@@ -6,7 +6,7 @@ import { Gallery, Photo } from "@/lib/database.types"
 import { DemoPhotoLightboxModal } from "@/components/demo-photo-lightbox-modal"
 
 interface DemoMainClientProps {
-  galleries: Gallery[]
+  galleries: any[]
 }
 
 interface DemoPhoto extends Photo {
@@ -20,7 +20,17 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
   const [loading, setLoading] = useState(true)
 
   // Extraire toutes les photos de toutes les galeries
-  const allPhotos: DemoPhoto[] = []
+  const allPhotos: DemoPhoto[] = galleries.flatMap((gallery: any) => 
+    (gallery.photos || []).map((photo: any) => ({
+      ...photo,
+      gallery: {
+        id: gallery.id,
+        name: gallery.name,
+        date: gallery.date,
+        school_id: gallery.school_id
+      }
+    }))
+  )
 
   useEffect(() => {
     async function loadDemoUrls() {
