@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { Header } from "@/components/header"
+import { DemoHeader } from "@/components/demo-header"
 import Link from "next/link"
 import Image from "next/image"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
@@ -228,7 +228,7 @@ export default async function DemoPage({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <DemoHeader />
       
       <main className="flex-1">
 
