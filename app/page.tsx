@@ -341,7 +341,7 @@ export default function HomePage() {
                 whileTap={{ scale: 0.95 }}
               >
                 <Image
-                  src="/Logos/phone-logo.svg"
+                  src="/Logos/mail-logo.svg"
                   alt="Email"
                   width={20}
                   height={20}
