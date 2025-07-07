@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
@@ -152,6 +152,9 @@ export function DemoPhotoLightboxModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl w-full h-[90vh] p-0 overflow-hidden">
+        <DialogTitle className="sr-only">
+          Photo de surf - {currentPhoto.filename}
+        </DialogTitle>
         <div className="flex h-full bg-black">
           {/* Zone d'image principale */}
           <div className="flex-1 relative flex items-center justify-center bg-black">
