@@ -232,28 +232,6 @@ export default async function DemoPage({
       
       <main className="flex-1">
 
-        {/* Navigation */}
-        <div className="bg-white py-4 border-b border-gray-200">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between">
-              <Link 
-                href="/"
-                className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
-              >
-                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                <Home className="w-4 h-4" />
-                <span className="font-medium">Retour à l'accueil</span>
-              </Link>
-              
-              <Link 
-                href="/gallery"
-                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Galerie publique
-              </Link>
-            </div>
-          </div>
-        </div>
 
         {/* Filtres actifs */}
         {hasFilters && (
