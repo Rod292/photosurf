@@ -10,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
 });
 
-export async function createCheckoutSession(items: ZustandCartItem[] | NewCartItem[]): Promise<{url?: string, error?: string}> {
+export async function createCheckoutSession(items: ZustandCartItem[] | NewCartItem[], promoCode?: string): Promise<{url?: string, error?: string, isFree?: boolean}> {
   try {
     if (!items || items.length === 0) {
       return { error: 'Panier vide' };
@@ -83,10 +83,94 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
       });
     }
 
-    // Create checkout session
+    // Validate promo code if provided
+    let promoValidation = null;
+    if (promoCode) {
+      const totalAmount = items.reduce((sum, item) => {
+        const isZustandItem = 'photo_id' in item;
+        const price = isZustandItem ? (item as ZustandCartItem).price : (item as NewCartItem).price / 100;
+        const quantity = isZustandItem ? 1 : (item as NewCartItem).quantity;
+        return sum + (price * quantity);
+      }, 0);
+
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+      const promoResponse = await fetch(`${baseUrl}/api/validate-promo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode, totalAmount })
+      });
+
+      if (promoResponse.ok) {
+        promoValidation = await promoResponse.json();
+      }
+    }
+
+    // If promo code makes the order free, create a free order directly
+    if (promoValidation?.isFree) {
+      // Create order in database with "completed" status for free orders
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          customer_email: 'demo@arodestudio.com',
+          stripe_checkout_id: `free_${Date.now()}`,
+          status: 'completed',
+          total_amount: 0,
+          payment_status: 'paid',
+          promo_code: promoCode,
+          discount_amount: promoValidation.discountAmount
+        })
+        .select()
+        .single();
+
+      if (orderError) {
+        console.error('Error creating free order:', orderError);
+        return { error: 'Erreur lors de la création de la commande gratuite' };
+      }
+
+      // Create order items
+      const orderItems = items.map(item => {
+        const isZustandItem = 'photo_id' in item;
+        if (isZustandItem) {
+          const zustandItem = item as ZustandCartItem;
+          return {
+            order_id: order.id,
+            photo_id: zustandItem.photo_id,
+            product_type: zustandItem.product_type,
+            price: 0,
+            quantity: 1
+          };
+        } else {
+          const newItem = item as NewCartItem;
+          return {
+            order_id: order.id,
+            photo_id: newItem.photo.id,
+            product_type: newItem.productType,
+            price: 0,
+            quantity: newItem.quantity
+          };
+        }
+      });
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) {
+        console.error('Error creating free order items:', itemsError);
+        return { error: 'Erreur lors de la création des articles gratuits' };
+      }
+
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+      return { 
+        url: `${baseUrl}/order/success?session_id=free_${order.id}&free_order=true`,
+        isFree: true 
+      };
+    }
+
+    // Create checkout session for paid orders
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     
-    const session = await stripe.checkout.sessions.create({
+    const sessionData: any = {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
@@ -119,7 +203,25 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
           }
         })),
       },
-    });
+    };
+
+    // Add discount if promo code is valid but not free
+    if (promoValidation?.valid && promoValidation.discount > 0 && !promoValidation.isFree) {
+      const coupon = await stripe.coupons.create({
+        percent_off: promoValidation.discount,
+        duration: 'once',
+        name: `Réduction ${promoValidation.discount}%`,
+      });
+
+      sessionData.discounts = [{
+        coupon: coupon.id,
+      }];
+
+      sessionData.metadata.promo_code = promoCode;
+      sessionData.metadata.discount_amount = promoValidation.discountAmount.toString();
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionData);
 
     return { url: session.url || undefined };
     

@@ -13,12 +13,13 @@ interface CreateCheckoutRequest {
   customerEmail?: string
   successUrl?: string
   cancelUrl?: string
+  promoCode?: string
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: CreateCheckoutRequest = await request.json()
-    const { items, customerEmail, successUrl, cancelUrl } = body
+    const { items, customerEmail, successUrl, cancelUrl, promoCode } = body
 
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -66,12 +67,82 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Create Stripe checkout session
+    // Validate promo code if provided
+    let promoValidation = null
+    if (promoCode) {
+      // Calculate total amount for promo validation
+      const totalAmount = lineItems.reduce((sum, item) => {
+        const prices = { digital: 15, print: 25, bundle: 35 }
+        return sum + (prices[item.productType] * item.quantity)
+      }, 0)
+
+      const promoResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/validate-promo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode, totalAmount })
+      })
+
+      if (promoResponse.ok) {
+        promoValidation = await promoResponse.json()
+      }
+    }
+
+    // If promo code makes the order free, create a free order directly
+    if (promoValidation?.isFree) {
+      // Create order in database with "completed" status for free orders
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          customer_email: customerEmail || 'demo@arodestudio.com',
+          stripe_checkout_id: `free_${Date.now()}`,
+          status: 'completed',
+          total_amount: 0,
+          payment_status: 'paid',
+          promo_code: promoCode,
+          discount_amount: promoValidation.discountAmount
+        })
+        .select()
+        .single()
+
+      if (orderError) {
+        console.error('Error creating free order:', orderError)
+        throw new Error('Failed to create free order')
+      }
+
+      // Create order items
+      const orderItems = lineItems.map(item => ({
+        order_id: order.id,
+        photo_id: item.photoId,
+        product_type: item.productType,
+        price: 0,
+        quantity: item.quantity
+      }))
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems)
+
+      if (itemsError) {
+        console.error('Error creating free order items:', itemsError)
+        throw new Error('Failed to create free order items')
+      }
+
+      // Return success URL for free orders
+      return NextResponse.json({
+        sessionId: `free_${order.id}`,
+        url: `${successUrl || `${process.env.NEXT_PUBLIC_BASE_URL}/success`}?session_id=free_${order.id}&free_order=true`,
+        isFree: true,
+        orderId: order.id
+      })
+    }
+
+    // Create Stripe checkout session for paid orders
     const session = await createCheckoutSession(
       lineItems,
       customerEmail,
       successUrl,
-      cancelUrl
+      cancelUrl,
+      promoValidation
     )
 
     return NextResponse.json({

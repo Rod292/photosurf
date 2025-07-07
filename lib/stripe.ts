@@ -86,7 +86,8 @@ export async function createCheckoutSession(
   }>,
   customerEmail?: string,
   successUrl?: string,
-  cancelUrl?: string
+  cancelUrl?: string,
+  promoValidation?: any
 ): Promise<Stripe.Checkout.Session> {
   try {
     const stripeLineItems = await Promise.all(
@@ -109,7 +110,7 @@ export async function createCheckoutSession(
       })
     )
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionData: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
       line_items: stripeLineItems,
       mode: 'payment',
@@ -128,7 +129,27 @@ export async function createCheckoutSession(
       automatic_tax: {
         enabled: false, // Set to true if you have tax settings configured in Stripe
       },
-    })
+    }
+
+    // Add discount if promo code is valid
+    if (promoValidation?.valid && promoValidation.discount > 0) {
+      // Create a coupon for the discount
+      const coupon = await stripe.coupons.create({
+        percent_off: promoValidation.discount,
+        duration: 'once',
+        name: `Réduction ${promoValidation.discount}%`,
+      })
+
+      sessionData.discounts = [{
+        coupon: coupon.id,
+      }]
+
+      // Add promo code to metadata
+      sessionData.metadata!.promo_code = promoValidation.code || 'unknown'
+      sessionData.metadata!.discount_amount = promoValidation.discountAmount.toString()
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionData)
 
     return session
   } catch (error) {

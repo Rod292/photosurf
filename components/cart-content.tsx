@@ -18,7 +18,8 @@ export function CartContent() {
   
   const [isLoading, setIsLoading] = useState(false)
   const [promoCode, setPromoCode] = useState("")
-  const [discount, setDiscount] = useState(0)
+  const [promoValidation, setPromoValidation] = useState<any>(null)
+  const [promoLoading, setPromoLoading] = useState(false)
   const { toast } = useToast()
   const [selectedPhoto, setSelectedPhoto] = useState<null | {
     id: string
@@ -35,8 +36,8 @@ export function CartContent() {
     setIsLoading(true);
     
     try {
-      // Use the same logic as CartSheet
-      const result = await createCheckoutSession(items);
+      // Include promo code in checkout session
+      const result = await createCheckoutSession(items, promoValidation?.valid ? promoCode : undefined);
       
       if (result.error) {
         toast({
@@ -48,7 +49,7 @@ export function CartContent() {
       }
       
       if (result.url) {
-        // Redirect to Stripe Checkout
+        // Redirect to Stripe Checkout or success page for free orders
         window.location.href = result.url;
       }
     } catch (error) {
@@ -62,31 +63,62 @@ export function CartContent() {
     }
   }
 
-  const handleApplyPromo = () => {
+  const handleApplyPromo = async () => {
     if (promoCode.trim() === "") {
       toast({
         title: "Erreur",
-        description: "Veuillez entrer un code promo valide.",
+        description: "Veuillez entrer un code promo.",
         variant: "destructive",
       })
       return
     }
 
-    // Logique simple de code promo
-    if (promoCode.toLowerCase() === "arode10") {
-      setDiscount(totalPrice * 0.1)
-      toast({
-        title: "Succès",
-        description: "Le code promo a été appliqué avec succès.",
+    setPromoLoading(true)
+
+    try {
+      const response = await fetch('/api/validate-promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          code: promoCode, 
+          totalAmount: totalPrice 
+        })
       })
-      setPromoCode("")
-    } else {
+
+      const result = await response.json()
+
+      if (result.valid) {
+        setPromoValidation(result)
+        toast({
+          title: "Code promo appliqué !",
+          description: `${result.description} - Réduction de ${result.discountAmount.toFixed(2)}€`,
+        })
+      } else {
+        setPromoValidation(null)
+        toast({
+          title: "Code promo invalide",
+          description: result.error || "Ce code promo n'existe pas.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
       toast({
         title: "Erreur",
-        description: "Code promo invalide.",
+        description: "Impossible de valider le code promo.",
         variant: "destructive",
       })
+    } finally {
+      setPromoLoading(false)
     }
+  }
+
+  const handleRemovePromo = () => {
+    setPromoValidation(null)
+    setPromoCode("")
+    toast({
+      title: "Code promo supprimé",
+      description: "Le code promo a été retiré de votre commande.",
+    })
   }
 
   const handlePhotoClick = (item: any) => {
@@ -172,18 +204,44 @@ export function CartContent() {
             ))}
           </div>
           <div className="bg-white shadow-md rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Input
-                type="text"
-                placeholder="Code promo"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                className="flex-grow font-lexend-deca"
-              />
-              <Button onClick={handleApplyPromo} className="font-lexend-deca">
-                Appliquer
-              </Button>
-            </div>
+            {/* Code promo section */}
+            {!promoValidation ? (
+              <div className="flex items-center gap-2 mb-4">
+                <Input
+                  type="text"
+                  placeholder="Code promo"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  className="flex-grow font-lexend-deca"
+                  disabled={promoLoading}
+                />
+                <Button 
+                  onClick={handleApplyPromo} 
+                  className="font-lexend-deca"
+                  disabled={promoLoading}
+                >
+                  {promoLoading ? "..." : "Appliquer"}
+                </Button>
+              </div>
+            ) : (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-sm font-medium text-green-800">Code promo appliqué:</span>
+                    <p className="text-green-700 font-semibold">{promoCode} - {promoValidation.description}</p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleRemovePromo}
+                    className="text-green-600 hover:text-green-800"
+                  >
+                    Supprimer
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-between mb-4">
               <span className="font-semibold font-lexend-deca">Nombre de photos :</span>
               <span className="font-lexend-deca">{totalItems}</span>
@@ -192,15 +250,17 @@ export function CartContent() {
               <span className="font-semibold font-lexend-deca">Sous-total :</span>
               <span className="font-lexend-deca">{totalPrice.toFixed(2)}€</span>
             </div>
-            {discount > 0 && (
+            {promoValidation && (
               <div className="flex justify-between mb-4 text-green-600">
-                <span className="font-semibold font-lexend-deca">Réduction :</span>
-                <span className="font-lexend-deca">-{discount.toFixed(2)}€</span>
+                <span className="font-semibold font-lexend-deca">Réduction ({promoValidation.discount}%) :</span>
+                <span className="font-lexend-deca">-{promoValidation.discountAmount.toFixed(2)}€</span>
               </div>
             )}
             <div className="flex justify-between mb-4 text-lg font-bold">
               <span className="font-lexend-deca">Total :</span>
-              <span className="font-lexend-deca">{(totalPrice - discount).toFixed(2)}€</span>
+              <span className="font-lexend-deca">
+                {promoValidation?.isFree ? "GRATUIT" : `${(promoValidation ? promoValidation.finalAmount : totalPrice).toFixed(2)}€`}
+              </span>
             </div>
             <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded">
               <p className="text-sm font-lexend-deca">
