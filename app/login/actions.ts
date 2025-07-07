@@ -12,19 +12,17 @@ export async function login(formData: FormData) {
     return redirect('/login?message=Mot de passe incorrect')
   }
 
-  // Authentifier avec Supabase en utilisant un compte admin fixe
-  const supabase = await createSupabaseServerClient()
-  const { error } = await supabase.auth.signInWithPassword({
-    email: 'admin@arodestudio.com',
-    password: 'edorastudio29',
+  // Créer une session simple côté serveur
+  const { cookies } = await import('next/headers')
+  const cookieStore = await cookies()
+  
+  // Ajouter un cookie de session
+  cookieStore.set('admin-session', 'authenticated', {
+    path: '/',
+    httpOnly: true,
+    maxAge: 3600 // 1 heure
   })
-
-  if (error) {
-    console.error('Login error:', error.message)
-    return redirect('/login?message=Erreur d\'authentification')
-  }
-
-  // Rediriger vers la page demandée ou vers admin par défaut
-  const redirectPath = redirect_to || '/admin/upload'
-  return redirect(redirectPath)
+  
+  // Rediriger vers la page demandée ou vers demo par défaut
+  return redirect(redirect_to || '/demo')
 } 

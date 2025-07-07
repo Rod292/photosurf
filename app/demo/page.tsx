@@ -16,14 +16,15 @@ interface SearchParams {
 
 async function checkAuthentication() {
   try {
-    const supabase = await createSupabaseServerClient()
-    const { data: { user }, error } = await supabase.auth.getUser()
+    const { cookies } = await import('next/headers')
+    const cookieStore = await cookies()
+    const adminSession = cookieStore.get('admin-session')
     
-    if (error || !user) {
+    if (!adminSession || adminSession.value !== 'authenticated') {
       redirect('/login?redirect=/demo')
     }
     
-    return user
+    return true
   } catch (error) {
     console.error('Auth check error:', error)
     redirect('/login?redirect=/demo')
@@ -196,7 +197,7 @@ export default async function DemoPage({
   searchParams: Promise<SearchParams>
 }) {
   // Check authentication first
-  const user = await checkAuthentication()
+  await checkAuthentication()
   
   const resolvedSearchParams = await searchParams
   const galleries = await getFilteredGalleries(resolvedSearchParams)
@@ -284,7 +285,7 @@ export default async function DemoPage({
             </p>
             <div className="mt-6 inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3">
               <Eye className="w-5 h-5" />
-              <span className="text-sm font-medium">Authentifié en tant que {user.email}</span>
+              <span className="text-sm font-medium">Mode administrateur activé</span>
             </div>
           </div>
         </div>

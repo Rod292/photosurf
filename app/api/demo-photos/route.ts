@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/storage'
 import { generateDownloadUrl, generateBulkDownloadUrls } from '@/lib/storage'
+import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
   try {
-    // Vérifier l'authentification
-    const supabase = await createSupabaseServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    // Vérifier l'authentification via cookie
+    const cookieStore = await cookies()
+    const adminSession = cookieStore.get('admin-session')
     
-    if (authError || !user) {
+    if (!adminSession || adminSession.value !== 'authenticated') {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
+    
+    // Utiliser le service role pour accéder aux données
+    const supabase = createServiceRoleClient()
 
     const { searchParams } = new URL(request.url)
     const photoId = searchParams.get('photoId')
@@ -108,11 +112,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Vérifier l'authentification
-    const supabase = await createSupabaseServerClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    // Vérifier l'authentification via cookie
+    const cookieStore = await cookies()
+    const adminSession = cookieStore.get('admin-session')
     
-    if (authError || !user) {
+    if (!adminSession || adminSession.value !== 'authenticated') {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
