@@ -354,7 +354,7 @@ export default async function DemoPage({
                 <div className="bg-white p-3 rounded-lg shadow-md">
                   <div className="flex justify-center mb-2">
                     <Image
-                      src="/Logos/Search.svg"
+                      src="/Logos/camera2.svg"
                       alt="Search"
                       width={32}
                       height={32}
@@ -369,7 +369,7 @@ export default async function DemoPage({
                 <div className="bg-white p-3 rounded-lg shadow-md">
                   <div className="flex justify-center mb-2">
                     <Image
-                      src="/Logos/Shopping.svg"
+                      src="/Logos/shopping-cart.svg"
                       alt="Shopping"
                       width={32}
                       height={32}
@@ -399,7 +399,7 @@ export default async function DemoPage({
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-md flex items-center">
                   <Image
-                    src="/Logos/Search.svg"
+                    src="/Logos/camera2.svg"
                     alt="Search"
                     width={24}
                     height={24}
@@ -412,7 +412,7 @@ export default async function DemoPage({
                 </div>
                 <div className="bg-white p-3 rounded-lg shadow-md flex items-center">
                   <Image
-                    src="/Logos/Shopping.svg"
+                    src="/Logos/shopping-cart.svg"
                     alt="Shopping"
                     width={24}
                     height={24}
