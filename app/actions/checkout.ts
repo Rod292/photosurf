@@ -181,6 +181,8 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
       shipping_address_collection: {
         allowed_countries: ['FR', 'BE', 'LU', 'CH', 'ES', 'DE', 'IT', 'NL', 'PT'],
       },
+      // Enable promotion codes on Stripe checkout page
+      allow_promotion_codes: true,
       metadata: {
         cart_items: JSON.stringify(items.map(item => {
           const isZustandItem = 'photo_id' in item;

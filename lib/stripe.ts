@@ -129,6 +129,8 @@ export async function createCheckoutSession(
       automatic_tax: {
         enabled: false, // Set to true if you have tax settings configured in Stripe
       },
+      // Enable promotion codes on Stripe checkout page
+      allow_promotion_codes: true,
     }
 
     // Add discount if promo code is valid
