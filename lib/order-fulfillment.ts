@@ -3,6 +3,7 @@ import { generateBulkDownloadUrls } from '@/lib/storage';
 import { createServiceRoleClient } from '@/lib/storage';
 import { OrderConfirmationWithDownloadsEmail } from '@/utils/email-templates/OrderConfirmationWithDownloadsEmail';
 import { SimpleOrderConfirmationEmail } from '@/utils/email-templates/SimpleOrderConfirmationEmail';
+import { generatePlainTextEmail } from '@/lib/email-utils';
 import type { Order, OrderItem, Photo } from '@/lib/database.types';
 
 interface FulfillOrderOptions {
@@ -100,6 +101,20 @@ export async function fulfillOrder({
         };
       });
 
+      // Generate plain text version
+      const plainTextContent = generatePlainTextEmail({
+        customerEmail,
+        orderItems: orderItems.map(item => ({
+          photo: { filename: `Photo ${item.photo_id}` },
+          product_type: item.product_type,
+          price: item.price / 100
+        })),
+        downloadLinks: emailDownloads.map(download => ({
+          filename: `Photo ${download.photoId}`,
+          downloadUrl: download.downloadUrl
+        }))
+      });
+
       const { data, error: emailError } = await resend.emails.send({
         from: 'Arode Studio <contact@arodestudio.com>',
         to: customerEmail,
@@ -108,7 +123,8 @@ export async function fulfillOrder({
           customerName: customerName || customerEmail.split('@')[0],
           totalPrice: totalAmount / 100, // Convert cents to euros
           downloads: emailDownloads
-        })
+        }),
+        text: plainTextContent
       });
       
       emailData = data;

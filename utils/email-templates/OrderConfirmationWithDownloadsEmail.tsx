@@ -1,5 +1,6 @@
 import type * as React from "react"
 import { Html, Body, Head, Heading, Hr, Container, Preview, Section, Text, Link, Img, Button } from "@react-email/components"
+import { proxySupabaseUrl, localizeImageUrl } from "../../lib/email-utils"
 
 interface PhotoDownload {
   photoId: string
@@ -26,7 +27,7 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
       <Container style={container}>
         <Section style={logoSection}>
           <Img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/arodelogo2-3rLHVrTg3M1BwmO55e2Bd3rfphyoKU.png"
+            src="https://www.arodestudio.com/images/logo.png"
             width="80"
             height="80"
             alt="Arode Studio"
@@ -55,14 +56,14 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
               <div key={download.photoId} style={photoCard}>
                 {download.thumbnailUrl && (
                   <Img
-                    src={download.thumbnailUrl}
+                    src={proxySupabaseUrl(download.thumbnailUrl)}
                     alt={`Photo ${index + 1}`}
                     style={thumbnail}
                   />
                 )}
                 <div style={downloadInfo}>
                   <Text style={photoName}>Photo {index + 1}</Text>
-                  <Link href={download.downloadUrl} style={downloadButton}>
+                  <Link href={proxySupabaseUrl(download.downloadUrl)} style={downloadButton}>
                     Télécharger
                   </Link>
                   <Text style={expiryText}>
@@ -104,7 +105,7 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
             <Heading style={printHeading}>TIRAGES PHOTO</Heading>
             <div style={imageContainer}>
               <Img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Beige%20Minimalist%20Picture%20Frame%20Mockup%20Instagram%20Post-1qtGHkoHXu1DX4vj6NlRbO5b1nORxP.png"
+                src={localizeImageUrl("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Beige%20Minimalist%20Picture%20Frame%20Mockup%20Instagram%20Post-1qtGHkoHXu1DX4vj6NlRbO5b1nORxP.png")}
                 width="500"
                 height="375"
                 alt="Exemple de tirage photo encadré"

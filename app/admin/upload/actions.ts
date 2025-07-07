@@ -1,6 +1,6 @@
 'use server'
 
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
@@ -83,7 +83,8 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
       redirect('/login')
     }
 
-    const supabase = await createSupabaseServerClient()
+    // Use admin client to bypass RLS for admin operations
+    const supabase = createSupabaseAdminClient()
 
     // Extraire et valider les données du FormData
     const schoolId = parseInt(formData.get('school_id') as string)
