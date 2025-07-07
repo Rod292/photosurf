@@ -34,10 +34,13 @@ export function proxySupabaseUrl(originalUrl: string): string {
 export function localizeImageUrl(imageUrl: string): string {
   // Pour les images du logo, on peut les héberger localement
   if (imageUrl.includes('vercel-storage.com')) {
-    // Retourner l'URL locale si elle existe
     const filename = imageUrl.split('/').pop()
     if (filename?.includes('arodelogo')) {
-      return 'https://www.arodestudio.com/images/logo.png'
+      return 'https://www.arodestudio.com/images/logo-white.svg'
+    }
+    // Pour l'image de tirage photo
+    if (filename?.includes('Beige%20Minimalist') || filename?.includes('Picture%20Frame')) {
+      return 'https://www.arodestudio.com/images/print-mockup.png'
     }
   }
   

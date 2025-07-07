@@ -27,14 +27,11 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
       <Container style={container}>
         <Section style={logoSection}>
           <Img
-            src="https://www.arodestudio.com/images/logo.png"
+            src="https://www.arodestudio.com/images/logo-white.svg"
             width="80"
             height="80"
             alt="Arode Studio"
-            style={{
-              ...logo,
-              filter: "brightness(0)", // Makes the white logo black for light backgrounds
-            }}
+            style={logo}
           />
         </Section>
         <Section style={contentSection}>
@@ -105,7 +102,7 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
             <Heading style={printHeading}>TIRAGES PHOTO</Heading>
             <div style={imageContainer}>
               <Img
-                src={localizeImageUrl("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Beige%20Minimalist%20Picture%20Frame%20Mockup%20Instagram%20Post-1qtGHkoHXu1DX4vj6NlRbO5b1nORxP.png")}
+                src="https://www.arodestudio.com/images/print-mockup.png"
                 width="500"
                 height="375"
                 alt="Exemple de tirage photo encadré"
@@ -151,6 +148,10 @@ const logoSection = {
   textAlign: "center" as const,
   padding: "0 48px",
   marginBottom: "32px",
+  backgroundColor: "#1a1a1a",
+  borderRadius: "12px",
+  paddingTop: "16px",
+  paddingBottom: "16px",
 }
 
 const logo = {

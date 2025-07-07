@@ -19,7 +19,7 @@ export const SimpleOrderConfirmationEmail: React.FC<SimpleOrderConfirmationEmail
       <Container style={container}>
         <Section style={logoSection}>
           <Img
-            src="https://photosurf.vercel.app/Logos/arodelogo.png"
+            src="https://www.arodestudio.com/images/logo-white.svg"
             width="80"
             height="80"
             alt="Arode Studio"
@@ -93,6 +93,10 @@ const logoSection = {
   textAlign: "center" as const,
   padding: "0 48px",
   marginBottom: "32px",
+  backgroundColor: "#1a1a1a",
+  borderRadius: "12px",
+  paddingTop: "16px",
+  paddingBottom: "16px",
 }
 
 const logo = {
