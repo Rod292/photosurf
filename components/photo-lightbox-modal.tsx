@@ -11,6 +11,7 @@ import { useCartStore } from "@/context/cart-context"
 import { Photo } from "@/lib/database.types"
 import { useToast } from "@/hooks/use-toast"
 import { MobilePhotoViewer } from "./mobile-photo-viewer"
+import { motion } from "framer-motion"
 
 interface PhotoLightboxModalProps {
   isOpen: boolean
@@ -130,10 +131,22 @@ export function PhotoLightboxModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-full h-[95vh] md:h-[90vh] p-0">
+      <DialogContent 
+        className="max-w-4xl w-full h-[95vh] md:h-[90vh] p-0"
+        style={{
+          animation: 'none', // Disable default dialog animation
+        }}
+      >
         <DialogTitle className="sr-only">
           Aperçu de la photo {currentPhoto.filename}
         </DialogTitle>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="h-full"
+        >
         <div className="flex flex-col h-full">
           {/* Main content */}
           <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
@@ -157,28 +170,49 @@ export function PhotoLightboxModal({
               {/* Navigation arrows */}
               {photos.length > 1 && (
                 <>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white"
-                    onClick={handlePrevious}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2"
                   >
-                    <ChevronLeft className="h-6 w-6" />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white"
-                    onClick={handleNext}
+                    <motion.button
+                      className="w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
+                      onClick={handlePrevious}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </motion.button>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2"
                   >
-                    <ChevronRight className="h-6 w-6" />
-                  </Button>
+                    <motion.button
+                      className="w-12 h-12 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-lg"
+                      onClick={handleNext}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </motion.button>
+                  </motion.div>
                 </>
               )}
             </div>
 
             {/* Purchase options sidebar */}
-            <div className="w-full lg:w-80 bg-gradient-to-b from-white to-gray-50 p-4 md:p-6 border-l lg:border-l lg:border-t-0 border-t shadow-inner overflow-y-auto max-h-[40vh] lg:max-h-none">
+            <motion.div 
+              className="w-full lg:w-80 bg-gradient-to-b from-white to-gray-50 p-4 md:p-6 border-l lg:border-l lg:border-t-0 border-t shadow-inner overflow-y-auto max-h-[40vh] lg:max-h-none"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
               <div className="mb-4 md:mb-6">
                 <div className="mb-2 md:mb-3">
                   <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Galerie</h4>
@@ -254,9 +288,10 @@ export function PhotoLightboxModal({
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
+        </motion.div>
       </DialogContent>
     </Dialog>
   )

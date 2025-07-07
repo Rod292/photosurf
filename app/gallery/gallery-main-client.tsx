@@ -5,6 +5,10 @@ import Image from "next/image"
 import Link from "next/link"
 import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { PhotoGrid, PhotoCard, LoadingSkeleton } from "@/components/animations/photo-grid"
+import { StaggerContainer, StaggerItem } from "@/components/animations/page-transition"
+import { AnimatedButton } from "@/components/animations/button-animations"
+import { motion } from "framer-motion"
 
 interface GalleryMainClientProps {
   galleries: any[]
@@ -71,18 +75,21 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
     <>
       <div className="space-y-8">
         {/* Petites cartes de jours horizontales */}
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-          {[...new Map(galleries.map((gallery: any) => [gallery.date, gallery])).values()].map((gallery: any) => (
-            <button 
-              key={gallery.date} 
-              onClick={() => handleDateFilter(gallery.date)}
-              className="flex-shrink-0"
-            >
-              <div className={`w-32 bg-white rounded-lg border transition-all duration-300 cursor-pointer ${
-                selectedDate === gallery.date 
-                  ? 'border-blue-500 shadow-lg ring-2 ring-blue-200' 
-                  : 'border-gray-200 hover:shadow-md'
-              }`}>
+        <StaggerContainer className="flex gap-3 overflow-x-auto scrollbar-hide pb-2" staggerDelay={0.05}>
+          {[...new Map(galleries.map((gallery: any) => [gallery.date, gallery])).values()].map((gallery: any, index: number) => (
+            <StaggerItem key={gallery.date}>
+              <motion.button 
+                onClick={() => handleDateFilter(gallery.date)}
+                className="flex-shrink-0"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className={`w-32 bg-white rounded-lg border transition-all duration-300 cursor-pointer ${
+                  selectedDate === gallery.date 
+                    ? 'border-blue-500 shadow-lg ring-2 ring-blue-200' 
+                    : 'border-gray-200 hover:shadow-md'
+                }`}>
                 <div className="relative h-32 rounded-t-lg overflow-hidden">
                   {gallery.photos && gallery.photos.length > 0 ? (
                     <Image
@@ -122,9 +129,10 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                   </p>
                 </div>
               </div>
-            </button>
+              </motion.button>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
 
         {/* Toutes les photos chronologiques */}
         <div>
@@ -140,12 +148,13 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
               }
             </h3>
             {selectedDate && (
-              <button
+              <AnimatedButton
                 onClick={() => setSelectedDate(null)}
                 className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                variant="subtle"
               >
                 Voir toutes les photos
-              </button>
+              </AnimatedButton>
             )}
           </div>
           
@@ -168,12 +177,12 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <PhotoGrid className="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {currentPhotos.map((photo: any, index: number) => (
-                <button
+                <PhotoCard
                   key={photo.id}
                   onClick={() => handlePhotoClick(index)}
-                  className="group relative w-full pt-[150%] overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
+                  index={index}
                 >
                   <div className="absolute inset-0">
                     <Image
@@ -184,12 +193,18 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                       className="object-cover"
                     />
                   </div>
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
+                  
+                  {/* Info overlay - sera masqué par l'overlay hover du PhotoCard */}
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-3"
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                  >
                     <div className="text-white text-center">
-                      <p className="text-sm font-medium">
+                      <p className="text-sm font-medium drop-shadow-lg">
                         {photo.gallery?.name}
                       </p>
-                      <p className="text-xs opacity-75">
+                      <p className="text-xs opacity-90 drop-shadow-lg">
                         {new Date(photo.gallery?.date || photo.created_at).toLocaleDateString('fr-FR', {
                           day: '2-digit',
                           month: '2-digit',
@@ -197,22 +212,28 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                         })}
                       </p>
                     </div>
-                  </div>
-                </button>
+                  </motion.div>
+                </PhotoCard>
               ))}
-            </div>
+            </PhotoGrid>
           )}
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-8 flex items-center justify-center gap-2">
-              <button
+            <motion.div 
+              className="mt-8 flex items-center justify-center gap-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+            >
+              <AnimatedButton
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                variant="subtle"
               >
                 <ChevronLeft className="w-5 h-5" />
-              </button>
+              </AnimatedButton>
               
               <div className="flex gap-1">
                 {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
@@ -230,7 +251,7 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                   if (pageNum < 1 || pageNum > totalPages) return null;
                   
                   return (
-                    <button
+                    <AnimatedButton
                       key={pageNum}
                       onClick={() => handlePageChange(pageNum)}
                       className={`w-10 h-10 rounded-lg font-medium transition-colors ${
@@ -238,21 +259,23 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                           ? 'bg-blue-600 text-white'
                           : 'border border-gray-300 hover:bg-gray-100'
                       }`}
+                      variant="subtle"
                     >
                       {pageNum}
-                    </button>
+                    </AnimatedButton>
                   );
                 })}
               </div>
               
-              <button
+              <AnimatedButton
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                variant="subtle"
               >
                 <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+              </AnimatedButton>
+            </motion.div>
           )}
         </div>
       </div>

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { motion } from "framer-motion"
+import { StaggerContainer, StaggerItem } from "@/components/animations/page-transition"
 
 interface PhotosBySchool {
   school: {
@@ -82,14 +84,23 @@ export function PhotosBySchool() {
         </h2>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+      <StaggerContainer className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4" staggerDelay={0.1}>
         {schoolGroups.map((schoolGroup) => (
-          <Link
-            key={schoolGroup.school.id}
-            href={`/gallery?school=${encodeURIComponent(schoolGroup.school.name)}`}
-            className="group"
-          >
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
+          <StaggerItem key={schoolGroup.school.id}>
+            <Link
+              href={`/gallery?school=${encodeURIComponent(schoolGroup.school.name)}`}
+              className="group block"
+            >
+              <motion.div 
+                className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                whileHover={{ 
+                  scale: 1.03,
+                  y: -8,
+                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
               {/* Image de couverture */}
               <div className="relative h-72 overflow-hidden">
                 {schoolGroup.galleries[0]?.coverPhoto ? (
@@ -156,10 +167,11 @@ export function PhotosBySchool() {
                   {schoolGroup.school.name}
                 </h3>
               </div>
-            </div>
-          </Link>
+              </motion.div>
+            </Link>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerContainer>
     </div>
   )
 } 
