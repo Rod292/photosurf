@@ -130,22 +130,16 @@ export function PhotoLightboxModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-full h-[90vh] p-0">
+      <DialogContent className="max-w-4xl w-full h-[95vh] p-0">
         <div className="flex flex-col h-full">
-          {/* Header */}
-          <DialogHeader className="p-4 border-b">
-            <DialogTitle className="text-lg font-semibold">
-              {currentPhoto.filename}
-            </DialogTitle>
-            <p className="text-sm text-gray-600">
-              Photo {currentIndex + 1} sur {photos.length}
-            </p>
-          </DialogHeader>
-
           {/* Main content */}
           <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
             {/* Image section */}
             <div className="flex-1 relative bg-black flex items-center justify-center">
+              {/* Photo counter overlay */}
+              <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full z-10">
+                {currentIndex + 1} / {photos.length}
+              </div>
               <Image
                 src={currentPhoto.preview_s3_url}
                 alt={currentPhoto.filename}
@@ -181,6 +175,10 @@ export function PhotoLightboxModal({
             {/* Purchase options sidebar */}
             <div className="w-full lg:w-80 bg-gradient-to-b from-white to-gray-50 p-6 border-l shadow-inner">
               <div className="mb-6">
+                <div className="mb-3">
+                  <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Galerie</h4>
+                  <p className="text-sm font-medium text-gray-800">{currentPhoto.filename}</p>
+                </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Options d'achat</h3>
                 <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
               </div>
