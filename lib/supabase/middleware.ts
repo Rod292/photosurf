@@ -45,20 +45,25 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // Vérifier si l'utilisateur est connecté
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // Protection des routes admin
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    console.log('[Middleware] Admin route detected, user:', user?.email || 'NOT AUTHENTICATED');
+  // Vérifier le cookie de session pour les routes admin et demo
+  const adminSession = request.cookies.get('admin-session')
+  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
+  const isDemoRoute = request.nextUrl.pathname.startsWith('/demo')
+  
+  // Protection des routes admin et demo
+  if (isAdminRoute || isDemoRoute) {
+    console.log('[Middleware] Protected route detected:', request.nextUrl.pathname);
+    console.log('[Middleware] Admin session cookie:', adminSession?.value || 'NOT FOUND');
     
-    // Si pas d'utilisateur connecté, rediriger vers login
-    if (!user) {
-      console.log('[Middleware] No user found, redirecting to /login');
-      return NextResponse.redirect(new URL('/login', request.url))
+    // Si pas de session valide, rediriger vers login
+    if (!adminSession || adminSession.value !== 'authenticated') {
+      console.log('[Middleware] No valid session, redirecting to /login');
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('redirect', request.nextUrl.pathname)
+      return NextResponse.redirect(loginUrl)
     }
     
-    console.log('[Middleware] User authenticated, allowing access');
+    console.log('[Middleware] Valid session found, allowing access');
     
     // Add cache prevention headers for admin routes
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
