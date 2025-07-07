@@ -15,22 +15,46 @@ const PHOTOS_PER_PAGE = 50
 export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
-  // Obtenir toutes les photos triées par date
+  // Obtenir toutes les photos avec leurs galeries
   const allPhotos = galleries
-    .flatMap((gallery: any) => gallery.photos || [])
+    .flatMap((gallery: any) => 
+      (gallery.photos || []).map((photo: any) => ({
+        ...photo,
+        gallery: {
+          id: gallery.id,
+          name: gallery.name,
+          date: gallery.date,
+          school_id: gallery.school_id
+        }
+      }))
+    )
     .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
+  // Filtrer les photos par date si une date est sélectionnée
+  const filteredPhotos = selectedDate 
+    ? allPhotos.filter(photo => photo.gallery?.date === selectedDate)
+    : allPhotos
+
   // Pagination
-  const totalPages = Math.ceil(allPhotos.length / PHOTOS_PER_PAGE)
+  const totalPages = Math.ceil(filteredPhotos.length / PHOTOS_PER_PAGE)
   const startIndex = (currentPage - 1) * PHOTOS_PER_PAGE
   const endIndex = startIndex + PHOTOS_PER_PAGE
-  const currentPhotos = allPhotos.slice(startIndex, endIndex)
+  const currentPhotos = filteredPhotos.slice(startIndex, endIndex)
 
   const handlePhotoClick = (index: number) => {
-    // Ajuster l'index pour tenir compte de la pagination
+    // Ajuster l'index pour tenir compte de la pagination et du filtrage
     const actualIndex = startIndex + index
-    setLightboxIndex(actualIndex)
+    // Trouver l'index dans la liste complète des photos
+    const photoId = currentPhotos[index].id
+    const globalIndex = allPhotos.findIndex(photo => photo.id === photoId)
+    setLightboxIndex(globalIndex)
+  }
+
+  const handleDateFilter = (date: string) => {
+    setSelectedDate(date === selectedDate ? null : date)
+    setCurrentPage(1) // Reset pagination when filtering
   }
 
   const handleCloseModal = () => {
@@ -49,8 +73,16 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
         {/* Petites cartes de jours horizontales */}
         <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
           {[...new Map(galleries.map((gallery: any) => [gallery.date, gallery])).values()].map((gallery: any) => (
-            <Link key={gallery.date} href={`/gallery?date=${gallery.date}`} className="flex-shrink-0">
-              <div className="w-32 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300 cursor-pointer">
+            <button 
+              key={gallery.date} 
+              onClick={() => handleDateFilter(gallery.date)}
+              className="flex-shrink-0"
+            >
+              <div className={`w-32 bg-white rounded-lg border transition-all duration-300 cursor-pointer ${
+                selectedDate === gallery.date 
+                  ? 'border-blue-500 shadow-lg ring-2 ring-blue-200' 
+                  : 'border-gray-200 hover:shadow-md'
+              }`}>
                 <div className="relative h-32 rounded-t-lg overflow-hidden">
                   {gallery.photos && gallery.photos.length > 0 ? (
                     <Image
@@ -80,7 +112,9 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                 </div>
                 
                 <div className="p-2">
-                  <p className="text-center text-xs font-medium text-black">
+                  <p className={`text-center text-xs font-medium ${
+                    selectedDate === gallery.date ? 'text-blue-600' : 'text-black'
+                  }`}>
                     {new Date(gallery.date).toLocaleDateString('fr-FR', {
                       day: 'numeric',
                       month: 'short'
@@ -88,17 +122,34 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                   </p>
                 </div>
               </div>
-            </Link>
+            </button>
           ))}
         </div>
 
         {/* Toutes les photos chronologiques */}
         <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-6">
-            Toutes les photos
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-900">
+              {selectedDate 
+                ? `Photos du ${new Date(selectedDate).toLocaleDateString('fr-FR', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}`
+                : 'Toutes les photos'
+              }
+            </h3>
+            {selectedDate && (
+              <button
+                onClick={() => setSelectedDate(null)}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                Voir toutes les photos
+              </button>
+            )}
+          </div>
           
-          {allPhotos.length === 0 ? (
+          {filteredPhotos.length === 0 ? (
             <div className="text-center py-8 bg-gray-50 rounded-lg">
               <div className="mb-4">
                 <Image
@@ -109,7 +160,12 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                   className="w-16 h-16 mx-auto opacity-60"
                 />
               </div>
-              <p className="text-gray-600">Aucune photo disponible pour le moment</p>
+              <p className="text-gray-600">
+                {selectedDate 
+                  ? "Aucune photo disponible pour cette date"
+                  : "Aucune photo disponible pour le moment"
+                }
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -131,7 +187,10 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
                     <div className="text-white text-center">
                       <p className="text-sm font-medium">
-                        {new Date(photo.created_at).toLocaleDateString('fr-FR', {
+                        {photo.gallery?.name}
+                      </p>
+                      <p className="text-xs opacity-75">
+                        {new Date(photo.gallery?.date || photo.created_at).toLocaleDateString('fr-FR', {
                           day: '2-digit',
                           month: '2-digit',
                           year: 'numeric'

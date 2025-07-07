@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { Gallery, Photo } from "@/lib/database.types"
 import { DemoPhotoLightboxModal } from "@/components/demo-photo-lightbox-modal"
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -22,6 +23,7 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
   const [demoPhotos, setDemoPhotos] = useState<DemoPhoto[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
   // Extraire toutes les photos de toutes les galeries
   const allPhotos: DemoPhoto[] = galleries.flatMap((gallery: any) => 
@@ -93,16 +95,29 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
     loadDemoUrls()
   }, [galleries])
 
+  // Filtrer les photos par date si une date est sélectionnée
+  const filteredPhotos = selectedDate 
+    ? demoPhotos.filter(photo => photo.gallery?.date === selectedDate)
+    : demoPhotos
+
   // Pagination
-  const totalPages = Math.ceil(demoPhotos.length / PHOTOS_PER_PAGE)
+  const totalPages = Math.ceil(filteredPhotos.length / PHOTOS_PER_PAGE)
   const startIndex = (currentPage - 1) * PHOTOS_PER_PAGE
   const endIndex = startIndex + PHOTOS_PER_PAGE
-  const currentPhotos = demoPhotos.slice(startIndex, endIndex)
+  const currentPhotos = filteredPhotos.slice(startIndex, endIndex)
 
   const handlePhotoClick = (index: number) => {
-    // Ajuster l'index pour tenir compte de la pagination
+    // Ajuster l'index pour tenir compte de la pagination et du filtrage
     const actualIndex = startIndex + index
-    setLightboxIndex(actualIndex)
+    // Trouver l'index dans la liste complète des photos
+    const photoId = currentPhotos[index].id
+    const globalIndex = demoPhotos.findIndex(photo => photo.id === photoId)
+    setLightboxIndex(globalIndex)
+  }
+
+  const handleDateFilter = (date: string) => {
+    setSelectedDate(date === selectedDate ? null : date)
+    setCurrentPage(1) // Reset pagination when filtering
   }
 
   const handleCloseModal = () => {
@@ -141,41 +156,141 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {currentPhotos.map((photo, index) => (
-          <div
-            key={photo.id}
-            onClick={() => handlePhotoClick(index)}
-            className="group relative aspect-[2/3] overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
-          >
-            <Image
-              src={photo.demoUrl || photo.preview_s3_url}
-              alt="Photo de surf"
-              fill
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                console.error('Erreur de chargement image:', photo.demoUrl || photo.preview_s3_url)
-                console.error('Photo complète:', photo)
-              }}
-              onLoad={() => {
-                console.log('Image chargée avec succès:', photo.demoUrl || photo.preview_s3_url)
-              }}
-            />
-            
-            {/* Overlay simple */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
-              <div className="text-white text-center">
-                <p className="text-xs font-medium">
-                  {photo.gallery?.name}
-                </p>
-                <p className="text-xs opacity-75">
-                  {new Date(photo.gallery?.date || '').toLocaleDateString('fr-FR')}
-                </p>
+      <div className="space-y-8">
+        {/* Sélecteur de dates - Petites cartes de jours horizontales */}
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+          {[...new Map(galleries.map((gallery: any) => [gallery.date, gallery])).values()].map((gallery: any) => (
+            <button 
+              key={gallery.date} 
+              onClick={() => handleDateFilter(gallery.date)}
+              className="flex-shrink-0"
+            >
+              <div className={`w-32 bg-white rounded-lg border transition-all duration-300 cursor-pointer ${
+                selectedDate === gallery.date 
+                  ? 'border-purple-500 shadow-lg ring-2 ring-purple-200' 
+                  : 'border-gray-200 hover:shadow-md'
+              }`}>
+                <div className="relative h-32 rounded-t-lg overflow-hidden">
+                  {gallery.photos && gallery.photos.length > 0 ? (
+                    <Image
+                      src={gallery.photos[0].preview_s3_url}
+                      alt={`Photos du ${new Date(gallery.date).toLocaleDateString('fr-FR')}`}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+                      <Image
+                        src="/Logos/camera2.svg"
+                        alt="Camera"
+                        width={24}
+                        height={24}
+                        className="w-6 h-6"
+                        style={{ filter: 'brightness(0) invert(1)' }}
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="absolute top-1 right-1 bg-white/90 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+                    <span className="text-xs font-medium text-gray-700">
+                      {galleries.filter((g: any) => g.date === gallery.date).length}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="p-2">
+                  <p className={`text-center text-xs font-medium ${
+                    selectedDate === gallery.date ? 'text-purple-600' : 'text-black'
+                  }`}>
+                    {new Date(gallery.date).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'short'
+                    })}
+                  </p>
+                </div>
               </div>
-            </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Toutes les photos */}
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-900">
+              {selectedDate 
+                ? `Photos du ${new Date(selectedDate).toLocaleDateString('fr-FR', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}`
+                : 'Toutes les photos'
+              }
+            </h3>
+            {selectedDate && (
+              <button
+                onClick={() => setSelectedDate(null)}
+                className="text-purple-600 hover:text-purple-800 text-sm font-medium"
+              >
+                Voir toutes les photos
+              </button>
+            )}
           </div>
-        ))}
+          
+          {filteredPhotos.length === 0 ? (
+            <div className="text-center py-12">
+              <Image
+                src="/Logos/camera2.svg"
+                alt="Aucune photo"
+                width={64}
+                height={64}
+                className="w-16 h-16 mx-auto mb-4 opacity-50"
+              />
+              <p className="text-gray-500">
+                {selectedDate 
+                  ? "Aucune photo disponible pour cette date"
+                  : "Aucune photo disponible en mode démonstration"
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {currentPhotos.map((photo, index) => (
+                <div
+                  key={photo.id}
+                  onClick={() => handlePhotoClick(index)}
+                  className="group relative aspect-[2/3] overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
+                >
+                  <Image
+                    src={photo.demoUrl || photo.preview_s3_url}
+                    alt="Photo de surf"
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      console.error('Erreur de chargement image:', photo.demoUrl || photo.preview_s3_url)
+                      console.error('Photo complète:', photo)
+                    }}
+                    onLoad={() => {
+                      console.log('Image chargée avec succès:', photo.demoUrl || photo.preview_s3_url)
+                    }}
+                  />
+                  
+                  {/* Overlay simple */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
+                    <div className="text-white text-center">
+                      <p className="text-xs font-medium">
+                        {photo.gallery?.name}
+                      </p>
+                      <p className="text-xs opacity-75">
+                        {new Date(photo.gallery?.date || '').toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Pagination */}
