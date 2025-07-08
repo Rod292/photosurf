@@ -122,7 +122,7 @@ export function DemoPhotoLightboxModal({
 
     addItem({
       photo_id: currentPhoto.id,
-      product_type: selectedProduct as 'digital' | 'print' | 'bundle',
+      product_type: selectedProduct as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2',
       price: selectedOption.price,
       preview_url: currentPhoto.preview_s3_url,
       filename: currentPhoto.filename

@@ -71,8 +71,8 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
           photo_id: photoId,
           product_type: productType,
           gallery_id: galleryId,
-          delivery_option: isZustandItem && zustandItem.delivery_option ? zustandItem.delivery_option : '',
-          delivery_price: isZustandItem && zustandItem.delivery_price ? zustandItem.delivery_price.toString() : '0',
+          delivery_option: isZustandItem ? (item as ZustandCartItem).delivery_option || '' : '',
+          delivery_price: isZustandItem ? ((item as ZustandCartItem).delivery_price || 0).toString() : '0',
         },
       });
 

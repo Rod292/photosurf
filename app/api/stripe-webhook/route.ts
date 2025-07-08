@@ -82,12 +82,12 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }
 
     // Extract shipping address if available
-    const shippingAddress = session.shipping_details?.address ? {
-      line1: session.shipping_details.address.line1,
-      line2: session.shipping_details.address.line2,
-      city: session.shipping_details.address.city,
-      postal_code: session.shipping_details.address.postal_code,
-      country: session.shipping_details.address.country,
+    const shippingAddress = (session as any).shipping_details?.address ? {
+      line1: (session as any).shipping_details.address.line1,
+      line2: (session as any).shipping_details.address.line2,
+      city: (session as any).shipping_details.address.city,
+      postal_code: (session as any).shipping_details.address.postal_code,
+      country: (session as any).shipping_details.address.country,
     } : null;
 
     // Create the order record
