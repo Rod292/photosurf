@@ -259,7 +259,7 @@ export function PhotoLightboxModal({
 
             {/* Purchase options sidebar */}
             <motion.div 
-              className="w-full md:w-80 bg-gradient-to-b from-white to-gray-50 p-4 md:p-6 border-l md:border-l md:border-t-0 border-t shadow-inner overflow-y-auto max-h-[50vh] md:max-h-full"
+              className="w-full md:w-80 bg-gradient-to-b from-white to-gray-50 p-4 md:p-6 border-l md:border-l md:border-t-0 border-t shadow-inner overflow-y-auto max-h-[60vh] md:max-h-full"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
@@ -383,6 +383,9 @@ export function PhotoLightboxModal({
                   💰 <strong>Réductions dégressives :</strong> 2ème photo 10€ • 3ème+ photos 5€
                 </p>
               </div>
+              
+              {/* Padding en bas pour éviter que le bouton soit coupé */}
+              <div className="pb-4 md:pb-0"></div>
             </motion.div>
           </div>
         </div>
