@@ -83,26 +83,34 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
               
               {/* Date picker pour les autres dates */}
               <div className="relative">
-                <input
-                  type="date"
-                  value={selectedDate && !uniqueDates.slice(0, 3).includes(selectedDate) ? selectedDate : ''}
-                  onChange={(e) => {
-                    const date = e.target.value;
-                    if (date && uniqueDates.includes(date)) {
-                      setSelectedDate(date);
-                    } else if (date === '') {
-                      setSelectedDate(null);
-                    }
-                  }}
-                  className={`px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    selectedDate && !uniqueDates.slice(0, 3).includes(selectedDate)
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                  min={uniqueDates[uniqueDates.length - 1]} // Date la plus ancienne
-                  max={uniqueDates[0]} // Date la plus récente
-                  placeholder="Autre date"
-                />
+                <div className="flex items-center">
+                  <input
+                    type="date"
+                    value={selectedDate && !uniqueDates.slice(0, 3).includes(selectedDate) ? selectedDate : ''}
+                    onChange={(e) => {
+                      const date = e.target.value;
+                      if (date && uniqueDates.includes(date)) {
+                        setSelectedDate(date);
+                      } else if (date === '') {
+                        setSelectedDate(null);
+                      }
+                    }}
+                    className={`px-4 py-2 border rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      selectedDate && !uniqueDates.slice(0, 3).includes(selectedDate)
+                        ? 'border-blue-500 bg-blue-50 text-blue-600'
+                        : 'border-gray-300 bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                    min={uniqueDates[uniqueDates.length - 1]} // Date la plus ancienne
+                    max={uniqueDates[0]} // Date la plus récente
+                    style={{
+                      colorScheme: 'light',
+                      WebkitCalendarPickerIndicator: {
+                        opacity: 0.7,
+                        cursor: 'pointer'
+                      }
+                    }}
+                  />
+                </div>
                 <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap">
                   {uniqueDates.length > 3 ? 'Plus de dates' : 'Choisir une date'}
                 </div>
