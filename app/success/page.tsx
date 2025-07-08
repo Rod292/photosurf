@@ -121,7 +121,7 @@ function SuccessContent() {
           <p>
             {sessionDetails 
               ? `Un email de confirmation a été envoyé à ${sessionDetails.customer_email}. Les photos numériques sont disponibles immédiatement et les tirages seront expédiés sous 3-5 jours ouvrés.`
-              : "Les photos vous seront envoyées par mail dans un délai de quelques heures. Vous recevrez les photos en haute résolution et avec les retouches finales."
+              : "Les photos vous seront envoyées par mail dans les prochaines minutes. Vous recevrez les photos en haute résolution et avec les retouches finales. Pensez à vérifier vos spams !"
             }
           </p>
         </div>

@@ -332,8 +332,8 @@ export function CartContent() {
             </div>
             <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded">
               <p className="text-sm font-lexend-deca">
-                Les photos vous seront envoyées par mail dans un délai de quelques heures. Vous recevrez les photos en
-                haute résolution et avec les retouches finales.
+                Les photos vous seront envoyées par mail dans les prochaines minutes. Vous recevrez les photos en
+                haute résolution et avec les retouches finales. Pensez à vérifier vos spams !
               </p>
               {dynamicPricing.totalSavings > 0 && (
                 <p className="text-sm font-lexend-deca mt-2 text-green-700">
