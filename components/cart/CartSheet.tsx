@@ -126,7 +126,7 @@ export function CartSheet() {
             <div className="space-y-4">
               {items.map((item) => (
                 <div key={`${item.photo_id}-${item.product_type}`} className="flex gap-3 py-3 border-b">
-                  <div className="relative h-16 w-16 overflow-hidden rounded-md">
+                  <div className="relative h-20 w-20 sm:h-16 sm:w-16 overflow-hidden rounded-md flex-shrink-0">
                     <Image
                       src={item.preview_url}
                       alt="Photo"
