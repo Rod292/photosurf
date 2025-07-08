@@ -11,14 +11,9 @@ export function MobileHeader() {
   const router = useRouter()
   const { scrollY } = useScroll()
 
-  // Animations for navigation icons and text
-  const iconOpacity = useTransform(scrollY, [0, 100], [1, 0])
-  const textY = useTransform(scrollY, [0, 100], [0, -12])
-  
-  // Animation for tagline - smoother transitions
-  const taglineScale = useTransform(scrollY, [0, 80], [1, 0.3])
+  // Simplified animations for better performance
+  const headerOpacity = useTransform(scrollY, [0, 100], [1, 0.8])
   const taglineOpacity = useTransform(scrollY, [0, 60], [1, 0])
-  const taglineY = useTransform(scrollY, [0, 80], [0, -20])
   const taglineHeight = useTransform(scrollY, [0, 80], ["28px", "0px"])
 
   useEffect(() => {
@@ -51,19 +46,16 @@ export function MobileHeader() {
       {/* Navigation Row */}
       <motion.div 
         className="px-4 pb-2 border-b border-gray-200"
-        style={{ y: textY }}
+        style={{ opacity: headerOpacity }}
       >
         <div className="flex items-center justify-around">
           {/* Photos */}
           <motion.button
             onClick={() => handleNavigation("/gallery")}
-            className="flex flex-col items-center gap-0 px-2 py-0 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px]"
             whileTap={{ scale: 0.98 }}
           >
-            <motion.div
-              style={{ opacity: iconOpacity }}
-              className="w-6 h-6 flex items-center justify-center"
-            >
+            <div className="w-6 h-6 flex items-center justify-center">
               <Image
                 src="/Logos/camera2.svg"
                 alt="Camera"
@@ -71,25 +63,19 @@ export function MobileHeader() {
                 height={24}
                 className="w-full h-full"
               />
-            </motion.div>
-            <motion.span
-              style={{ y: textY }}
-              className="text-sm font-medium text-gray-700"
-            >
+            </div>
+            <span className="text-sm font-medium text-gray-700">
               Photos
-            </motion.span>
+            </span>
           </motion.button>
 
           {/* Nos produits */}
           <motion.button
             onClick={() => handleNavigation("/boutique")}
-            className="flex flex-col items-center gap-0 px-2 py-0 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px]"
             whileTap={{ scale: 0.98 }}
           >
-            <motion.div
-              style={{ opacity: iconOpacity }}
-              className="w-6 h-6 flex items-center justify-center"
-            >
+            <div className="w-6 h-6 flex items-center justify-center">
               <Image
                 src="/Logos/Nos-produits.svg"
                 alt="Nos produits"
@@ -97,25 +83,19 @@ export function MobileHeader() {
                 height={24}
                 className="w-full h-full"
               />
-            </motion.div>
-            <motion.span
-              style={{ y: textY }}
-              className="text-sm font-medium text-gray-700"
-            >
+            </div>
+            <span className="text-sm font-medium text-gray-700">
               Nos produits
-            </motion.span>
+            </span>
           </motion.button>
 
           {/* Contact */}
           <motion.button
             onClick={() => handleNavigation("/contact")}
-            className="flex flex-col items-center gap-0 px-2 py-0 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px]"
             whileTap={{ scale: 0.98 }}
           >
-            <motion.div
-              style={{ opacity: iconOpacity }}
-              className="w-6 h-6 flex items-center justify-center"
-            >
+            <div className="w-6 h-6 flex items-center justify-center">
               <Image
                 src="/Logos/Call-gesture.svg"
                 alt="Contact"
@@ -123,13 +103,10 @@ export function MobileHeader() {
                 height={24}
                 className="w-full h-full"
               />
-            </motion.div>
-            <motion.span
-              style={{ y: textY }}
-              className="text-sm font-medium text-gray-700"
-            >
+            </div>
+            <span className="text-sm font-medium text-gray-700">
               Contact
-            </motion.span>
+            </span>
           </motion.button>
         </div>
       </motion.div>
@@ -143,14 +120,7 @@ export function MobileHeader() {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <motion.div
-          className="flex items-center justify-center gap-4 text-xs text-black py-1 relative"
-          style={{ 
-            scale: taglineScale,
-            y: taglineY
-          }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-        >
+        <div className="flex items-center justify-center gap-4 text-xs text-black py-1 relative">
           <motion.div
             animate={{ 
               x: [-8, -4, 0, -4, -8],
@@ -161,6 +131,7 @@ export function MobileHeader() {
               repeat: Infinity,
               ease: "easeInOut"
             }}
+            style={{ willChange: 'transform' }}
           >
             <Image
               src="/Logos/surfer.svg"
@@ -182,6 +153,7 @@ export function MobileHeader() {
               ease: "easeInOut",
               delay: 0.5
             }}
+            style={{ willChange: 'transform' }}
           >
             <Image
               src="/Logos/surfer.svg"
@@ -191,7 +163,7 @@ export function MobileHeader() {
               className="w-4 h-4"
             />
           </motion.div>
-        </motion.div>
+        </div>
       </motion.div>
     </div>
   )

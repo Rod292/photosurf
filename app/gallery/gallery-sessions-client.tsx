@@ -176,7 +176,7 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
             </p>
           </div>
         ) : (
-          <StaggerContainer className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" staggerDelay={0.1}>
+          <StaggerContainer className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4" staggerDelay={0.1}>
             {filteredSessions.map((gallery: any, index: number) => (
               <StaggerItem key={gallery.id}>
                 <Link href={`/gallery/${gallery.id}`} className="block">

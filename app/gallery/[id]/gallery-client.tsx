@@ -29,7 +29,7 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
       {/* Galerie de photos */}
       {photos.length > 0 ? (
         <div className="mb-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
             {photos.map((photo, index) => (
               <div 
                 key={photo.id} 

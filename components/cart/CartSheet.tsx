@@ -99,7 +99,7 @@ export function CartSheet() {
           </Button>
         </motion.div>
       </SheetTrigger>
-      <SheetContent className="w-full sm:w-[400px] lg:w-[500px]">
+      <SheetContent className="w-full sm:w-[350px] lg:w-[400px]">
         <SheetHeader>
           <SheetTitle>Votre panier</SheetTitle>
           <SheetDescription>
@@ -110,7 +110,7 @@ export function CartSheet() {
           </SheetDescription>
         </SheetHeader>
         
-        <div className="mt-8 flex-1 overflow-y-auto">
+        <div className="mt-6 flex-1 overflow-y-auto">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
               <Image
@@ -125,8 +125,8 @@ export function CartSheet() {
           ) : (
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={`${item.photo_id}-${item.product_type}`} className="flex gap-4 py-4 border-b">
-                  <div className="relative h-20 w-20 overflow-hidden rounded-md">
+                <div key={`${item.photo_id}-${item.product_type}`} className="flex gap-3 py-3 border-b">
+                  <div className="relative h-16 w-16 overflow-hidden rounded-md">
                     <Image
                       src={item.preview_url}
                       alt="Photo"

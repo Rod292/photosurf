@@ -51,23 +51,23 @@ export function MorphingSearch() {
   const hasValues = Object.values(searchState).some(value => value.length > 0)
 
   return (
-    <div className="relative max-w-2xl mx-auto px-6 py-2">
+    <div className="relative max-w-2xl mx-auto px-4 py-2">
       <motion.div 
-        className="bg-white rounded-[32px] shadow-lg border border-gray-200 p-1"
+        className="bg-white rounded-[24px] shadow-md border border-gray-200 p-1"
         whileHover={{ 
-          scale: 1.02,
-          boxShadow: "0 10px 25px rgba(0,0,0,0.15)"
+          scale: 1.01,
+          boxShadow: "0 6px 20px rgba(0,0,0,0.12)"
         }}
         transition={{ 
           type: "spring",
-          stiffness: 300,
-          damping: 30,
-          duration: 0.6
+          stiffness: 400,
+          damping: 35,
+          duration: 0.3
         }}
       >
         <div className="flex items-center">
           {/* Date */}
-          <div className="flex-1 px-4 py-1.5 border-r border-gray-300 relative">
+          <div className="flex-1 px-3 py-2 border-r border-gray-300 relative">
             <label className="block text-xs font-semibold text-gray-700 mb-1 text-center">
               Date
             </label>
@@ -79,7 +79,7 @@ export function MorphingSearch() {
                   setShowSchoolList(false)
                 }
               }}
-              className="w-full text-center text-sm text-gray-700 bg-transparent border-none outline-none"
+              className="w-full text-center text-sm text-gray-700 bg-transparent border-none outline-none min-h-[20px]"
             >
               {searchState.date 
                 ? new Date(searchState.date).toLocaleDateString("fr-FR")
@@ -101,7 +101,7 @@ export function MorphingSearch() {
           </div>
 
           {/* School */}
-          <div className="flex-1 px-4 py-1.5 relative">
+          <div className="flex-1 px-3 py-2 relative">
             <label className="block text-xs font-semibold text-gray-700 mb-1 text-center">
               École
             </label>
@@ -113,7 +113,7 @@ export function MorphingSearch() {
                   setShowDatePicker(false)
                 }
               }}
-              className="w-full text-center text-sm text-gray-700 bg-transparent border-none outline-none"
+              className="w-full text-center text-sm text-gray-700 bg-transparent border-none outline-none min-h-[20px]"
             >
               {searchState.school || "Quelle école ?"}
             </button>
@@ -140,7 +140,7 @@ export function MorphingSearch() {
           <button
             onClick={handleSearch}
             disabled={!hasValues || isSearching}
-            className={`p-3 rounded-full transition-colors ml-1 ${
+            className={`p-2.5 rounded-full transition-colors ml-1 min-w-[44px] min-h-[44px] flex items-center justify-center ${
               hasValues 
                 ? "bg-blue-600 text-white hover:bg-blue-700" 
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
