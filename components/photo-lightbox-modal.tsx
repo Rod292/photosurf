@@ -259,44 +259,44 @@ export function PhotoLightboxModal({
 
             {/* Purchase options sidebar */}
             <motion.div 
-              className="w-full md:w-80 bg-gradient-to-b from-white to-gray-50 p-4 md:p-6 border-l md:border-l md:border-t-0 border-t shadow-inner overflow-y-auto max-h-[40vh] md:max-h-none"
+              className="w-full md:w-80 bg-gradient-to-b from-white to-gray-50 p-4 md:p-6 border-l md:border-l md:border-t-0 border-t shadow-inner overflow-y-auto max-h-[50vh] md:max-h-full"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <div className="mb-4 md:mb-6">
-                <div className="mb-2 md:mb-3">
+              <div className="mb-3 md:mb-4">
+                <div className="mb-2">
                   <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Galerie</h4>
                   <p className="text-sm font-medium text-gray-800">{currentPhoto.filename}</p>
                 </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">Options d'achat</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Options d'achat</h3>
                 <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
               </div>
               
               <RadioGroup 
                 value={selectedProduct} 
                 onValueChange={setSelectedProduct}
-                className="space-y-3"
+                className="space-y-2"
               >
                 {PRODUCT_OPTIONS.map((option, index) => (
                   <div key={option.id} className="group relative">
                     <div 
-                      className="flex items-start space-x-4 p-4 border-2 rounded-xl bg-white hover:bg-gray-50 transition-all duration-200 hover:shadow-md cursor-pointer group-hover:border-blue-300"
+                      className="flex items-start space-x-3 p-3 border-2 rounded-lg bg-white hover:bg-gray-50 transition-all duration-200 hover:shadow-md cursor-pointer group-hover:border-blue-300"
                       onClick={() => setSelectedProduct(option.id)}
                     >
-                      <RadioGroupItem value={option.id} id={option.id} className="mt-1.5 scale-110 pointer-events-none" />
+                      <RadioGroupItem value={option.id} id={option.id} className="mt-1 scale-110 pointer-events-none" />
                       <div className="flex-1">
                         <Label 
                           htmlFor={option.id} 
-                          className="text-base font-semibold cursor-pointer text-gray-900 group-hover:text-blue-700 transition-colors pointer-events-none"
+                          className="text-sm font-semibold cursor-pointer text-gray-900 group-hover:text-blue-700 transition-colors pointer-events-none"
                         >
                           {option.label}
                         </Label>
-                        <p className="text-sm text-gray-600 mt-1 leading-relaxed pointer-events-none">
+                        <p className="text-xs text-gray-600 mt-0.5 leading-relaxed pointer-events-none">
                           {option.description}
                         </p>
-                        <div className="flex items-center justify-between mt-2">
-                          <p className="text-xl font-bold text-blue-600 pointer-events-none">
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-lg font-bold text-blue-600 pointer-events-none">
                             {selectedProduct === option.id ? formatPrice(getPhotoPrice()) : formatPrice(option.price)}
                           </p>
                         </div>
@@ -308,11 +308,11 @@ export function PhotoLightboxModal({
 
               {/* Options de livraison pour les tirages */}
               {selectedProduct !== 'digital' && (
-                <div className="mt-6 p-4 bg-gray-50 rounded-xl border">
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">Options de livraison</h3>
-                  <div className="space-y-3">
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Options de livraison</h3>
+                  <div className="space-y-2">
                     <div 
-                      className={`flex items-center space-x-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                      className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${
                         deliveryOption === 'pickup' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
                       }`}
                       onClick={() => setDeliveryOption('pickup')}
@@ -325,17 +325,17 @@ export function PhotoLightboxModal({
                         onChange={() => setDeliveryOption('pickup')}
                         className="w-4 h-4 text-blue-600"
                       />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">🏄‍♂️ Récupération à La Torche Surf School</span>
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">GRATUIT</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className="text-sm font-medium">🏄‍♂️ Récupération</span>
+                          <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full font-medium">GRATUIT</span>
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">Nous vous recontacterons pour organiser le rendez-vous</p>
+                        <p className="text-xs text-gray-600">La Torche Surf School</p>
                       </div>
                     </div>
                     
                     <div 
-                      className={`flex items-center space-x-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                      className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${
                         deliveryOption === 'delivery' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
                       }`}
                       onClick={() => setDeliveryOption('delivery')}
@@ -348,14 +348,14 @@ export function PhotoLightboxModal({
                         onChange={() => setDeliveryOption('delivery')}
                         className="w-4 h-4 text-blue-600"
                       />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">📦 Livraison à domicile (tube carton)</span>
-                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className="text-sm font-medium">📦 Livraison</span>
+                          <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full font-medium">
                             +{formatPriceUtil(calculateDeliveryPrice(selectedProduct, 'delivery'))}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">Livraison sécurisée en tube carton</p>
+                        <p className="text-xs text-gray-600">Tube carton sécurisé</p>
                       </div>
                     </div>
                   </div>
@@ -365,7 +365,7 @@ export function PhotoLightboxModal({
               <Button 
                 onClick={handleAddToCart}
                 disabled={isPhotoInCart()}
-                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full mt-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 size="lg"
               >
                 <Image
@@ -378,7 +378,7 @@ export function PhotoLightboxModal({
                 {isPhotoInCart() ? "Déjà dans le panier" : "Ajouter au panier"}
               </Button>
 
-              <div className="mt-6 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+              <div className="mt-4 p-2 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
                 <p className="text-xs text-center text-gray-700">
                   💰 <strong>Réductions dégressives :</strong> 2ème photo 10€ • 3ème+ photos 5€
                 </p>
