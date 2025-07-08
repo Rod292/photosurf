@@ -92,7 +92,7 @@ async function getLatestPhotosFromSchool(schoolName: string) {
     
     const galleryIds = galleries.map(g => g.id)
     
-    // Enfin, obtenir les photos les plus récentes de ces galeries
+    // Enfin, obtenir toutes les photos de ces galeries
     const { data: photos, error: photosError } = await supabase
       .from("photos")
       .select(`
@@ -107,7 +107,6 @@ async function getLatestPhotosFromSchool(schoolName: string) {
       `)
       .in("gallery_id", galleryIds)
       .order("created_at", { ascending: false })
-      .limit(20)
     
     if (photosError) {
       console.error("Erreur lors de la récupération des photos:", photosError)
@@ -142,7 +141,7 @@ async function getLatestPhotosFromDate(date: string) {
       return []
     }
     
-    // Obtenir les photos les plus récentes de ces galeries
+    // Obtenir toutes les photos de ces galeries
     const { data: photos, error: photosError } = await supabase
       .from("photos")
       .select(`
@@ -157,7 +156,6 @@ async function getLatestPhotosFromDate(date: string) {
       `)
       .in("gallery_id", galleryIds)
       .order("created_at", { ascending: false })
-      .limit(20)
     
     if (photosError) {
       console.error("Erreur lors de la récupération des photos:", photosError)
