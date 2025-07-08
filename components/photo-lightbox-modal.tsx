@@ -58,13 +58,12 @@ export function PhotoLightboxModal({
 
   useEffect(() => {
     const checkMobile = () => {
-      // Considérer comme mobile si largeur < 768px OU si c'est un appareil tactile en mode portrait
-      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-      const isPortrait = window.innerWidth < window.innerHeight
+      // Considérer comme mobile uniquement pour les petits écrans
+      // iPad et tablettes utiliseront le layout desktop
       const isSmallScreen = window.innerWidth < 768
-      const isTabletPortrait = window.innerWidth < 1024 && isPortrait && isTouchDevice
       
-      setIsMobile(isSmallScreen || isTabletPortrait)
+      console.log('PhotoLightbox - Screen width:', window.innerWidth, 'isMobile:', isSmallScreen)
+      setIsMobile(isSmallScreen)
     }
     
     checkMobile()
@@ -132,7 +131,7 @@ export function PhotoLightboxModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-4xl w-full h-[95vh] md:h-[90vh] p-0"
+        className="max-w-5xl w-[95vw] h-[95vh] md:h-[90vh] p-0"
         style={{
           animation: 'none', // Disable default dialog animation
         }}
@@ -149,7 +148,7 @@ export function PhotoLightboxModal({
         >
         <div className="flex flex-col h-full">
           {/* Main content */}
-          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
+          <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
             {/* Image section */}
             <div className="flex-1 relative bg-gray-100 flex items-center justify-center min-h-0">
               {/* Photo counter overlay */}
@@ -208,7 +207,7 @@ export function PhotoLightboxModal({
 
             {/* Purchase options sidebar */}
             <motion.div 
-              className="w-full lg:w-80 bg-gradient-to-b from-white to-gray-50 p-4 md:p-6 border-l lg:border-l lg:border-t-0 border-t shadow-inner overflow-y-auto max-h-[40vh] lg:max-h-none"
+              className="w-full md:w-80 bg-gradient-to-b from-white to-gray-50 p-4 md:p-6 border-l md:border-l md:border-t-0 border-t shadow-inner overflow-y-auto max-h-[40vh] md:max-h-none"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}

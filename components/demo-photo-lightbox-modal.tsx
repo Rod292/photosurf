@@ -72,13 +72,12 @@ export function DemoPhotoLightboxModal({
 
   useEffect(() => {
     const checkMobile = () => {
-      // Considérer comme mobile si largeur < 768px OU si c'est un appareil tactile en mode portrait
-      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-      const isPortrait = window.innerWidth < window.innerHeight
+      // Considérer comme mobile uniquement pour les petits écrans
+      // iPad et tablettes utiliseront le layout desktop
       const isSmallScreen = window.innerWidth < 768
-      const isTabletPortrait = window.innerWidth < 1024 && isPortrait && isTouchDevice
       
-      setIsMobile(isSmallScreen || isTabletPortrait)
+      console.log('DemoPhotoLightbox - Screen width:', window.innerWidth, 'isMobile:', isSmallScreen)
+      setIsMobile(isSmallScreen)
     }
     
     checkMobile()
@@ -161,13 +160,13 @@ export function DemoPhotoLightboxModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl w-full h-[90vh] p-0 overflow-hidden">
+      <DialogContent className="max-w-7xl w-[95vw] h-[90vh] p-0 overflow-hidden">
         <DialogTitle className="sr-only">
           Photo de surf - {currentPhoto.filename}
         </DialogTitle>
-        <div className="flex flex-col lg:flex-row h-full bg-black">
+        <div className="flex flex-col md:flex-row h-full bg-black">
           {/* Zone d'image principale */}
-          <div className="flex-1 relative flex items-center justify-center bg-black min-h-[50vh] lg:min-h-full">
+          <div className="flex-1 relative flex items-center justify-center bg-black min-h-[50vh] md:min-h-full">
             {imageLoading && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
@@ -211,7 +210,7 @@ export function DemoPhotoLightboxModal({
           </div>
 
           {/* Sidebar des options d'achat */}
-          <div className="w-full lg:w-80 bg-gray-50 p-4 lg:p-6 border-l lg:border-l border-t lg:border-t-0 flex flex-col max-h-[40vh] lg:max-h-full overflow-y-auto lg:overflow-y-visible">
+          <div className="w-full md:w-80 bg-gray-50 p-4 md:p-6 border-l md:border-l border-t md:border-t-0 flex flex-col max-h-[40vh] md:max-h-full overflow-y-auto md:overflow-y-visible">
             <h3 className="text-lg font-semibold mb-4">Options d'achat</h3>
             
             {/* Bouton de téléchargement démo */}
