@@ -47,12 +47,15 @@ export function SupabaseImage({
     return (
       <div 
         className={cn(
-          "flex items-center justify-center bg-gray-100 rounded-lg",
+          "flex items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg",
           className
         )}
         style={{ width, height }}
       >
-        <span className="text-gray-400 text-sm">Image non disponible</span>
+        <div className="text-white text-center">
+          <div className="text-2xl mb-1">📷</div>
+          <div className="text-xs">En cours...</div>
+        </div>
       </div>
     )
   }

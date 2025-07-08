@@ -28,9 +28,6 @@ export function PhotoGrid({ children, className = "", columns = 6 }: PhotoGridPr
   return (
     <motion.div
       className={`grid gap-3 md:gap-4 ${className}`}
-      style={{
-        gridTemplateColumns: `repeat(auto-fit, minmax(150px, 1fr))`,
-      }}
       variants={animConfig.enabled ? containerVariants : undefined}
       initial={animConfig.enabled ? "hidden" : undefined}
       animate={animConfig.enabled ? "visible" : undefined}
