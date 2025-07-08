@@ -62,7 +62,6 @@ const uploadServerSchema = z.object({
   gallerySelection: z.string().min(1, "Sélection de galerie requise"),
   newGalleryName: z.string().optional(),
   galleryDate: z.string().min(1, "Date requise"),
-  sessionPeriod: z.union([z.enum(['matin', 'apres-midi', 'midi']), z.literal(""), z.null(), z.undefined()]).optional(),
   originalFiles: z.array(z.instanceof(File)).min(1, "Au moins un fichier original requis"),
   previewFiles: z.array(z.instanceof(File)).min(1, "Au moins un fichier preview requis"),
 })
@@ -102,7 +101,6 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
       gallerySelection,
       newGalleryName: newGalleryName || undefined,
       galleryDate,
-      sessionPeriod,
       originalFiles,
       previewFiles,
     })
@@ -114,7 +112,7 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
       }
     }
 
-    const { school_id, gallerySelection: selectedGallery, newGalleryName: newName, galleryDate: date, sessionPeriod: period } = validationResult.data
+    const { school_id, gallerySelection: selectedGallery, newGalleryName: newName, galleryDate: date } = validationResult.data
 
     // Vérifier que l'école de surf existe
     const { data: surfSchool, error: schoolError } = await supabase
@@ -164,43 +162,18 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
         }
       }
 
-      // Créer une nouvelle galerie avec school_id et session_period (si supporté)
-      const galleryData: any = {
+      // Créer une nouvelle galerie
+      const galleryData = {
         name: newName.trim(),
         date: date,
         school_id: school_id,
       }
       
-      // Essayer d'abord avec session_period si fourni
-      if (period) {
-        galleryData.session_period = period
-      }
-      
-      let { data: newGallery, error: galleryError } = await supabase
+      const { data: newGallery, error: galleryError } = await supabase
         .from('galleries')
         .insert(galleryData)
         .select('id')
         .single()
-
-      // Si erreur liée à session_period, réessayer sans ce champ
-      if (galleryError && galleryError.message?.includes('session_period') && period) {
-        console.log('⚠️ Colonne session_period non trouvée, création sans ce champ...')
-        
-        const fallbackData = {
-          name: newName.trim(),
-          date: date,
-          school_id: school_id,
-        }
-        
-        const result = await supabase
-          .from('galleries')
-          .insert(fallbackData)
-          .select('id')
-          .single()
-        
-        newGallery = result.data
-        galleryError = result.error
-      }
 
       if (galleryError || !newGallery) {
         console.error('Gallery creation error:', galleryError)

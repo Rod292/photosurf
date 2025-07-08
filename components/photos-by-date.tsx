@@ -176,16 +176,6 @@ export function PhotosByDate() {
                       </div>
                     )}
                     
-                    {/* Badge période */}
-                    {group.galleries[0].session_period && (
-                      <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
-                        <span className="text-xs font-semibold text-gray-700">
-                          {group.galleries[0].session_period === 'matin' && '🌅'}
-                          {group.galleries[0].session_period === 'apres-midi' && '☀️'}
-                          {group.galleries[0].session_period === 'midi' && '🌅☀️'}
-                        </span>
-                      </div>
-                    )}
                   </div>
                   
                   <div className="p-3">
@@ -259,13 +249,6 @@ export function PhotosByDate() {
                           month: 'short'
                         })}
                       </p>
-                      {gallery.session_period && (
-                        <p className="text-center text-xs text-blue-600 mt-1 font-medium capitalize">
-                          {gallery.session_period === 'matin' && '🌅 Matin'}
-                          {gallery.session_period === 'apres-midi' && '☀️ Après-midi'}
-                          {gallery.session_period === 'midi' && '🌅☀️ Midi'}
-                        </p>
-                      )}
                       <p className="text-center text-xs text-gray-500 mt-1">
                         {gallery.photoCount} photo{gallery.photoCount > 1 ? 's' : ''}
                       </p>

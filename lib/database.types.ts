@@ -11,7 +11,6 @@ export interface Gallery {
   name: string
   slug?: string
   date: string
-  session_period?: 'matin' | 'apres-midi' | 'midi'  // Période de la session
   school_id?: number  // Foreign key vers surf_schools
   created_at?: string
   surf_school?: {
