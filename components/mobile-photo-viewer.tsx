@@ -18,9 +18,11 @@ interface MobilePhotoViewerProps {
 }
 
 const PRODUCT_OPTIONS = [
-  { id: 'digital', label: 'Numérique', price: 15 },
-  { id: 'print', label: 'Tirage A4', price: 25 },
-  { id: 'bundle', label: 'Pack Complet', price: 35 }
+  { id: 'digital', label: 'Photo Numérique', price: 15, description: 'Téléchargement haute résolution' },
+  { id: 'print_a5', label: 'Tirage A5', price: 20, description: 'Impression A5 + JPEG inclus' },
+  { id: 'print_a4', label: 'Tirage A4', price: 30, description: 'Impression A4 + JPEG inclus' },
+  { id: 'print_a3', label: 'Tirage A3', price: 50, description: 'Impression A3 + JPEG inclus' },
+  { id: 'print_a2', label: 'Tirage A2', price: 80, description: 'Impression A2 + JPEG inclus' }
 ] as const
 
 export function MobilePhotoViewer({
@@ -297,7 +299,10 @@ export function MobilePhotoViewer({
                     )}
                   >
                     <div className="flex justify-between items-center">
-                      <span className="font-medium">{option.label}</span>
+                      <div>
+                        <span className="font-medium">{option.label}</span>
+                        <p className="text-sm text-gray-600">{option.description}</p>
+                      </div>
                       <span className="font-bold text-blue-600">{option.price}€</span>
                     </div>
                   </button>
