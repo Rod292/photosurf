@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import { SupabaseImage } from "@/components/ui/supabase-image"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { StaggerContainer, StaggerItem } from "@/components/animations/page-transition"
+import { SimpleCalendar } from "@/components/ui/simple-calendar"
+import { Calendar } from "lucide-react"
 
 interface GallerySessionsClientProps {
   galleries: any[]
@@ -13,6 +15,8 @@ interface GallerySessionsClientProps {
 
 export function GallerySessionsClient({ galleries }: GallerySessionsClientProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false)
+  const datePickerRef = useRef<HTMLDivElement>(null)
   
   // Chaque galerie est une session séparée
   const sessionsWithPhotos = galleries
@@ -30,6 +34,25 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
 
   const handleDateFilter = (date: string) => {
     setSelectedDate(date === selectedDate ? null : date)
+  }
+
+  // Fermer le date picker au clic extérieur
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
+        setShowCustomDatePicker(false)
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleCustomDateSelect = (date: string) => {
+    if (uniqueDates.includes(date)) {
+      setSelectedDate(date)
+    }
+    setShowCustomDatePicker(false)
   }
 
   return (
@@ -81,36 +104,49 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
                 </motion.button>
               ))}
               
-              {/* Date picker pour les autres dates */}
-              <div className="relative">
-                <div className="flex items-center">
-                  <input
-                    type="date"
-                    value={selectedDate && !uniqueDates.slice(0, 3).includes(selectedDate) ? selectedDate : ''}
-                    onChange={(e) => {
-                      const date = e.target.value;
-                      if (date && uniqueDates.includes(date)) {
-                        setSelectedDate(date);
-                      } else if (date === '') {
-                        setSelectedDate(null);
-                      }
-                    }}
-                    className={`px-4 py-2 border rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      selectedDate && !uniqueDates.slice(0, 3).includes(selectedDate)
-                        ? 'border-blue-500 bg-blue-50 text-blue-600'
-                        : 'border-gray-300 bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                    min={uniqueDates[uniqueDates.length - 1]} // Date la plus ancienne
-                    max={uniqueDates[0]} // Date la plus récente
-                    style={{
-                      colorScheme: 'light',
-                      WebkitCalendarPickerIndicator: {
-                        opacity: 0.7,
-                        cursor: 'pointer'
-                      }
-                    }}
-                  />
-                </div>
+              {/* Date picker personnalisé pour les autres dates */}
+              <div className="relative" ref={datePickerRef}>
+                <motion.button
+                  onClick={() => setShowCustomDatePicker(!showCustomDatePicker)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    selectedDate && !uniqueDates.slice(0, 3).includes(selectedDate)
+                      ? 'border-blue-500 bg-blue-50 text-blue-600'
+                      : 'border border-gray-300 bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    {selectedDate && !uniqueDates.slice(0, 3).includes(selectedDate)
+                      ? new Date(selectedDate).toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric'
+                        })
+                      : 'Plus de dates'
+                    }
+                  </span>
+                </motion.button>
+                
+                <AnimatePresence>
+                  {showCustomDatePicker && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                    >
+                      <SimpleCalendar
+                        selectedDate={selectedDate || ''}
+                        onDateSelect={handleCustomDateSelect}
+                        availableDates={uniqueDates}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
                 <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap">
                   {uniqueDates.length > 3 ? 'Plus de dates' : 'Choisir une date'}
                 </div>

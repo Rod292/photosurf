@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 interface SimpleCalendarProps {
   selectedDate: string
   onDateSelect: (date: string) => void
+  availableDates?: string[]
 }
 
 const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
@@ -14,7 +15,7 @@ const MONTHS = [
   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
 ]
 
-export function SimpleCalendar({ selectedDate, onDateSelect }: SimpleCalendarProps) {
+export function SimpleCalendar({ selectedDate, onDateSelect, availableDates }: SimpleCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(() => {
     return selectedDate ? new Date(selectedDate) : new Date()
   })
@@ -75,6 +76,15 @@ export function SimpleCalendar({ selectedDate, onDateSelect }: SimpleCalendarPro
     return date.toDateString() === selected.toDateString()
   }
 
+  const isAvailable = (date: Date) => {
+    if (!availableDates) return true
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateString = `${year}-${month}-${day}`
+    return availableDates.includes(dateString)
+  }
+
   const days = getDaysInMonth(currentMonth)
 
   return (
@@ -117,11 +127,14 @@ export function SimpleCalendar({ selectedDate, onDateSelect }: SimpleCalendarPro
             <div key={index} className="aspect-square">
               {date && (
                 <button
-                  onClick={() => handleDateClick(date)}
+                  onClick={() => isAvailable(date) && handleDateClick(date)}
+                  disabled={!isAvailable(date)}
                   className={`
                     w-full h-full flex items-center justify-center text-xs rounded
                     transition-all duration-150 font-medium
-                    ${isSelected(date) 
+                    ${!isAvailable(date)
+                      ? 'text-gray-300 cursor-not-allowed'
+                      : isSelected(date) 
                       ? 'bg-blue-500 text-white' 
                       : isToday(date)
                       ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
