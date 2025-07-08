@@ -8,6 +8,7 @@ import { useCartStore } from "@/context/cart-context"
 import { Photo } from "@/lib/database.types"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import { getNextPhotoPrice, calculateDeliveryPrice } from "@/lib/pricing"
 
 interface MobilePhotoViewerProps {
   isOpen: boolean
@@ -36,8 +37,28 @@ export function MobilePhotoViewer({
   const [showOptions, setShowOptions] = useState(false)
   const [addedToCart, setAddedToCart] = useState(false)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
+  const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'delivery'>('pickup')
   const { addItem, items } = useCartStore()
   const { toast } = useToast()
+
+  // Calculer le prix dynamique selon le nombre d'éléments dans le panier
+  const getDynamicPrice = (productType: string) => {
+    if (productType === 'digital') {
+      // Compter seulement les photos numériques pour le pricing dynamique
+      const digitalPhotosCount = items.filter(item => item.product_type === 'digital').length
+      return getNextPhotoPrice(digitalPhotosCount, 'digital')
+    } else {
+      // Pour les tirages, prix fixe
+      const option = PRODUCT_OPTIONS.find(opt => opt.id === productType)
+      return option?.price || 15
+    }
+  }
+
+  // Calculer le prix de livraison
+  const getDeliveryPrice = (productType: string) => {
+    if (productType === 'digital') return 0
+    return calculateDeliveryPrice(productType, deliveryOption)
+  }
 
   const currentPhoto = photos[currentIndex]
 
@@ -82,17 +103,22 @@ export function MobilePhotoViewer({
     const selectedOption = PRODUCT_OPTIONS.find(option => option.id === selectedProduct)
     if (!selectedOption) return
 
+    const dynamicPrice = getDynamicPrice(selectedProduct)
+    const deliveryPrice = getDeliveryPrice(selectedProduct)
+
     addItem({
       photo_id: currentPhoto.id,
       product_type: selectedProduct as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2',
-      price: selectedOption.price,
+      price: dynamicPrice,
       preview_url: currentPhoto.preview_s3_url,
-      filename: currentPhoto.filename
+      filename: currentPhoto.filename,
+      delivery_option: selectedProduct !== 'digital' ? deliveryOption : undefined,
+      delivery_price: deliveryPrice > 0 ? deliveryPrice : undefined
     })
 
     toast({
       title: "Photo ajoutée au panier !",
-      description: `${selectedOption.label} - ${selectedOption.price}€`,
+      description: `${selectedOption.label} - ${dynamicPrice}€${deliveryPrice > 0 ? ` + ${deliveryPrice}€ livraison` : ''}`,
       duration: 3000,
     })
 
@@ -249,7 +275,8 @@ export function MobilePhotoViewer({
               <div>
                 <p className="font-medium text-gray-900">{currentPhoto.filename}</p>
                 <p className="text-sm text-gray-600">
-                  {PRODUCT_OPTIONS.find(opt => opt.id === selectedProduct)?.label} - {PRODUCT_OPTIONS.find(opt => opt.id === selectedProduct)?.price}€
+                  {PRODUCT_OPTIONS.find(opt => opt.id === selectedProduct)?.label} - {getDynamicPrice(selectedProduct)}€
+                  {getDeliveryPrice(selectedProduct) > 0 && ` + ${getDeliveryPrice(selectedProduct)}€ livraison`}
                 </p>
               </div>
               <button
@@ -289,7 +316,6 @@ export function MobilePhotoViewer({
                     key={option.id}
                     onClick={() => {
                       setSelectedProduct(option.id)
-                      setShowOptions(false)
                     }}
                     className={cn(
                       "w-full p-3 rounded-lg text-left transition-all",
@@ -303,11 +329,49 @@ export function MobilePhotoViewer({
                         <span className="font-medium">{option.label}</span>
                         <p className="text-sm text-gray-600">{option.description}</p>
                       </div>
-                      <span className="font-bold text-blue-600">{option.price}€</span>
+                      <div className="text-right">
+                        <span className="font-bold text-blue-600">{getDynamicPrice(option.id)}€</span>
+                        {getDeliveryPrice(option.id) > 0 && (
+                          <p className="text-xs text-gray-500">+ {getDeliveryPrice(option.id)}€ livraison</p>
+                        )}
+                      </div>
                     </div>
                   </button>
                 ))}
               </div>
+              
+              {/* Options de livraison pour les tirages */}
+              {selectedProduct !== 'digital' && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Options de livraison :</p>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => setDeliveryOption('pickup')}
+                      className={cn(
+                        "w-full p-2 rounded text-left text-sm transition-all",
+                        deliveryOption === 'pickup'
+                          ? "bg-blue-100 border border-blue-300 text-blue-700"
+                          : "bg-white border border-gray-200 text-gray-700"
+                      )}
+                    >
+                      <div className="font-medium">Récupération à La Torche Surf School</div>
+                      <div className="text-xs text-gray-600">Gratuit</div>
+                    </button>
+                    <button
+                      onClick={() => setDeliveryOption('delivery')}
+                      className={cn(
+                        "w-full p-2 rounded text-left text-sm transition-all",
+                        deliveryOption === 'delivery'
+                          ? "bg-blue-100 border border-blue-300 text-blue-700"
+                          : "bg-white border border-gray-200 text-gray-700"
+                      )}
+                    >
+                      <div className="font-medium">Livraison à domicile</div>
+                      <div className="text-xs text-gray-600">+ {getDeliveryPrice(selectedProduct)}€</div>
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="flex gap-2 mt-4">
                 <button
                   onClick={() => setShowOptions(false)}
@@ -321,8 +385,9 @@ export function MobilePhotoViewer({
                     setShowOptions(false)
                   }}
                   className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-full font-medium active:scale-95"
+                  disabled={addedToCart}
                 >
-                  Confirmer
+                  {addedToCart ? 'Ajouté' : 'Confirmer'}
                 </button>
               </div>
             </div>
