@@ -171,16 +171,36 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
         school_id: school_id,
       }
       
-      // Ajouter session_period seulement si fourni
+      // Essayer d'abord avec session_period si fourni
       if (period) {
         galleryData.session_period = period
       }
       
-      const { data: newGallery, error: galleryError } = await supabase
+      let { data: newGallery, error: galleryError } = await supabase
         .from('galleries')
         .insert(galleryData)
         .select('id')
         .single()
+
+      // Si erreur liée à session_period, réessayer sans ce champ
+      if (galleryError && galleryError.message?.includes('session_period') && period) {
+        console.log('⚠️ Colonne session_period non trouvée, création sans ce champ...')
+        
+        const fallbackData = {
+          name: newName.trim(),
+          date: date,
+          school_id: school_id,
+        }
+        
+        const result = await supabase
+          .from('galleries')
+          .insert(fallbackData)
+          .select('id')
+          .single()
+        
+        newGallery = result.data
+        galleryError = result.error
+      }
 
       if (galleryError || !newGallery) {
         console.error('Gallery creation error:', galleryError)
