@@ -12,6 +12,7 @@ import { Photo } from "@/lib/database.types"
 import { useToast } from "@/hooks/use-toast"
 import { MobilePhotoViewer } from "./mobile-photo-viewer"
 import { motion } from "framer-motion"
+import { getNextPhotoPrice, formatPrice as formatPriceUtil, calculateSavingsPercentage } from "@/lib/pricing"
 
 interface PhotoLightboxModalProps {
   isOpen: boolean
@@ -50,8 +51,9 @@ export function PhotoLightboxModal({
   onNavigate
 }: PhotoLightboxModalProps) {
   const [selectedProduct, setSelectedProduct] = useState<string>('digital')
+  const [quantity, setQuantity] = useState(1)
   const [isMobile, setIsMobile] = useState(false)
-  const { addItem } = useCartStore()
+  const { addItem, items } = useCartStore()
   const { toast } = useToast()
 
   const currentPhoto = photos[currentIndex]
@@ -91,17 +93,36 @@ export function PhotoLightboxModal({
     const selectedOption = PRODUCT_OPTIONS.find(option => option.id === selectedProduct)
     if (!selectedOption) return
 
+    // Vérifier si cette photo est déjà dans le panier pour ce type de produit
+    const existingItem = items.find(item => 
+      item.photo_id === currentPhoto.id && item.product_type === selectedProduct
+    )
+    
+    if (existingItem) {
+      toast({
+        title: "Photo déjà dans le panier",
+        description: "Cette photo est déjà ajoutée pour ce type de produit",
+        variant: "destructive",
+        duration: 4000,
+      })
+      return
+    }
+
+    // Calculer le prix selon le nombre de photos actuelles dans le panier
+    const currentPhotoCount = items.filter(item => item.product_type === selectedProduct).length
+    const photoPrice = getNextPhotoPrice(currentPhotoCount, selectedProduct as 'digital' | 'print' | 'bundle')
+    
     addItem({
       photo_id: currentPhoto.id,
       product_type: selectedProduct as 'digital' | 'print' | 'bundle',
-      price: selectedOption.price,
+      price: photoPrice,
       preview_url: currentPhoto.preview_s3_url,
       filename: currentPhoto.filename
     })
 
     toast({
       title: "Photo ajoutée au panier !",
-      description: `${selectedOption.label} - ${selectedOption.price}€`,
+      description: `${selectedOption.label} - ${formatPriceUtil(photoPrice)}`,
       duration: 4000,
     })
   }
@@ -111,6 +132,19 @@ export function PhotoLightboxModal({
       style: 'currency',
       currency: 'EUR'
     }).format(price)
+  }
+
+  // Calculer le prix pour cette photo selon sa position dans le panier
+  const getPhotoPrice = () => {
+    const currentPhotoCount = items.filter(item => item.product_type === selectedProduct).length
+    return getNextPhotoPrice(currentPhotoCount, selectedProduct as 'digital' | 'print' | 'bundle')
+  }
+
+  // Vérifier si la photo est déjà dans le panier
+  const isPhotoInCart = () => {
+    return items.some(item => 
+      item.photo_id === currentPhoto.id && item.product_type === selectedProduct
+    )
   }
 
   if (!currentPhoto) return null
@@ -245,7 +279,7 @@ export function PhotoLightboxModal({
                         </p>
                         <div className="flex items-center justify-between mt-2">
                           <p className="text-xl font-bold text-blue-600 pointer-events-none">
-                            {formatPrice(option.price)}
+                            {selectedProduct === option.id ? formatPrice(getPhotoPrice()) : formatPrice(option.price)}
                           </p>
                           {index === 2 && (
                             <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full pointer-events-none">
@@ -261,7 +295,8 @@ export function PhotoLightboxModal({
 
               <Button 
                 onClick={handleAddToCart}
-                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                disabled={isPhotoInCart()}
+                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 size="lg"
               >
                 <Image
@@ -271,21 +306,13 @@ export function PhotoLightboxModal({
                   height={18}
                   className="h-5 w-5 mr-3 inline-block"
                 />
-                Ajouter au panier
+                {isPhotoInCart() ? "Déjà dans le panier" : "Ajouter au panier"}
               </Button>
 
-              <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
-                <div className="flex items-start space-x-3">
-                  <div className="text-2xl">💡</div>
-                  <div>
-                    <p className="text-sm font-medium text-blue-900 mb-1">
-                      Astuce
-                    </p>
-                    <p className="text-sm text-blue-800">
-                      Le pack Numérique + Tirage vous fait économiser 5€ !
-                    </p>
-                  </div>
-                </div>
+              <div className="mt-6 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                <p className="text-xs text-center text-gray-700">
+                  💰 <strong>Réductions dégressives :</strong> 2ème photo 10€ • 3ème+ photos 5€
+                </p>
               </div>
             </motion.div>
           </div>

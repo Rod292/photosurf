@@ -15,6 +15,7 @@ export function CartContent() {
   const removeItem = useCartStore((state) => state.removeItem)
   const getTotalPrice = useCartStore((state) => state.getTotalPrice)
   const getItemCount = useCartStore((state) => state.getItemCount)
+  const getDynamicPricing = useCartStore((state) => state.getDynamicPricing)
   
   const [isLoading, setIsLoading] = useState(false)
   const [promoCode, setPromoCode] = useState("")
@@ -31,6 +32,7 @@ export function CartContent() {
 
   const totalPrice = getTotalPrice()
   const totalItems = getItemCount()
+  const dynamicPricing = getDynamicPricing()
 
   const handleCheckout = async () => {
     setIsLoading(true);
@@ -81,7 +83,7 @@ export function CartContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           code: promoCode, 
-          totalAmount: totalPrice 
+          totalAmount: dynamicPricing.total 
         })
       })
 
@@ -248,18 +250,27 @@ export function CartContent() {
             </div>
             <div className="flex justify-between mb-4">
               <span className="font-semibold font-lexend-deca">Sous-total :</span>
-              <span className="font-lexend-deca">{totalPrice.toFixed(2)}€</span>
+              <span className="font-lexend-deca">{dynamicPricing.total.toFixed(2)}€</span>
             </div>
+            
+            {/* Affichage des économies automatiques */}
+            {dynamicPricing.totalSavings > 0 && (
+              <div className="flex justify-between mb-4 text-green-600">
+                <span className="font-semibold font-lexend-deca">Économies automatiques :</span>
+                <span className="font-lexend-deca">-{dynamicPricing.totalSavings.toFixed(2)}€</span>
+              </div>
+            )}
+            
             {promoValidation && (
               <div className="flex justify-between mb-4 text-green-600">
-                <span className="font-semibold font-lexend-deca">Réduction ({promoValidation.discount}%) :</span>
+                <span className="font-semibold font-lexend-deca">Réduction code promo ({promoValidation.discount}%) :</span>
                 <span className="font-lexend-deca">-{promoValidation.discountAmount.toFixed(2)}€</span>
               </div>
             )}
             <div className="flex justify-between mb-4 text-lg font-bold">
               <span className="font-lexend-deca">Total :</span>
               <span className="font-lexend-deca">
-                {promoValidation?.isFree ? "GRATUIT" : `${(promoValidation ? promoValidation.finalAmount : totalPrice).toFixed(2)}€`}
+                {promoValidation?.isFree ? "GRATUIT" : `${(promoValidation ? promoValidation.finalAmount : dynamicPricing.total).toFixed(2)}€`}
               </span>
             </div>
             <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded">
@@ -267,6 +278,11 @@ export function CartContent() {
                 Les photos vous seront envoyées par mail dans un délai de quelques heures. Vous recevrez les photos en
                 haute résolution et avec les retouches finales.
               </p>
+              {dynamicPricing.totalSavings > 0 && (
+                <p className="text-sm font-lexend-deca mt-2 text-green-700">
+                  💰 Vous économisez {dynamicPricing.totalSavings.toFixed(2)}€ grâce à notre système de réductions dégressives !
+                </p>
+              )}
             </div>
             <Button className="w-full font-lexend-deca" onClick={handleCheckout} disabled={isLoading}>
               {isLoading ? "Chargement..." : "Passer au paiement"}

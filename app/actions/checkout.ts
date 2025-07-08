@@ -5,6 +5,7 @@ import Stripe from 'stripe';
 import { CartItem as NewCartItem } from '@/contexts/CartContext';
 import { CartItem as ZustandCartItem } from '@/context/cart-context';
 import { createServiceRoleClient } from '@/lib/storage';
+import { calculateDynamicPricing } from '@/lib/pricing';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',

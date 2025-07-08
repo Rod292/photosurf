@@ -318,8 +318,8 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             <Instagram className="h-5 w-5 text-gray-600" />
           </motion.a>
 
-          {/* Panier - hidden on mobile since it's in bottom nav */}
-          <div className="hidden md:block">
+          {/* Panier */}
+          <div>
             <CartSheet />
           </div>
 

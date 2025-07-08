@@ -174,6 +174,20 @@ export default async function GalleryPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
         </div>
+
+        {/* Bandeau réductions */}
+        <div className="bg-gradient-to-r from-emerald-400 to-blue-500 py-3 shadow-sm">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-center gap-3">
+              <div className="bg-white/20 backdrop-blur-sm rounded-full p-1.5">
+                <span className="text-base">💰</span>
+              </div>
+              <p className="text-center text-white font-medium text-sm">
+                <span className="font-bold">Réductions dégressives :</span> 2ème photo 10€ • 3ème+ photos 5€
+              </p>
+            </div>
+          </div>
+        </div>
         
         {/* Galerie de photos */}
         <div className="py-8">

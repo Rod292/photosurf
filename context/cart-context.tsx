@@ -2,6 +2,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { calculateDynamicPricing } from '@/lib/pricing'
 
 export interface CartItem {
   photo_id: string
@@ -20,6 +21,13 @@ interface CartStore {
   toggleCart: () => void
   getTotalPrice: () => number
   getItemCount: () => number
+  getDynamicPricing: () => {
+    digital: ReturnType<typeof calculateDynamicPricing>
+    print: ReturnType<typeof calculateDynamicPricing>
+    bundle: ReturnType<typeof calculateDynamicPricing>
+    total: number
+    totalSavings: number
+  }
 }
 
 export const useCartStore = create<CartStore>()(
@@ -65,6 +73,31 @@ export const useCartStore = create<CartStore>()(
       
       getItemCount: () => {
         return get().items.length
+      },
+
+      getDynamicPricing: () => {
+        const items = get().items
+        
+        // Grouper par type de produit
+        const digitalCount = items.filter(item => item.product_type === 'digital').length
+        const printCount = items.filter(item => item.product_type === 'print').length
+        const bundleCount = items.filter(item => item.product_type === 'bundle').length
+        
+        // Calculer les prix dynamiques pour chaque type
+        const digitalPricing = calculateDynamicPricing(digitalCount, 'digital')
+        const printPricing = calculateDynamicPricing(printCount, 'print')
+        const bundlePricing = calculateDynamicPricing(bundleCount, 'bundle')
+        
+        const total = digitalPricing.finalTotal + printPricing.finalTotal + bundlePricing.finalTotal
+        const totalSavings = digitalPricing.totalSavings + printPricing.totalSavings + bundlePricing.totalSavings
+        
+        return {
+          digital: digitalPricing,
+          print: printPricing,
+          bundle: bundlePricing,
+          total,
+          totalSavings
+        }
       }
     }),
     {

@@ -159,49 +159,6 @@ export default function HomePage() {
                     </div>
       </section>
 
-      {/* Section Photos récentes */}
-      <ContentFlowAnimation 
-        className="bg-white border-t border-gray-100"
-        layoutId="recent-photos"
-        staggerChildren={0.1}
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="px-6 py-4">
-            <FlowItem className="mb-6">
-              <Link href="/gallery">
-                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2 hover:text-gray-700 transition-colors cursor-pointer">
-                  <Image
-                    src="/Logos/camera2.svg"
-                    alt="Camera"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6"
-                  />
-                  Photos récentes {'>'}
-                </h2>
-              </Link>
-            </FlowItem>
-            <FlowItem>
-              <Suspense fallback={
-                <div className="flex gap-4 overflow-x-auto scrollbar-hide">
-                  {[...Array(4)].map((_, i) => (
-                    <motion.div 
-                      key={i} 
-                      className="w-80 h-64 bg-gray-200 rounded-xl animate-pulse flex-shrink-0"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.5, delay: i * 0.1 }}
-                    />
-                  ))}
-                </div>
-              }>
-                <LatestPhotosSectionClient />
-              </Suspense>
-            </FlowItem>
-          </div>
-        </div>
-      </ContentFlowAnimation>
-
       {/* Section Sessions par jour */}
       <ContentFlowAnimation 
         className="bg-gray-50"
@@ -262,6 +219,49 @@ export default function HomePage() {
             <PhotosByDate />
           </Suspense>
                   </div>
+      </ContentFlowAnimation>
+
+      {/* Section Photos récentes */}
+      <ContentFlowAnimation 
+        className="bg-white border-t border-gray-100"
+        layoutId="recent-photos"
+        staggerChildren={0.1}
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="px-6 py-4">
+            <FlowItem className="mb-6">
+              <Link href="/gallery">
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2 hover:text-gray-700 transition-colors cursor-pointer">
+                  <Image
+                    src="/Logos/camera2.svg"
+                    alt="Camera"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
+                  Photos récentes {'>'}
+                </h2>
+              </Link>
+            </FlowItem>
+            <FlowItem>
+              <Suspense fallback={
+                <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+                  {[...Array(4)].map((_, i) => (
+                    <motion.div 
+                      key={i} 
+                      className="w-80 h-64 bg-gray-200 rounded-xl animate-pulse flex-shrink-0"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5, delay: i * 0.1 }}
+                    />
+                  ))}
+                </div>
+              }>
+                <LatestPhotosSectionClient />
+              </Suspense>
+            </FlowItem>
+          </div>
+        </div>
       </ContentFlowAnimation>
               
       {/* Section Écoles de surf */}

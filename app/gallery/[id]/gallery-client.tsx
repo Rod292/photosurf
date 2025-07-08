@@ -5,7 +5,6 @@ import Image from "next/image"
 import { SupabaseImage } from "@/components/ui/supabase-image"
 import { Gallery, Photo } from "@/lib/database.types"
 import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
-import { CartSlideOver } from "@/components/cart-slide-over"
 
 interface GalleryClientProps {
   photos: Photo[]
@@ -24,7 +23,6 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
             Photos de la session
           </h2>
         </div>
-        <CartSlideOver />
       </div>
 
 

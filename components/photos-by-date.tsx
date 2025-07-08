@@ -154,8 +154,8 @@ export function PhotosByDate() {
             {/* Si une seule session, affichage simple */}
             {group.galleries.length === 1 ? (
               <Link href={`/gallery/${group.galleries[0].id}`} className="flex-shrink-0">
-                <div className="w-48 bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
-                  <div className="relative h-72 rounded-t-xl overflow-hidden">
+                <div className="w-44 bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+                  <div className="relative h-64 rounded-t-xl overflow-hidden">
                     {group.galleries[0]?.coverPhoto ? (
                       <Image
                         src={group.galleries[0].coverPhoto}
@@ -168,9 +168,9 @@ export function PhotosByDate() {
                         <Image
                           src="/Logos/camera2.svg"
                           alt="Camera"
-                          width={48}
-                          height={48}
-                          className="w-12 h-12"
+                          width={40}
+                          height={40}
+                          className="w-10 h-10"
                           style={{ filter: 'brightness(0) invert(1)' }}
                         />
                       </div>
@@ -178,7 +178,7 @@ export function PhotosByDate() {
                     
                     {/* Badge période */}
                     {group.galleries[0].session_period && (
-                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
+                      <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
                         <span className="text-xs font-semibold text-gray-700">
                           {group.galleries[0].session_period === 'matin' && '🌅'}
                           {group.galleries[0].session_period === 'apres-midi' && '☀️'}
@@ -188,19 +188,26 @@ export function PhotosByDate() {
                     )}
                   </div>
                   
-                  <div className="p-4">
-                    <h3 className="text-center font-semibold text-black text-sm">
-                      {new Date(group.date).toLocaleDateString('fr-FR', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long'
-                      })}
+                  <div className="p-3">
+                    <h3 className="text-center font-medium text-black text-xs leading-tight">
+                      {group.galleries[0].name}
                     </h3>
+                    <p className="text-center text-xs text-gray-600 mt-1">
+                      {new Date(group.date).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short'
+                      })}
+                    </p>
                     {group.galleries[0].session_period && (
-                      <p className="text-center text-xs text-gray-600 mt-1 capitalize">
-                        {group.galleries[0].session_period.replace('-', '-')}
+                      <p className="text-center text-xs text-blue-600 mt-1 font-medium capitalize">
+                        {group.galleries[0].session_period === 'matin' && '🌅 Matin'}
+                        {group.galleries[0].session_period === 'apres-midi' && '☀️ Après-midi'}
+                        {group.galleries[0].session_period === 'journee' && '🌅☀️ Midi'}
                       </p>
                     )}
+                    <p className="text-center text-xs text-gray-500 mt-1">
+                      {group.galleries[0].photoCount} photo{group.galleries[0].photoCount > 1 ? 's' : ''}
+                    </p>
                   </div>
                 </div>
               </Link>
@@ -244,14 +251,19 @@ export function PhotosByDate() {
                     
                     <div className="p-3">
                       <h3 className="text-center font-medium text-black text-xs leading-tight">
+                        {gallery.name}
+                      </h3>
+                      <p className="text-center text-xs text-gray-600 mt-1">
                         {new Date(group.date).toLocaleDateString('fr-FR', {
                           day: 'numeric',
                           month: 'short'
                         })}
-                      </h3>
+                      </p>
                       {gallery.session_period && (
-                        <p className="text-center text-xs text-gray-600 mt-1 capitalize">
-                          {gallery.session_period.replace('-', '-')}
+                        <p className="text-center text-xs text-blue-600 mt-1 font-medium capitalize">
+                          {gallery.session_period === 'matin' && '🌅 Matin'}
+                          {gallery.session_period === 'apres-midi' && '☀️ Après-midi'}
+                          {gallery.session_period === 'journee' && '🌅☀️ Midi'}
                         </p>
                       )}
                       <p className="text-center text-xs text-gray-500 mt-1">

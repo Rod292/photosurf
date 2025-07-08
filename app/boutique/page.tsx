@@ -87,7 +87,31 @@ export default function BoutiquePage() {
                 </div>
               </div>
               
+              {/* Nouveau système de tarifs dégressifs */}
               <div className="text-center">
+                <div className="mb-6 p-6 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl border-2 border-emerald-200">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">💰 Tarifs dégressifs</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="bg-white p-4 rounded-xl shadow-sm">
+                      <div className="text-2xl font-bold text-blue-600">15€</div>
+                      <div className="text-sm text-gray-600">1ère photo</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl shadow-sm border-2 border-emerald-300">
+                      <div className="text-2xl font-bold text-emerald-600">10€</div>
+                      <div className="text-sm text-gray-600">2ème photo</div>
+                      <div className="text-xs text-emerald-600 font-medium">-33%</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl shadow-sm border-2 border-emerald-400">
+                      <div className="text-2xl font-bold text-emerald-700">5€</div>
+                      <div className="text-sm text-gray-600">3ème+ photos</div>
+                      <div className="text-xs text-emerald-700 font-medium">-67%</div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-4">
+                    Plus vous commandez, plus vous économisez !
+                  </p>
+                </div>
+                
                 <Link 
                   href="/gallery"
                   className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-xl shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 cursor-pointer"
@@ -99,13 +123,10 @@ export default function BoutiquePage() {
                     height={24}
                     className="w-6 h-6 invert"
                   />
-                  15€ par photo
+                  Découvrir nos photos
                 </Link>
                 
                 <div className="mt-6 p-4 bg-blue-50 rounded-xl border-l-4 border-blue-500">
-                  <p className="text-sm text-blue-700 font-medium mb-3">
-                    💡 Vous voulez toutes les photos de votre session ? Contactez-nous pour un pack personnalisé avec un tarif préférentiel !
-                  </p>
                   <div className="flex flex-col sm:flex-row gap-2 justify-center">
                     <a
                       href="https://www.instagram.com/arode.studio/"

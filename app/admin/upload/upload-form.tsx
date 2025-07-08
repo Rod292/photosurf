@@ -528,7 +528,7 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
                       <SelectItem value="journee">
                         <div className="flex items-center gap-2">
                           <span className="text-purple-500">🌅☀️</span>
-                          Journée complète
+                          Midi
                         </div>
                       </SelectItem>
                     </SelectContent>
