@@ -20,7 +20,7 @@ export function MobileBottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden">
-      <div className="bg-white border-t border-gray-200 px-4 py-1 pb-safe">
+      <div className="bg-white border-t border-gray-200 px-4 py-2 pb-safe">
         <div className="flex items-center justify-between h-12">
           {/* Logo */}
           <Link href="/" className="flex items-center">
@@ -42,7 +42,7 @@ export function MobileBottomNav() {
             <Link 
               href="/cart"
               className={cn(
-                "relative p-2 rounded-full transition-all block",
+                "relative p-3 rounded-full transition-all block min-w-[44px] min-h-[44px] flex items-center justify-center",
                 "hover:bg-gray-100"
               )}
             >
@@ -76,7 +76,7 @@ export function MobileBottomNav() {
             href="https://www.instagram.com/arode.studio/"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors active:scale-95 flex items-center justify-center"
+            className="p-3 rounded-full hover:bg-gray-100 transition-colors active:scale-95 flex items-center justify-center min-w-[44px] min-h-[44px]"
           >
             <Instagram className="h-6 w-6 text-gray-600" />
           </a>
