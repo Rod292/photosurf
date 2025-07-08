@@ -21,7 +21,6 @@ export async function GET() {
         id,
         name,
         date,
-        session_period,
         photos!gallery_id (
           id,
           preview_s3_url
@@ -50,7 +49,7 @@ export async function GET() {
       acc[date].push({
         id: gallery.id,
         name: gallery.name,
-        session_period: gallery.session_period,
+        session_period: gallery.session_period || null,
         photoCount: gallery.photos?.length || 0,
         coverPhoto: gallery.photos?.[0]?.preview_s3_url || null
       })

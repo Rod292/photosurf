@@ -36,7 +36,7 @@ const uploadFormSchema = z.object({
   galleryDate: z.string().min(1, "La date est requise"),
   sessionPeriod: z.enum(['matin', 'apres-midi', 'journee'], {
     errorMap: () => ({ message: "Veuillez sélectionner une période de session" })
-  }),
+  }).optional(),
   originalFiles: z
     .any()
     .refine((files) => files && files.length > 0, "Veuillez sélectionner au moins une photo originale")
@@ -118,7 +118,7 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
       gallerySelection: "",
       newGalleryName: "",
       galleryDate: new Date().toISOString().split('T')[0],
-      sessionPeriod: 'matin',
+      sessionPeriod: undefined,
     },
   })
 
@@ -222,7 +222,9 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
       formData.append("school_id", data.school_id.toString())
       formData.append("gallerySelection", data.gallerySelection)
       formData.append("galleryDate", data.galleryDate)
-      formData.append("sessionPeriod", data.sessionPeriod)
+      if (data.sessionPeriod) {
+        formData.append("sessionPeriod", data.sessionPeriod)
+      }
       
       if (data.newGalleryName) {
         formData.append("newGalleryName", data.newGalleryName.trim())
@@ -296,7 +298,7 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
             gallerySelection: "",
             newGalleryName: "",
             galleryDate: new Date().toISOString().split('T')[0],
-            sessionPeriod: 'matin',
+            sessionPeriod: undefined,
           })
           setShowNewGalleryInput(false)
           setUploadProgress(0)

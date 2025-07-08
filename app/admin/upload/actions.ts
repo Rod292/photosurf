@@ -40,7 +40,7 @@ export async function fetchGalleries(): Promise<Gallery[]> {
     
     const { data: galleries, error } = await supabase
       .from('galleries')
-      .select('id, name, date, session_period, school_id, created_at')
+      .select('id, name, date, school_id, created_at')
       .order('created_at', { ascending: false })
     
     if (error) {
@@ -62,7 +62,7 @@ const uploadServerSchema = z.object({
   gallerySelection: z.string().min(1, "Sélection de galerie requise"),
   newGalleryName: z.string().optional(),
   galleryDate: z.string().min(1, "Date requise"),
-  sessionPeriod: z.enum(['matin', 'apres-midi', 'journee']),
+  sessionPeriod: z.enum(['matin', 'apres-midi', 'journee']).optional(),
   originalFiles: z.array(z.instanceof(File)).min(1, "Au moins un fichier original requis"),
   previewFiles: z.array(z.instanceof(File)).min(1, "Au moins un fichier preview requis"),
 })
@@ -164,15 +164,21 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
         }
       }
 
-      // Créer une nouvelle galerie avec school_id et session_period
+      // Créer une nouvelle galerie avec school_id et session_period (si supporté)
+      const galleryData: any = {
+        name: newName.trim(),
+        date: date,
+        school_id: school_id,
+      }
+      
+      // Ajouter session_period seulement si fourni
+      if (period) {
+        galleryData.session_period = period
+      }
+      
       const { data: newGallery, error: galleryError } = await supabase
         .from('galleries')
-        .insert({
-          name: newName.trim(),
-          date: date,
-          session_period: period,
-          school_id: school_id,
-        })
+        .insert(galleryData)
         .select('id')
         .single()
 
