@@ -102,6 +102,8 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadedFiles, setUploadedFiles] = useState(0)
   const [totalFiles, setTotalFiles] = useState(0)
+  const [currentBatch, setCurrentBatch] = useState(0)
+  const [totalBatches, setTotalBatches] = useState(0)
   const [fileMatches, setFileMatches] = useState<FileMatch[]>([])
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const { toast } = useToast()
@@ -233,18 +235,41 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
         formData.append("previewFiles", file as File)
       })
 
-      setTotalFiles(sortedOriginals.length)
+      const totalPhotos = sortedOriginals.length
+      const batchSize = 5 // Traitement par lots de 5 photos
+      const totalBatches = Math.ceil(totalPhotos / batchSize)
+      
+      setTotalFiles(totalPhotos)
+      setTotalBatches(totalBatches)
       setUploadedFiles(0)
+      setCurrentBatch(0)
       setUploadProgress(0)
 
-      // Simuler le progrès d'upload
+      // Simuler le progrès d'upload plus réaliste basé sur les lots
       clearProgressInterval()
+      
+      let currentFileIndex = 0
+      let currentBatchIndex = 0
+      
+      const estimatedTimePerFile = 3000 // 3 secondes par fichier
+      const intervalDelay = estimatedTimePerFile / batchSize // Interval plus réaliste
+      
       progressIntervalRef.current = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) return prev
-          return prev + Math.random() * 10
-        })
-      }, 500)
+        currentFileIndex++
+        
+        if (currentFileIndex % batchSize === 0 || currentFileIndex === totalPhotos) {
+          currentBatchIndex++
+          setCurrentBatch(currentBatchIndex)
+        }
+        
+        setUploadedFiles(Math.min(currentFileIndex, totalPhotos))
+        setUploadProgress(Math.min((currentFileIndex / totalPhotos) * 85, 85)) // Max 85% pendant l'upload
+        
+        // Arrêter la simulation quand on arrive au bout
+        if (currentFileIndex >= totalPhotos) {
+          clearProgressInterval()
+        }
+      }, intervalDelay)
 
       // Appeler le Server Action
       const result = await uploadPhotos(formData)
@@ -271,6 +296,8 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
           setUploadProgress(0)
           setUploadedFiles(0)
           setTotalFiles(0)
+          setCurrentBatch(0)
+          setTotalBatches(0)
           setFileMatches([])
         }, 2000)
       } else {
@@ -648,13 +675,23 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
                 Upload en cours...
               </span>
               <span className="text-sm text-blue-700">
-                {uploadedFiles}/{totalFiles} paires • {Math.round(uploadProgress)}%
+                {uploadedFiles}/{totalFiles} photos • {Math.round(uploadProgress)}%
               </span>
             </div>
-            <Progress value={uploadProgress} className="h-2" />
-            <div className="text-xs text-blue-600">
-              Upload des photos originales et previews...
+            <Progress value={uploadProgress} className="h-3" />
+            <div className="flex items-center justify-between text-xs text-blue-600">
+              <span>Upload des photos originales et previews...</span>
+              {totalBatches > 1 && (
+                <span>
+                  Lot {currentBatch}/{totalBatches}
+                </span>
+              )}
             </div>
+            {uploadedFiles > 0 && (
+              <div className="text-xs text-blue-500">
+                📤 {uploadedFiles} paire{uploadedFiles > 1 ? 's' : ''} de photos uploadée{uploadedFiles > 1 ? 's' : ''}
+              </div>
+            )}
           </div>
         )}
 
