@@ -34,7 +34,9 @@ export async function fulfillOrder({
         id,
         photo_id,
         product_type,
-        price
+        price,
+        delivery_option,
+        delivery_price
       `)
       .eq('order_id', orderId);
       
@@ -46,15 +48,47 @@ export async function fulfillOrder({
       throw new Error('No order items found');
     }
     
-    // 2. Filter digital photos and get photo IDs
-    const digitalPhotoIds = orderItems
-      .filter(item => item.product_type === 'digital')
-      .map(item => item.photo_id);
-      
-    if (digitalPhotoIds.length === 0) {
-      console.log('No digital photos to fulfill for order:', orderId);
-      return { success: true, message: 'No digital photos to fulfill' };
+    // 2. Separate digital and print items
+    const digitalItems = orderItems.filter(item => item.product_type === 'digital');
+    const printItems = orderItems.filter(item => item.product_type !== 'digital');
+    
+    // Check if we have items to process
+    if (digitalItems.length === 0 && printItems.length === 0) {
+      console.log('No items to fulfill for order:', orderId);
+      return { success: true, message: 'No items to fulfill' };
     }
+    
+    // Handle print items that require pickup notification
+    const pickupItems = printItems.filter(item => item.delivery_option === 'pickup');
+    if (pickupItems.length > 0) {
+      // Send pickup notification email
+      try {
+        await resend.emails.send({
+          from: 'Arode Studio <contact@arodestudio.com>',
+          to: customerEmail,
+          subject: '📦 Commande de tirages - Récupération à organiser',
+          text: `Bonjour,\n\nVotre commande de tirages photo est confirmée !\n\nNous vous recontacterons prochainement pour organiser un rendez-vous de récupération à La Torche Surf School.\n\nCordialement,\nL'équipe Arode Studio`
+        });
+        
+        // Send internal notification
+        await resend.emails.send({
+          from: 'Arode Studio <contact@arodestudio.com>',
+          to: 'contact@arodestudio.com',
+          subject: '🏄‍♂️ Nouveau rendez-vous à organiser',
+          text: `Nouveau client à recontacter pour récupération :\n\nEmail: ${customerEmail}\nNom: ${customerName || 'Non renseigné'}\nNombre de tirages: ${pickupItems.length}\nMontant total: ${totalAmount / 100}€`
+        });
+      } catch (emailError) {
+        console.error('Failed to send pickup notification:', emailError);
+      }
+    }
+    
+    // If no digital photos, we're done
+    if (digitalItems.length === 0) {
+      console.log('No digital photos to fulfill for order:', orderId);
+      return { success: true, message: 'Print orders processed successfully' };
+    }
+    
+    const digitalPhotoIds = digitalItems.map(item => item.photo_id);
     
     // 3. Fetch photo details
     const { data: photos, error: photosError } = await supabase
@@ -104,7 +138,7 @@ export async function fulfillOrder({
       // Generate plain text version
       const plainTextContent = generatePlainTextEmail({
         customerEmail,
-        orderItems: orderItems.map(item => ({
+        orderItems: digitalItems.map(item => ({
           photo: { filename: `Photo ${item.photo_id}` },
           product_type: item.product_type,
           price: item.price / 100

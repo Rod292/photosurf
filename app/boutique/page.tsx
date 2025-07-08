@@ -90,7 +90,7 @@ export default function BoutiquePage() {
               {/* Nouveau système de tarifs dégressifs */}
               <div className="text-center">
                 <div className="mb-6 p-6 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl border-2 border-emerald-200">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">💰 Tarifs dégressifs</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">💰 Tarifs dégressifs - Photos numériques</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-white p-4 rounded-xl shadow-sm">
                       <div className="text-2xl font-bold text-blue-600">15€</div>
@@ -177,7 +177,7 @@ export default function BoutiquePage() {
               </div>
               
               <p className="text-gray-600 mb-8 leading-relaxed">
-                Vous souhaitez imprimer vos photos ? Nous proposons des tirages professionnels sur papier photo haute qualité.
+                Vous souhaitez imprimer vos photos ? Nous proposons des tirages professionnels sur papier photo haute qualité avec le fichier JPEG inclus.
               </p>
               
               <div className="space-y-4 mb-8">
@@ -185,7 +185,7 @@ export default function BoutiquePage() {
                   <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                     <span className="text-gray-700 font-bold">✓</span>
                   </div>
-                  <span>Formats disponibles jusqu'à A2 📄✅</span>
+                  <span>Formats A5, A4, A3, A2 disponibles 📄✨</span>
                 </div>
                 
                 <div className="flex items-center gap-3 text-gray-700">
@@ -199,19 +199,87 @@ export default function BoutiquePage() {
                   <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                     <span className="text-gray-700 font-bold">✓</span>
                   </div>
-                  <span>Rendu des couleurs exceptionnel 🎨🔥</span>
+                  <span>Fichier JPEG haute résolution inclus 💾🔥</span>
+                </div>
+                
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-gray-700 font-bold">✓</span>
+                  </div>
+                  <span>Récupération gratuite à La Torche 🏄‍♂️</span>
+                </div>
+                
+                <div className="flex items-center gap-3 text-gray-700">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-gray-700 font-bold">✓</span>
+                  </div>
+                  <span>Livraison à domicile possible 📦</span>
                 </div>
               </div>
               
               <div className="text-center">
-                <a
-                  href="https://www.instagram.com/arode.studio/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 bg-gradient-to-r from-gray-800 to-black text-white px-8 py-4 rounded-2xl font-semibold hover:from-gray-700 hover:to-gray-900 transition-all duration-300 shadow-lg"
+                <div className="mb-6 p-4 bg-gray-100 rounded-2xl border-2 border-gray-300">
+                  <h3 className="text-lg font-bold text-gray-800 mb-4">Formats disponibles</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <div className="text-xl font-bold text-gray-800">20€</div>
+                      <div className="text-sm text-gray-600">A5 + JPEG</div>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <div className="text-xl font-bold text-gray-800">30€</div>
+                      <div className="text-sm text-gray-600">A4 + JPEG</div>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <div className="text-xl font-bold text-gray-800">50€</div>
+                      <div className="text-sm text-gray-600">A3 + JPEG</div>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <div className="text-xl font-bold text-gray-800">80€</div>
+                      <div className="text-sm text-gray-600">A2 + JPEG</div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-3">Prix fixes, pas de dégressif</div>
+                </div>
+                
+                <div className="mb-6 p-4 bg-blue-50 rounded-2xl border-2 border-blue-200">
+                  <h3 className="text-sm font-bold text-blue-800 mb-3">Options de livraison</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>🏄‍♂️ Récupération à La Torche</span>
+                      <span className="font-bold text-green-600">GRATUIT</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>📦 Livraison A5</span>
+                      <span className="font-bold">+5€</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>📦 Livraison A4</span>
+                      <span className="font-bold">+7€</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>📦 Livraison A3</span>
+                      <span className="font-bold">+10€</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>📦 Livraison A2</span>
+                      <span className="font-bold">+15€</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <Link 
+                  href="/gallery"
+                  className="inline-flex items-center gap-3 bg-gradient-to-r from-gray-800 to-black text-white px-8 py-4 rounded-2xl font-bold text-xl shadow-lg hover:from-gray-700 hover:to-gray-900 transition-all duration-300 cursor-pointer"
                 >
-                  📸 Contactez nous pour vos tirages
-                </a>
+                  <Image
+                    src="/Logos/Imprimante.svg"
+                    alt="Tirage"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6 invert"
+                  />
+                  Commander vos tirages
+                </Link>
               </div>
             </div>
           </div>

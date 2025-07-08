@@ -81,6 +81,15 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       throw new Error('No line items found in checkout session')
     }
 
+    // Extract shipping address if available
+    const shippingAddress = session.shipping_details?.address ? {
+      line1: session.shipping_details.address.line1,
+      line2: session.shipping_details.address.line2,
+      city: session.shipping_details.address.city,
+      postal_code: session.shipping_details.address.postal_code,
+      country: session.shipping_details.address.country,
+    } : null;
+
     // Create the order record
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -89,6 +98,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         stripe_checkout_id: sessionId,
         status: 'completed',
         total_amount: totalAmount,
+        shipping_address: shippingAddress,
       })
       .select()
       .single()
@@ -113,8 +123,10 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       const orderItem = {
         order_id: order.id,
         photo_id: metadata.photo_id,
-        product_type: metadata.product_type as 'digital' | 'print',
+        product_type: metadata.product_type as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2',
         price: item.price?.unit_amount || 0, // Price in cents
+        delivery_option: metadata.delivery_option || null,
+        delivery_price: metadata.delivery_price ? parseInt(metadata.delivery_price) : null,
       }
 
       orderItems.push(orderItem)

@@ -177,7 +177,18 @@ export function CartContent() {
                         />
                         Numérique
                       </span>
-                    ) : item.product_type === 'print' ? (
+                    ) : item.product_type === 'print_a5' ? (
+                      <span className="flex items-center gap-1">
+                        <Image
+                          src="/Logos/Imprimante.svg"
+                          alt="Print"
+                          width={16}
+                          height={16}
+                          className="w-4 h-4"
+                        />
+                        Tirage A5
+                      </span>
+                    ) : item.product_type === 'print_a4' ? (
                       <span className="flex items-center gap-1">
                         <Image
                           src="/Logos/Imprimante.svg"
@@ -188,11 +199,46 @@ export function CartContent() {
                         />
                         Tirage A4
                       </span>
-                    ) : '🎁 Pack Complet'}
+                    ) : item.product_type === 'print_a3' ? (
+                      <span className="flex items-center gap-1">
+                        <Image
+                          src="/Logos/Imprimante.svg"
+                          alt="Print"
+                          width={16}
+                          height={16}
+                          className="w-4 h-4"
+                        />
+                        Tirage A3
+                      </span>
+                    ) : item.product_type === 'print_a2' ? (
+                      <span className="flex items-center gap-1">
+                        <Image
+                          src="/Logos/Imprimante.svg"
+                          alt="Print"
+                          width={16}
+                          height={16}
+                          className="w-4 h-4"
+                        />
+                        Tirage A2
+                      </span>
+                    ) : null}
                   </p>
                   <p className="text-sm text-gray-600 font-lexend-deca">
                     {item.price === 0 ? "Gratuit" : `${item.price.toFixed(2)}€`}
                   </p>
+                  {item.delivery_option && (
+                    <p className="text-xs text-gray-500 font-lexend-deca mt-1">
+                      {item.delivery_option === 'pickup' ? (
+                        <span className="flex items-center gap-1">
+                          🏄‍♂️ Récupération à La Torche - Gratuit
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1">
+                          📦 Livraison à domicile - {item.delivery_price?.toFixed(2)}€
+                        </span>
+                      )}
+                    </p>
+                  )}
                 </div>
                 <Button
                   variant="ghost"
@@ -249,9 +295,20 @@ export function CartContent() {
               <span className="font-lexend-deca">{totalItems}</span>
             </div>
             <div className="flex justify-between mb-4">
-              <span className="font-semibold font-lexend-deca">Sous-total :</span>
+              <span className="font-semibold font-lexend-deca">Sous-total photos :</span>
               <span className="font-lexend-deca">{dynamicPricing.total.toFixed(2)}€</span>
             </div>
+            
+            {/* Frais de livraison */}
+            {(() => {
+              const deliveryTotal = items.reduce((total, item) => total + (item.delivery_price || 0), 0)
+              return deliveryTotal > 0 && (
+                <div className="flex justify-between mb-4">
+                  <span className="font-semibold font-lexend-deca">Frais de livraison :</span>
+                  <span className="font-lexend-deca">{deliveryTotal.toFixed(2)}€</span>
+                </div>
+              )
+            })()}
             
             {/* Affichage des économies automatiques */}
             {dynamicPricing.totalSavings > 0 && (

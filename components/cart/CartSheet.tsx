@@ -140,7 +140,10 @@ export function CartSheet() {
                       <div>
                         <h4 className="font-medium">
                           Photo {item.product_type === 'digital' ? 'Numérique' : 
-                                 item.product_type === 'print' ? 'Tirage' : 'Bundle'}
+                                 item.product_type === 'print_a5' ? 'Tirage A5' :
+                                 item.product_type === 'print_a4' ? 'Tirage A4' :
+                                 item.product_type === 'print_a3' ? 'Tirage A3' :
+                                 item.product_type === 'print_a2' ? 'Tirage A2' : 'Tirage'}
                         </h4>
                         <p className="text-sm text-muted-foreground">
                           {item.filename}

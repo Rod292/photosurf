@@ -39,12 +39,15 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
         // Zustand cart item
         const zustandItem = item as ZustandCartItem;
         productName = `Photo ${zustandItem.product_type === 'digital' ? 'Numérique' : 
-                              zustandItem.product_type === 'print' ? 'Tirage' : 'Bundle'}`;
+                              zustandItem.product_type === 'print_a5' ? 'Tirage A5' :
+                              zustandItem.product_type === 'print_a4' ? 'Tirage A4' :
+                              zustandItem.product_type === 'print_a3' ? 'Tirage A3' :
+                              zustandItem.product_type === 'print_a2' ? 'Tirage A2' : 'Tirage'}`;
         productDescription = `Photo: ${zustandItem.filename}`;
         imageUrl = zustandItem.preview_url;
         photoId = zustandItem.photo_id;
         productType = zustandItem.product_type;
-        priceInCents = Math.round(zustandItem.price * 100); // Convert euros to cents
+        priceInCents = Math.round((zustandItem.price + (zustandItem.delivery_price || 0)) * 100); // Convert euros to cents and include delivery
         quantity = 1; // Zustand doesn't have quantity
         galleryId = ''; // We'll need to fetch this from the database
       } else {
@@ -68,6 +71,8 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
           photo_id: photoId,
           product_type: productType,
           gallery_id: galleryId,
+          delivery_option: isZustandItem && zustandItem.delivery_option ? zustandItem.delivery_option : '',
+          delivery_price: isZustandItem && zustandItem.delivery_price ? zustandItem.delivery_price.toString() : '0',
         },
       });
 
@@ -171,6 +176,16 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
     // Create checkout session for paid orders
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     
+    // Check if any items require shipping
+    const requiresShipping = items.some(item => {
+      const isZustandItem = 'photo_id' in item;
+      if (isZustandItem) {
+        const zustandItem = item as ZustandCartItem;
+        return zustandItem.product_type !== 'digital' && zustandItem.delivery_option === 'delivery';
+      }
+      return false;
+    });
+    
     const sessionData: any = {
       payment_method_types: ['card'],
       line_items: lineItems,
@@ -179,9 +194,6 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
       cancel_url: `${baseUrl}/order/canceled`,
       customer_email: undefined, // Will be collected during checkout
       billing_address_collection: 'required',
-      shipping_address_collection: {
-        allowed_countries: ['FR', 'BE', 'LU', 'CH', 'ES', 'DE', 'IT', 'NL', 'PT'],
-      },
       // Enable promotion codes on Stripe checkout page
       allow_promotion_codes: true,
       metadata: {
@@ -194,6 +206,7 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
               product_type: zustandItem.product_type,
               quantity: 1,
               price: Math.round(zustandItem.price * 100),
+              delivery_option: zustandItem.delivery_option,
             };
           } else {
             const newItem = item as NewCartItem;
@@ -207,6 +220,13 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
         })),
       },
     };
+
+    // Only collect shipping address if delivery is required
+    if (requiresShipping) {
+      sessionData.shipping_address_collection = {
+        allowed_countries: ['FR', 'BE', 'LU', 'CH', 'ES', 'DE', 'IT', 'NL', 'PT'],
+      };
+    }
 
     // Add discount if promo code is valid but not free
     if (promoValidation?.valid && promoValidation.discount > 0 && !promoValidation.isFree) {

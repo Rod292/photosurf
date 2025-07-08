@@ -29,12 +29,12 @@ const TIER_3_PRICE = 5
 /**
  * Calcule le prix total avec le système de réductions par paliers
  * @param photoCount Nombre de photos
- * @param productType Type de produit (digital, print, bundle)
+ * @param productType Type de produit (digital, print_a5, print_a4, print_a3, print_a2)
  * @returns Calcul détaillé du pricing
  */
 export function calculateDynamicPricing(
   photoCount: number,
-  productType: 'digital' | 'print' | 'bundle' = 'digital'
+  productType: 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2' = 'digital'
 ): PricingCalculation {
   if (photoCount <= 0) {
     return {
@@ -49,19 +49,35 @@ export function calculateDynamicPricing(
     }
   }
 
-  // Multiplicateurs selon le type de produit
-  const multipliers = {
-    digital: 1,
-    print: 25 / 15, // 25€ au lieu de 15€
-    bundle: 35 / 15 // 35€ au lieu de 15€
+  // Prix selon le type de produit
+  if (productType !== 'digital') {
+    // Prix fixes pour les tirages, pas de réductions dégressives
+    const printPrices = {
+      'print_a5': 20,
+      'print_a4': 30,
+      'print_a3': 50,
+      'print_a2': 80
+    }
+    
+    const unitPrice = printPrices[productType]
+    const finalTotal = photoCount * unitPrice
+    
+    return {
+      subtotal: finalTotal,
+      totalSavings: 0,
+      finalTotal,
+      breakdown: {
+        tier1: { count: photoCount, price: unitPrice, total: finalTotal },
+        tier2: { count: 0, price: 0, total: 0 },
+        tier3: { count: 0, price: 0, total: 0 }
+      }
+    }
   }
 
-  const multiplier = multipliers[productType]
-  
-  // Calcul des prix par palier
-  const tier1Price = BASE_PRICE * multiplier
-  const tier2Price = TIER_2_PRICE * multiplier
-  const tier3Price = TIER_3_PRICE * multiplier
+  // Système de réductions dégressives pour les photos numériques uniquement
+  const tier1Price = BASE_PRICE
+  const tier2Price = TIER_2_PRICE
+  const tier3Price = TIER_3_PRICE
 
   // Répartition des photos par palier
   const tier1Count = Math.min(photoCount, 1)
@@ -99,22 +115,26 @@ export function calculateDynamicPricing(
  */
 export function getNextPhotoPrice(
   currentPhotoCount: number,
-  productType: 'digital' | 'print' | 'bundle' = 'digital'
+  productType: 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2' = 'digital'
 ): number {
-  const multipliers = {
-    digital: 1,
-    print: 25 / 15,
-    bundle: 35 / 15
+  if (productType !== 'digital') {
+    // Prix fixes pour les tirages
+    const printPrices = {
+      'print_a5': 20,
+      'print_a4': 30,
+      'print_a3': 50,
+      'print_a2': 80
+    }
+    return printPrices[productType]
   }
 
-  const multiplier = multipliers[productType]
-
+  // Système de réductions dégressives pour les photos numériques uniquement
   if (currentPhotoCount === 0) {
-    return BASE_PRICE * multiplier
+    return BASE_PRICE
   } else if (currentPhotoCount === 1) {
-    return TIER_2_PRICE * multiplier
+    return TIER_2_PRICE
   } else {
-    return TIER_3_PRICE * multiplier
+    return TIER_3_PRICE
   }
 }
 
@@ -134,4 +154,23 @@ export function formatPrice(price: number): string {
 export function calculateSavingsPercentage(originalPrice: number, newPrice: number): number {
   if (originalPrice === 0) return 0
   return Math.round(((originalPrice - newPrice) / originalPrice) * 100)
+}
+
+/**
+ * Calcule les frais de livraison selon le format de tirage
+ */
+export function calculateDeliveryPrice(productType: string, deliveryOption: 'pickup' | 'delivery'): number {
+  if (deliveryOption === 'pickup') {
+    return 0 // Récupération gratuite
+  }
+  
+  // Frais de livraison selon la taille (tube carton)
+  const deliveryPrices = {
+    'print_a5': 5, // Petit tube
+    'print_a4': 7, // Tube moyen
+    'print_a3': 10, // Tube grand
+    'print_a2': 15 // Tube très grand
+  }
+  
+  return deliveryPrices[productType as keyof typeof deliveryPrices] || 0
 }

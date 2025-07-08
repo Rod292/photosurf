@@ -41,6 +41,13 @@ export interface Order {
   stripe_checkout_id?: string
   status: 'pending' | 'completed' | 'fulfilled' | 'cancelled'
   total_amount?: number
+  shipping_address?: {
+    line1: string
+    line2?: string
+    city: string
+    postal_code: string
+    country: string
+  }
   created_at?: string
   fulfilled_at?: string
 }
@@ -49,8 +56,10 @@ export interface OrderItem {
   id: string  // UUID
   order_id: string  // UUID
   photo_id: string  // UUID
-  product_type: 'digital' | 'print'
+  product_type: 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2'
   price: number
+  delivery_option?: 'pickup' | 'delivery'
+  delivery_price?: number
   created_at?: string
 }
 

@@ -12,7 +12,7 @@ import { Photo } from "@/lib/database.types"
 import { useToast } from "@/hooks/use-toast"
 import { MobilePhotoViewer } from "./mobile-photo-viewer"
 import { motion } from "framer-motion"
-import { getNextPhotoPrice, formatPrice as formatPriceUtil, calculateSavingsPercentage } from "@/lib/pricing"
+import { getNextPhotoPrice, formatPrice as formatPriceUtil, calculateSavingsPercentage, calculateDeliveryPrice } from "@/lib/pricing"
 
 interface PhotoLightboxModalProps {
   isOpen: boolean
@@ -30,16 +30,28 @@ const PRODUCT_OPTIONS = [
     description: 'Téléchargement haute résolution'
   },
   {
-    id: 'print',
-    label: 'Tirage A4',
-    price: 25,
-    description: 'Impression professionnelle A4'
+    id: 'print_a5',
+    label: 'Tirage A5',
+    price: 20,
+    description: 'Impression A5 + JPEG inclus'
   },
   {
-    id: 'bundle',
-    label: 'Numérique + Tirage A4',
-    price: 35,
-    description: 'Pack complet (économie de 5€)'
+    id: 'print_a4',
+    label: 'Tirage A4',
+    price: 30,
+    description: 'Impression A4 + JPEG inclus'
+  },
+  {
+    id: 'print_a3',
+    label: 'Tirage A3',
+    price: 50,
+    description: 'Impression A3 + JPEG inclus'
+  },
+  {
+    id: 'print_a2',
+    label: 'Tirage A2',
+    price: 80,
+    description: 'Impression A2 + JPEG inclus'
   }
 ] as const
 
@@ -52,6 +64,7 @@ export function PhotoLightboxModal({
 }: PhotoLightboxModalProps) {
   const [selectedProduct, setSelectedProduct] = useState<string>('digital')
   const [quantity, setQuantity] = useState(1)
+  const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'delivery'>('pickup')
   const [isMobile, setIsMobile] = useState(false)
   const { addItem, items } = useCartStore()
   const { toast } = useToast()
@@ -110,14 +123,19 @@ export function PhotoLightboxModal({
 
     // Calculer le prix selon le nombre de photos actuelles dans le panier
     const currentPhotoCount = items.filter(item => item.product_type === selectedProduct).length
-    const photoPrice = getNextPhotoPrice(currentPhotoCount, selectedProduct as 'digital' | 'print' | 'bundle')
+    const photoPrice = getNextPhotoPrice(currentPhotoCount, selectedProduct as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2')
+    
+    // Calculer les frais de livraison si c'est un tirage
+    const deliveryPrice = selectedProduct !== 'digital' ? calculateDeliveryPrice(selectedProduct, deliveryOption) : 0
     
     addItem({
       photo_id: currentPhoto.id,
-      product_type: selectedProduct as 'digital' | 'print' | 'bundle',
+      product_type: selectedProduct as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2',
       price: photoPrice,
       preview_url: currentPhoto.preview_s3_url,
-      filename: currentPhoto.filename
+      filename: currentPhoto.filename,
+      delivery_option: selectedProduct !== 'digital' ? deliveryOption : undefined,
+      delivery_price: deliveryPrice
     })
 
     toast({
@@ -137,7 +155,7 @@ export function PhotoLightboxModal({
   // Calculer le prix pour cette photo selon sa position dans le panier
   const getPhotoPrice = () => {
     const currentPhotoCount = items.filter(item => item.product_type === selectedProduct).length
-    return getNextPhotoPrice(currentPhotoCount, selectedProduct as 'digital' | 'print' | 'bundle')
+    return getNextPhotoPrice(currentPhotoCount, selectedProduct as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2')
   }
 
   // Vérifier si la photo est déjà dans le panier
@@ -281,17 +299,68 @@ export function PhotoLightboxModal({
                           <p className="text-xl font-bold text-blue-600 pointer-events-none">
                             {selectedProduct === option.id ? formatPrice(getPhotoPrice()) : formatPrice(option.price)}
                           </p>
-                          {index === 2 && (
-                            <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full pointer-events-none">
-                              Économie 5€
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
               </RadioGroup>
+
+              {/* Options de livraison pour les tirages */}
+              {selectedProduct !== 'digital' && (
+                <div className="mt-6 p-4 bg-gray-50 rounded-xl border">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">Options de livraison</h3>
+                  <div className="space-y-3">
+                    <div 
+                      className={`flex items-center space-x-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                        deliveryOption === 'pickup' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => setDeliveryOption('pickup')}
+                    >
+                      <input
+                        type="radio"
+                        name="delivery"
+                        value="pickup"
+                        checked={deliveryOption === 'pickup'}
+                        onChange={() => setDeliveryOption('pickup')}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">🏄‍♂️ Récupération à La Torche Surf School</span>
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">GRATUIT</span>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Nous vous recontacterons pour organiser le rendez-vous</p>
+                      </div>
+                    </div>
+                    
+                    <div 
+                      className={`flex items-center space-x-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                        deliveryOption === 'delivery' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => setDeliveryOption('delivery')}
+                    >
+                      <input
+                        type="radio"
+                        name="delivery"
+                        value="delivery"
+                        checked={deliveryOption === 'delivery'}
+                        onChange={() => setDeliveryOption('delivery')}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">📦 Livraison à domicile (tube carton)</span>
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                            +{formatPriceUtil(calculateDeliveryPrice(selectedProduct, 'delivery'))}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Livraison sécurisée en tube carton</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <Button 
                 onClick={handleAddToCart}

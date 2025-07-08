@@ -31,12 +31,16 @@ export function CartSlideOver({ headerStyle = 'light' }: CartSlideOverProps) {
     switch (type) {
       case 'digital':
         return 'Photo Numérique'
-      case 'print':
+      case 'print_a5':
+        return 'Tirage A5'
+      case 'print_a4':
         return 'Tirage A4'
-      case 'bundle':
-        return 'Numérique + Tirage'
+      case 'print_a3':
+        return 'Tirage A3'
+      case 'print_a2':
+        return 'Tirage A2'
       default:
-        return type
+        return 'Tirage'
     }
   }
 

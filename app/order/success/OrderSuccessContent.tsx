@@ -80,7 +80,17 @@ export function OrderSuccessContent() {
               <div>
                 <h3 className="font-medium text-amber-900">Téléchargements</h3>
                 <p className="text-sm text-amber-700">
-                  Vos photos en haute résolution seront disponibles pendant 48 heures.
+                  Vos photos numériques en haute résolution seront disponibles pendant 48 heures.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
+              <div className="text-purple-600 mt-0.5">🏄‍♂️</div>
+              <div>
+                <h3 className="font-medium text-purple-900">Tirages photo</h3>
+                <p className="text-sm text-purple-700">
+                  Si vous avez commandé des tirages, vous recevrez un email séparé avec les instructions de récupération ou de livraison.
                 </p>
               </div>
             </div>
