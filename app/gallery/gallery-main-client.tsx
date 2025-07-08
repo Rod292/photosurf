@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import { SupabaseImage } from "@/components/ui/supabase-image"
 import Link from "next/link"
 import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -92,11 +93,12 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                 }`}>
                 <div className="relative h-32 rounded-t-lg overflow-hidden">
                   {gallery.photos && gallery.photos.length > 0 ? (
-                    <Image
+                    <SupabaseImage
                       src={gallery.photos[0].preview_s3_url}
                       alt={`Photos du ${new Date(gallery.date).toLocaleDateString('fr-FR')}`}
-                      fill
-                      className="object-cover"
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
@@ -188,12 +190,13 @@ export function GalleryMainClient({ galleries }: GalleryMainClientProps) {
                   index={index}
                 >
                   <div className="absolute inset-0">
-                    <Image
+                    <SupabaseImage
                       src={photo.preview_s3_url}
                       alt="Photo de surf"
-                      fill
+                      width={400}
+                      height={600}
                       sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                      className="object-cover"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   

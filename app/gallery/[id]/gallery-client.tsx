@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import { SupabaseImage } from "@/components/ui/supabase-image"
 import { Gallery, Photo } from "@/lib/database.types"
 import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
 import { CartSlideOver } from "@/components/cart-slide-over"
@@ -30,7 +31,7 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
       {/* Galerie de photos */}
       {photos.length > 0 ? (
         <div className="mb-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {photos.map((photo, index) => (
               <div 
                 key={photo.id} 
@@ -39,11 +40,12 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
               >
                 <div className="relative w-full pt-[150%] overflow-hidden rounded-lg bg-gray-200">
                   <div className="absolute inset-0">
-                    <Image
+                    <SupabaseImage
                       src={photo.preview_s3_url}
                       alt={photo.filename}
-                      fill
-                      className="object-cover"
+                      width={400}
+                      height={600}
+                      className="w-full h-full object-cover"
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                     />
                   </div>
