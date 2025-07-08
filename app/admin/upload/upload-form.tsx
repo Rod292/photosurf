@@ -634,27 +634,40 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
 
         {/* Validation des correspondances */}
         {originalFileCount > 0 && previewFileCount > 0 && (
-          <div className={`p-4 rounded-lg border ${isValidMatching ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-            <div className="flex items-center gap-2 mb-2">
+          <div className={`p-6 rounded-2xl border-2 shadow-lg backdrop-blur-sm transition-all duration-300 ${isValidMatching ? 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200' : 'bg-gradient-to-r from-red-50 to-rose-50 border-red-200'}`}>
+            <div className="flex items-center gap-3 mb-3">
               {isValidMatching ? (
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-emerald-600" />
+                </div>
               ) : (
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                </div>
               )}
-              <span className={`font-medium ${isValidMatching ? 'text-green-800' : 'text-red-800'}`}>
+              <span className={`font-bold text-lg ${isValidMatching ? 'text-emerald-800' : 'text-red-800'}`}>
                 Validation des correspondances
               </span>
             </div>
             
-            <div className={`text-sm ${isValidMatching ? 'text-green-700' : 'text-red-700'}`}>
-              <div className="flex gap-4 mb-2">
-                <span>Originaux: {originalFileCount}</span>
-                <span>Previews: {previewFileCount}</span>
-                <span>Correspondances: {matchedCount}</span>
+            <div className={`text-sm ${isValidMatching ? 'text-emerald-700' : 'text-red-700'}`}>
+              <div className="grid grid-cols-3 gap-4 mb-3">
+                <div className="text-center">
+                  <div className="font-bold text-lg">{originalFileCount}</div>
+                  <div className="text-xs opacity-75">Originaux</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-lg">{previewFileCount}</div>
+                  <div className="text-xs opacity-75">Previews</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-lg">{matchedCount}</div>
+                  <div className="text-xs opacity-75">Correspondances</div>
+                </div>
               </div>
               
               {!isValidMatching && (
-                <div className="text-xs text-red-600 mt-2">
+                <div className="text-sm text-red-700 mt-3 p-3 bg-red-100 rounded-xl border border-red-200">
                   {originalFileCount !== previewFileCount && 
                     "⚠️ Le nombre de fichiers originaux et previews doit être identique."
                   }
@@ -669,26 +682,27 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
 
         {/* Barre de progression */}
         {isUploading && (
-          <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="space-y-4 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/50 rounded-2xl shadow-lg backdrop-blur-sm">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-blue-900">
+              <span className="text-sm font-semibold text-blue-900 flex items-center gap-2">
+                <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
                 Upload en cours...
               </span>
-              <span className="text-sm text-blue-700">
+              <span className="text-sm font-medium text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
                 {uploadedFiles}/{totalFiles} photos • {Math.round(uploadProgress)}%
               </span>
             </div>
-            <Progress value={uploadProgress} className="h-3" />
+            <Progress value={uploadProgress} className="h-4 bg-blue-100" />
             <div className="flex items-center justify-between text-xs text-blue-600">
-              <span>Upload des photos originales et previews...</span>
+              <span className="font-medium">Upload des photos originales et previews...</span>
               {totalBatches > 1 && (
-                <span>
+                <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded-full font-medium">
                   Lot {currentBatch}/{totalBatches}
                 </span>
               )}
             </div>
             {uploadedFiles > 0 && (
-              <div className="text-xs text-blue-500">
+              <div className="text-sm text-blue-600 bg-blue-100 rounded-xl p-3 font-medium">
                 📤 {uploadedFiles} paire{uploadedFiles > 1 ? 's' : ''} de photos uploadée{uploadedFiles > 1 ? 's' : ''}
               </div>
             )}
@@ -696,25 +710,25 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
         )}
 
         {/* Bouton de soumission */}
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-4">
           <Button
             type="submit"
             disabled={isUploading || !watchedGallerySelection || !isValidMatching}
-            className="min-w-[200px]"
+            className="min-w-[240px] h-12 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl"
           >
             {isUploading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-3 h-5 w-5 animate-spin" />
                 Upload en cours...
               </>
             ) : uploadProgress === 100 && uploadedFiles > 0 ? (
               <>
-                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
+                <CheckCircle className="mr-3 h-5 w-5 text-emerald-400" />
                 Upload terminé !
               </>
             ) : (
               <>
-                <Upload className="mr-2 h-4 w-4" />
+                <Upload className="mr-3 h-5 w-5" />
                 Télécharger les photos
               </>
             )}
