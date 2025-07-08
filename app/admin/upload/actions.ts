@@ -62,7 +62,7 @@ const uploadServerSchema = z.object({
   gallerySelection: z.string().min(1, "Sélection de galerie requise"),
   newGalleryName: z.string().optional(),
   galleryDate: z.string().min(1, "Date requise"),
-  sessionPeriod: z.enum(['matin', 'apres-midi', 'journee']).optional(),
+  sessionPeriod: z.enum(['matin', 'apres-midi', 'midi']).optional(),
   originalFiles: z.array(z.instanceof(File)).min(1, "Au moins un fichier original requis"),
   previewFiles: z.array(z.instanceof(File)).min(1, "Au moins un fichier preview requis"),
 })

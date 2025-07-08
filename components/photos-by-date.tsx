@@ -182,7 +182,7 @@ export function PhotosByDate() {
                         <span className="text-xs font-semibold text-gray-700">
                           {group.galleries[0].session_period === 'matin' && '🌅'}
                           {group.galleries[0].session_period === 'apres-midi' && '☀️'}
-                          {group.galleries[0].session_period === 'journee' && '🌅☀️'}
+                          {group.galleries[0].session_period === 'midi' && '🌅☀️'}
                         </span>
                       </div>
                     )}
@@ -263,7 +263,7 @@ export function PhotosByDate() {
                         <p className="text-center text-xs text-blue-600 mt-1 font-medium capitalize">
                           {gallery.session_period === 'matin' && '🌅 Matin'}
                           {gallery.session_period === 'apres-midi' && '☀️ Après-midi'}
-                          {gallery.session_period === 'journee' && '🌅☀️ Midi'}
+                          {gallery.session_period === 'midi' && '🌅☀️ Midi'}
                         </p>
                       )}
                       <p className="text-center text-xs text-gray-500 mt-1">

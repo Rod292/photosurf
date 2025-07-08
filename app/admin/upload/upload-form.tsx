@@ -34,7 +34,7 @@ const uploadFormSchema = z.object({
   gallerySelection: z.string().min(1, "Veuillez sélectionner une galerie"),
   newGalleryName: z.string().optional(),
   galleryDate: z.string().min(1, "La date est requise"),
-  sessionPeriod: z.enum(['matin', 'apres-midi', 'journee'], {
+  sessionPeriod: z.enum(['matin', 'apres-midi', 'midi'], {
     errorMap: () => ({ message: "Veuillez sélectionner une période de session" })
   }).optional(),
   originalFiles: z
@@ -428,7 +428,7 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
                               <span className="text-xs">
                                 {gallery.session_period === 'matin' && '🌅'}
                                 {gallery.session_period === 'apres-midi' && '☀️'}
-                                {gallery.session_period === 'journee' && '🌅☀️'}
+                                {gallery.session_period === 'midi' && '🌅☀️'}
                               </span>
                             )}
                           </div>
@@ -525,7 +525,7 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
                           Après-midi
                         </div>
                       </SelectItem>
-                      <SelectItem value="journee">
+                      <SelectItem value="midi">
                         <div className="flex items-center gap-2">
                           <span className="text-purple-500">🌅☀️</span>
                           Midi
