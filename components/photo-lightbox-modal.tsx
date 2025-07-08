@@ -259,7 +259,7 @@ export function PhotoLightboxModal({
 
             {/* Purchase options sidebar */}
             <motion.div 
-              className="w-full md:w-80 bg-gradient-to-b from-white to-gray-50 p-4 md:p-6 border-l md:border-l md:border-t-0 border-t shadow-inner overflow-y-auto max-h-[60vh] md:max-h-full"
+              className="w-full md:w-80 bg-gradient-to-b from-white to-gray-50 p-3 md:p-6 border-l md:border-l md:border-t-0 border-t shadow-inner overflow-y-auto max-h-[65vh] md:max-h-full"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
@@ -276,15 +276,15 @@ export function PhotoLightboxModal({
               <RadioGroup 
                 value={selectedProduct} 
                 onValueChange={setSelectedProduct}
-                className="space-y-2"
+                className="space-y-1"
               >
                 {PRODUCT_OPTIONS.map((option, index) => (
                   <div key={option.id} className="group relative">
                     <div 
-                      className="flex items-start space-x-3 p-3 border-2 rounded-lg bg-white hover:bg-gray-50 transition-all duration-200 hover:shadow-md cursor-pointer group-hover:border-blue-300"
+                      className="flex items-start space-x-2 p-2 border-2 rounded-lg bg-white hover:bg-gray-50 transition-all duration-200 hover:shadow-md cursor-pointer group-hover:border-blue-300"
                       onClick={() => setSelectedProduct(option.id)}
                     >
-                      <RadioGroupItem value={option.id} id={option.id} className="mt-1 scale-110 pointer-events-none" />
+                      <RadioGroupItem value={option.id} id={option.id} className="mt-0.5 scale-90 pointer-events-none" />
                       <div className="flex-1">
                         <Label 
                           htmlFor={option.id} 
@@ -292,11 +292,11 @@ export function PhotoLightboxModal({
                         >
                           {option.label}
                         </Label>
-                        <p className="text-xs text-gray-600 mt-0.5 leading-relaxed pointer-events-none">
+                        <p className="text-xs text-gray-600 leading-tight pointer-events-none">
                           {option.description}
                         </p>
-                        <div className="flex items-center justify-between mt-1">
-                          <p className="text-lg font-bold text-blue-600 pointer-events-none">
+                        <div className="flex items-center justify-between mt-0.5">
+                          <p className="text-base font-bold text-blue-600 pointer-events-none">
                             {selectedProduct === option.id ? formatPrice(getPhotoPrice()) : formatPrice(option.price)}
                           </p>
                         </div>
@@ -308,9 +308,9 @@ export function PhotoLightboxModal({
 
               {/* Options de livraison pour les tirages */}
               {selectedProduct !== 'digital' && (
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Options de livraison</h3>
-                  <div className="space-y-2">
+                <div className="mt-2 p-2 bg-gray-50 rounded-lg border">
+                  <h3 className="text-sm font-medium text-gray-700 mb-1">Options de livraison</h3>
+                  <div className="space-y-1">
                     <div 
                       className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${
                         deliveryOption === 'pickup' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
@@ -365,27 +365,27 @@ export function PhotoLightboxModal({
               <Button 
                 onClick={handleAddToCart}
                 disabled={isPhotoInCart()}
-                className="w-full mt-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                size="lg"
+                className="w-full mt-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                size="default"
               >
                 <Image
                   src="/Logos/shopping-cart.svg"
                   alt="Shopping Cart"
-                  width={18}
-                  height={18}
-                  className="h-5 w-5 mr-3 inline-block"
+                  width={16}
+                  height={16}
+                  className="h-4 w-4 mr-2 inline-block"
                 />
                 {isPhotoInCart() ? "Déjà dans le panier" : "Ajouter au panier"}
               </Button>
 
-              <div className="mt-4 p-2 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+              <div className="mt-2 p-1.5 bg-gradient-to-r from-green-50 to-blue-50 rounded-md border border-green-200">
                 <p className="text-xs text-center text-gray-700">
                   💰 <strong>Réductions dégressives :</strong> 2ème photo 10€ • 3ème+ photos 5€
                 </p>
               </div>
               
               {/* Padding en bas pour éviter que le bouton soit coupé */}
-              <div className="pb-4 md:pb-0"></div>
+              <div className="pb-6 md:pb-0"></div>
             </motion.div>
           </div>
         </div>
