@@ -29,8 +29,9 @@ const nextConfig = {
       },
     ],
     formats: ["image/avif", "image/webp"],
-    // Désactiver le cache des images Next.js pour éviter les erreurs avec Supabase
+    // Désactiver complètement le cache et l'optimisation pour les images Supabase
     minimumCacheTTL: 0,
+    unoptimized: process.env.NODE_ENV === 'development',
   },
   async redirects() {
     return [
