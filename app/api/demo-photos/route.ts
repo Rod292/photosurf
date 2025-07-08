@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const adminSession = cookieStore.get('admin-session')
     
     if (!adminSession || adminSession.value !== 'authenticated') {
+      console.log('Demo photos API: Accès refusé - pas de session admin')
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
     
@@ -50,6 +51,7 @@ export async function GET(request: NextRequest) {
     // Si on demande plusieurs photos (bulk)
     if (photoIds) {
       const photoIdArray = photoIds.split(',')
+      console.log(`Demo photos API: Requête bulk pour ${photoIdArray.length} photos`)
       
       const { data: photos, error: photosError } = await supabase
         .from('photos')
@@ -57,11 +59,16 @@ export async function GET(request: NextRequest) {
         .in('id', photoIdArray)
 
       if (photosError || !photos) {
+        console.error('Demo photos API: Erreur récupération photos:', photosError)
         return NextResponse.json({ error: 'Photos non trouvées' }, { status: 404 })
       }
 
+      console.log(`Demo photos API: ${photos.length} photos trouvées dans la DB`)
+
       // Générer les URLs signées en bulk
       const downloadUrls = await generateBulkDownloadUrls(photos, 2 * 60 * 60)
+      
+      console.log(`Demo photos API: ${downloadUrls.length} URLs signées générées`)
       
       return NextResponse.json({
         photos: downloadUrls.map(url => ({

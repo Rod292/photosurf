@@ -64,7 +64,7 @@ async function getFilteredGalleries(searchParams: SearchParams): Promise<Gallery
       query = query.eq("surf_schools.name", searchParams.school)
     }
     
-    const { data: galleries, error } = await query.order("created_at", { ascending: false })
+    const { data: galleries, error } = await query.order("date", { ascending: false })
     
     if (error) {
       console.error("Erreur Supabase:", error)

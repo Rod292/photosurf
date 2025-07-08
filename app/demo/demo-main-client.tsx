@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Gallery, Photo } from "@/lib/database.types"
 import { DemoPhotoLightboxModal } from "@/components/demo-photo-lightbox-modal"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { SupabaseImage } from "@/components/ui/supabase-image"
 
 interface DemoMainClientProps {
   galleries: any[]
@@ -14,6 +15,13 @@ interface DemoMainClientProps {
 interface DemoPhoto extends Photo {
   demoUrl?: string
   expiresAt?: string
+  created_at?: string
+  gallery?: {
+    id: string
+    name: string
+    date: string
+    school_id?: number
+  }
 }
 
 const PHOTOS_PER_PAGE = 50
@@ -25,23 +33,34 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
-  // Extraire toutes les photos de toutes les galeries
-  const allPhotos: DemoPhoto[] = galleries.flatMap((gallery: any) => 
-    (gallery.photos || []).map((photo: any) => ({
-      ...photo,
-      gallery: {
-        id: gallery.id,
-        name: gallery.name,
-        date: gallery.date,
-        school_id: gallery.school_id
-      }
-    }))
-  )
+  // Extraire toutes les photos de toutes les galeries et les trier par date de création
+  const allPhotos: DemoPhoto[] = galleries
+    .flatMap((gallery: any) => 
+      (gallery.photos || []).map((photo: any) => ({
+        ...photo,
+        gallery: {
+          id: gallery.id,
+          name: gallery.name,
+          date: gallery.date,
+          school_id: gallery.school_id
+        }
+      }))
+    )
+    .sort((a, b) => {
+      // Trier par date de galerie puis par date de création de la photo
+      const dateA = new Date(a.gallery?.date || 0).getTime()
+      const dateB = new Date(b.gallery?.date || 0).getTime()
+      if (dateA !== dateB) return dateB - dateA // Plus récent en premier
+      
+      // Si même date de galerie, trier par created_at
+      const createdA = new Date(a.created_at || 0).getTime()
+      const createdB = new Date(b.created_at || 0).getTime()
+      return createdB - createdA
+    })
 
   useEffect(() => {
     async function loadDemoUrls() {
       console.log('Demo photos disponibles:', allPhotos.length)
-      console.log('Première photo:', allPhotos[0])
       
       if (allPhotos.length === 0) {
         setLoading(false)
@@ -49,8 +68,8 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
       }
 
       try {
-        // Charger les URLs demo par batch de 10 photos
-        const batchSize = 10
+        // Charger les URLs demo par batch de 20 photos pour éviter trop de requêtes
+        const batchSize = 20
         const photoBatches = []
         
         for (let i = 0; i < allPhotos.length; i += batchSize) {
@@ -58,30 +77,41 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
         }
 
         const updatedPhotos = [...allPhotos]
+        let loadedCount = 0
 
         // Charger les URLs par batch pour éviter de surcharger l'API
         for (const batch of photoBatches) {
-          const photoIds = batch.map(p => p.id).join(',')
-          
-          const response = await fetch(`/api/demo-photos?photoIds=${photoIds}`)
-          
-          if (response.ok) {
-            const data = await response.json()
+          try {
+            const photoIds = batch.map(p => p.id).join(',')
+            const response = await fetch(`/api/demo-photos?photoIds=${photoIds}`)
             
-            // Mettre à jour les URLs demo
-            data.photos.forEach((demoPhoto: any) => {
-              const index = updatedPhotos.findIndex(p => p.id === demoPhoto.photoId)
-              if (index !== -1) {
-                updatedPhotos[index] = {
-                  ...updatedPhotos[index],
-                  demoUrl: demoPhoto.demoUrl,
-                  expiresAt: demoPhoto.expiresAt
-                }
+            if (response.ok) {
+              const data = await response.json()
+              
+              // Mettre à jour les URLs demo
+              if (data.photos && Array.isArray(data.photos)) {
+                data.photos.forEach((demoPhoto: any) => {
+                  const index = updatedPhotos.findIndex(p => p.id === demoPhoto.photoId)
+                  if (index !== -1) {
+                    updatedPhotos[index] = {
+                      ...updatedPhotos[index],
+                      demoUrl: demoPhoto.demoUrl,
+                      expiresAt: demoPhoto.expiresAt
+                    }
+                    loadedCount++
+                  }
+                })
               }
-            })
+            } else {
+              console.warn(`Erreur lors du chargement du batch: ${response.status}`)
+            }
+          } catch (batchError) {
+            console.warn('Erreur lors du chargement d\'un batch:', batchError)
+            // Continuer avec les autres batchs
           }
         }
 
+        console.log(`URLs demo chargées: ${loadedCount}/${allPhotos.length}`)
         setDemoPhotos(updatedPhotos)
       } catch (error) {
         console.error('Erreur lors du chargement des URLs demo:', error)
@@ -93,7 +123,7 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
     }
 
     loadDemoUrls()
-  }, [galleries])
+  }, [allPhotos.length])
 
   // Filtrer les photos par date si une date est sélectionnée
   const filteredPhotos = selectedDate 
@@ -159,7 +189,9 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
       <div className="space-y-8">
         {/* Sélecteur de dates - Petites cartes de jours horizontales */}
         <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-          {[...new Map(galleries.map((gallery: any) => [gallery.date, gallery])).values()].map((gallery: any) => (
+          {[...new Map(galleries.map((gallery: any) => [gallery.date, gallery])).values()]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .map((gallery: any) => (
             <button 
               key={gallery.date} 
               onClick={() => handleDateFilter(gallery.date)}
@@ -172,11 +204,12 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
               }`}>
                 <div className="relative h-32 rounded-t-lg overflow-hidden">
                   {gallery.photos && gallery.photos.length > 0 ? (
-                    <Image
+                    <SupabaseImage
                       src={gallery.photos[0].preview_s3_url}
                       alt={`Photos du ${new Date(gallery.date).toLocaleDateString('fr-FR')}`}
-                      fill
-                      className="object-cover"
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
@@ -260,19 +293,14 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
                   onClick={() => handlePhotoClick(index)}
                   className="group relative aspect-[2/3] overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
                 >
-                  <Image
+                  <SupabaseImage
                     src={photo.demoUrl || photo.preview_s3_url}
                     alt="Photo de surf"
-                    fill
+                    width={400}
+                    height={600}
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      console.error('Erreur de chargement image:', photo.demoUrl || photo.preview_s3_url)
-                      console.error('Photo complète:', photo)
-                    }}
-                    onLoad={() => {
-                      console.log('Image chargée avec succès:', photo.demoUrl || photo.preview_s3_url)
-                    }}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={() => console.error(`Erreur de chargement image: "${photo.demoUrl || photo.preview_s3_url}"`)}
                   />
                   
                   {/* Overlay simple */}

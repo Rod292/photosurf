@@ -29,6 +29,8 @@ const nextConfig = {
       },
     ],
     formats: ["image/avif", "image/webp"],
+    // Désactiver le cache des images Next.js pour éviter les erreurs avec Supabase
+    minimumCacheTTL: 0,
   },
   async redirects() {
     return [
