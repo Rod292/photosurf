@@ -40,7 +40,7 @@ export async function fetchGalleries(): Promise<Gallery[]> {
     
     const { data: galleries, error } = await supabase
       .from('galleries')
-      .select('id, name, date, school_id, created_at')
+      .select('id, name, date, session_period, school_id, created_at')
       .order('created_at', { ascending: false })
     
     if (error) {
@@ -62,6 +62,7 @@ const uploadServerSchema = z.object({
   gallerySelection: z.string().min(1, "Sélection de galerie requise"),
   newGalleryName: z.string().optional(),
   galleryDate: z.string().min(1, "Date requise"),
+  sessionPeriod: z.enum(['matin', 'apres-midi', 'journee']),
   originalFiles: z.array(z.instanceof(File)).min(1, "Au moins un fichier original requis"),
   previewFiles: z.array(z.instanceof(File)).min(1, "Au moins un fichier preview requis"),
 })
@@ -91,6 +92,7 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
     const gallerySelection = formData.get('gallerySelection') as string
     const newGalleryName = formData.get('newGalleryName') as string | null
     const galleryDate = formData.get('galleryDate') as string
+    const sessionPeriod = formData.get('sessionPeriod') as string
     const originalFiles = formData.getAll('originalFiles') as File[]
     const previewFiles = formData.getAll('previewFiles') as File[]
 
@@ -100,6 +102,7 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
       gallerySelection,
       newGalleryName: newGalleryName || undefined,
       galleryDate,
+      sessionPeriod,
       originalFiles,
       previewFiles,
     })
@@ -111,7 +114,7 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
       }
     }
 
-    const { school_id, gallerySelection: selectedGallery, newGalleryName: newName, galleryDate: date } = validationResult.data
+    const { school_id, gallerySelection: selectedGallery, newGalleryName: newName, galleryDate: date, sessionPeriod: period } = validationResult.data
 
     // Vérifier que l'école de surf existe
     const { data: surfSchool, error: schoolError } = await supabase
@@ -161,12 +164,13 @@ export async function uploadPhotos(formData: FormData): Promise<UploadResult> {
         }
       }
 
-      // Créer une nouvelle galerie avec school_id
+      // Créer une nouvelle galerie avec school_id et session_period
       const { data: newGallery, error: galleryError } = await supabase
         .from('galleries')
         .insert({
           name: newName.trim(),
           date: date,
+          session_period: period,
           school_id: school_id,
         })
         .select('id')

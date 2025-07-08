@@ -34,6 +34,9 @@ const uploadFormSchema = z.object({
   gallerySelection: z.string().min(1, "Veuillez sélectionner une galerie"),
   newGalleryName: z.string().optional(),
   galleryDate: z.string().min(1, "La date est requise"),
+  sessionPeriod: z.enum(['matin', 'apres-midi', 'journee'], {
+    errorMap: () => ({ message: "Veuillez sélectionner une période de session" })
+  }),
   originalFiles: z
     .any()
     .refine((files) => files && files.length > 0, "Veuillez sélectionner au moins une photo originale")
@@ -115,6 +118,7 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
       gallerySelection: "",
       newGalleryName: "",
       galleryDate: new Date().toISOString().split('T')[0],
+      sessionPeriod: 'matin',
     },
   })
 
@@ -218,6 +222,7 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
       formData.append("school_id", data.school_id.toString())
       formData.append("gallerySelection", data.gallerySelection)
       formData.append("galleryDate", data.galleryDate)
+      formData.append("sessionPeriod", data.sessionPeriod)
       
       if (data.newGalleryName) {
         formData.append("newGalleryName", data.newGalleryName.trim())
@@ -291,6 +296,7 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
             gallerySelection: "",
             newGalleryName: "",
             galleryDate: new Date().toISOString().split('T')[0],
+            sessionPeriod: 'matin',
           })
           setShowNewGalleryInput(false)
           setUploadProgress(0)
@@ -414,9 +420,23 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
                     {filteredGalleries.map((gallery) => (
                       <SelectItem key={gallery.id} value={gallery.id.toString()}>
                         <div className="flex flex-col items-start">
-                          <span className="font-medium">{gallery.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{gallery.name}</span>
+                            {gallery.session_period && (
+                              <span className="text-xs">
+                                {gallery.session_period === 'matin' && '🌅'}
+                                {gallery.session_period === 'apres-midi' && '☀️'}
+                                {gallery.session_period === 'journee' && '🌅☀️'}
+                              </span>
+                            )}
+                          </div>
                           <span className="text-sm text-gray-500">
                             {new Date(gallery.date).toLocaleDateString('fr-FR')}
+                            {gallery.session_period && (
+                              <span className="ml-2 text-xs capitalize">
+                                ({gallery.session_period.replace('-', '-')})
+                              </span>
+                            )}
                           </span>
                         </div>
                       </SelectItem>
@@ -431,43 +451,86 @@ export function PhotoUploadForm({ surfSchools, galleries }: PhotoUploadFormProps
 
         {/* Input pour nouvelle galerie et date */}
         {showNewGalleryInput && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="newGalleryName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium">
-                    Nom de la nouvelle galerie
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Ex: Session Surf Matin"
-                      {...field}
-                      value={field.value || ""}
-                      className="w-full"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="newGalleryName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-medium">
+                      Nom de la nouvelle galerie
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Ex: Session Surf Matin"
+                        {...field}
+                        value={field.value || ""}
+                        className="w-full"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="galleryDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-medium">
+                      Date de la session
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        className="w-full"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             
+            {/* Sélection période de session */}
             <FormField
               control={form.control}
-              name="galleryDate"
+              name="sessionPeriod"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-base font-medium">
-                    Date de la session
+                    Période de la session
                   </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      className="w-full"
-                    />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Sélectionnez la période" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="matin">
+                        <div className="flex items-center gap-2">
+                          <span className="text-orange-500">🌅</span>
+                          Matin
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="apres-midi">
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-500">☀️</span>
+                          Après-midi
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="journee">
+                        <div className="flex items-center gap-2">
+                          <span className="text-purple-500">🌅☀️</span>
+                          Journée complète
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
