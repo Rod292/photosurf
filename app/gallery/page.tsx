@@ -7,6 +7,7 @@ import { Gallery } from "@/lib/database.types"
 import { ArrowLeft, Home } from "lucide-react"
 import { GalleryClient } from "./gallery-client"
 import { GalleryMainClient } from "./gallery-main-client"
+import { GallerySessionsClient } from "./gallery-sessions-client"
 
 interface SearchParams {
   date?: string
@@ -409,46 +410,8 @@ export default async function GalleriesListPage({
             dateFilter={resolvedSearchParams.date}
           />
         ) : (
-          // Layout organisé par date et école comme sur la page d'accueil
-          <div className="py-8">
-            <div className="container mx-auto px-4">
-              <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 font-dm-sans">
-                {hasFilters ? "Résultats de recherche" : "Toutes nos galeries"}
-              </h2>
-              
-              {galleries.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="mb-4 flex justify-center">
-                    <Image
-                      src="/Logos/camera2.svg"
-                      alt="Camera"
-                      width={96}
-                      height={96}
-                      className="w-24 h-24"
-                    />
-                  </div>
-                  <h3 className="text-2xl font-semibold mb-4">
-                    {hasFilters ? "Aucun résultat trouvé" : "Aucune galerie disponible"}
-                  </h3>
-                  <p className="text-gray-600">
-                    {hasFilters 
-                      ? "Essayez de modifier vos critères de recherche" 
-                      : "Les nouvelles galeries seront bientôt disponibles !"}
-                  </p>
-                  {hasFilters && (
-                    <Link 
-                      href="/gallery"
-                      className="inline-block mt-4 text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      Voir toutes les galeries
-                    </Link>
-                  )}
-                </div>
-              ) : (
-                <GalleryMainClient galleries={galleries} />
-              )}
-            </div>
-          </div>
+          // Layout organisé par sessions individuelles
+          <GallerySessionsClient galleries={galleries} />
         )}
       </main>
     </div>
