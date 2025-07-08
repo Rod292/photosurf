@@ -29,9 +29,9 @@ const nextConfig = {
       },
     ],
     formats: ["image/avif", "image/webp"],
-    // Désactiver complètement le cache et l'optimisation pour les images Supabase
+    // Désactiver complètement le cache et l'optimisation pour éviter les erreurs Supabase
     minimumCacheTTL: 0,
-    unoptimized: process.env.NODE_ENV === 'development',
+    unoptimized: true,
   },
   async redirects() {
     return [
