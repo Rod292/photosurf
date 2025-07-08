@@ -174,7 +174,7 @@ export function DemoPhotoLightboxModal({
             )}
             
             <Image
-              src={currentPhoto.demoUrl || currentPhoto.preview_s3_url}
+              src={currentPhoto.demoUrl || '/placeholder-image.jpg'}
               alt={currentPhoto.filename}
               fill
               className="object-contain"

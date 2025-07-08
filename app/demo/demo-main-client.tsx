@@ -125,10 +125,11 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
     loadDemoUrls()
   }, [allPhotos.length])
 
-  // Filtrer les photos par date si une date est sélectionnée
+  // Filtrer les photos: seulement celles avec demoUrl ET par date si sélectionnée
+  const photosWithDemo = demoPhotos.filter(photo => photo.demoUrl)
   const filteredPhotos = selectedDate 
-    ? demoPhotos.filter(photo => photo.gallery?.date === selectedDate)
-    : demoPhotos
+    ? photosWithDemo.filter(photo => photo.gallery?.date === selectedDate)
+    : photosWithDemo
 
   // Pagination
   const totalPages = Math.ceil(filteredPhotos.length / PHOTOS_PER_PAGE)
@@ -141,7 +142,7 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
     const actualIndex = startIndex + index
     // Trouver l'index dans la liste complète des photos
     const photoId = currentPhotos[index].id
-    const globalIndex = demoPhotos.findIndex(photo => photo.id === photoId)
+    const globalIndex = photosWithDemo.findIndex(photo => photo.id === photoId)
     setLightboxIndex(globalIndex)
   }
 
@@ -293,15 +294,24 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
                   onClick={() => handlePhotoClick(index)}
                   className="group relative aspect-[2/3] overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
                 >
-                  <SupabaseImage
-                    src={photo.demoUrl || photo.preview_s3_url}
-                    alt="Photo de surf"
-                    width={400}
-                    height={600}
-                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={() => console.error(`Erreur de chargement image: "${photo.demoUrl || photo.preview_s3_url}"`)}
-                  />
+                  {photo.demoUrl ? (
+                    <SupabaseImage
+                      src={photo.demoUrl}
+                      alt="Photo de surf"
+                      width={400}
+                      height={600}
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={() => console.error(`Erreur de chargement image: "${photo.demoUrl}"`)}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <div className="text-gray-500 text-center">
+                        <div className="text-2xl mb-2">📷</div>
+                        <div className="text-xs">Chargement...</div>
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Overlay simple */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
@@ -378,7 +388,7 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
         <DemoPhotoLightboxModal
           isOpen={true}
           onClose={handleCloseModal}
-          photos={demoPhotos}
+          photos={photosWithDemo}
           currentIndex={lightboxIndex}
           onNavigate={setLightboxIndex}
         />
