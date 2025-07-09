@@ -5,6 +5,29 @@ import { headers } from 'next/headers'
 import { fulfillOrder } from '@/lib/order-fulfillment'
 import { simpleFulfillOrder } from '@/lib/simple-fulfillment'
 import { resend } from '@/lib/resend'
+import { createClient } from '@supabase/supabase-js'
+
+// Client Supabase spécial pour le webhook avec timeout réduit
+function createWebhookSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      },
+      global: {
+        fetch: (url, options = {}) => {
+          return fetch(url, {
+            ...options,
+            signal: AbortSignal.timeout(10000) // 10 second timeout for webhook only
+          });
+        }
+      }
+    }
+  )
+}
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
@@ -61,7 +84,7 @@ export async function POST(request: NextRequest) {
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
   try {
-    const supabase = createSupabaseAdminClient()
+    const supabase = createWebhookSupabaseClient()
 
     // Extract order information from the session
     const customerEmail = session.customer_details?.email || session.customer_email
