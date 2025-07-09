@@ -197,27 +197,13 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
       // Enable promotion codes on Stripe checkout page
       allow_promotion_codes: true,
       metadata: {
-        cart_items: JSON.stringify(items.map(item => {
+        cart_item_count: items.length.toString(),
+        cart_total: items.reduce((sum, item) => {
           const isZustandItem = 'photo_id' in item;
-          if (isZustandItem) {
-            const zustandItem = item as ZustandCartItem;
-            return {
-              photo_id: zustandItem.photo_id,
-              product_type: zustandItem.product_type,
-              quantity: 1,
-              price: Math.round(zustandItem.price * 100),
-              delivery_option: zustandItem.delivery_option,
-            };
-          } else {
-            const newItem = item as NewCartItem;
-            return {
-              photo_id: newItem.photo.id,
-              product_type: newItem.productType,
-              quantity: newItem.quantity,
-              price: newItem.price,
-            };
-          }
-        })),
+          const price = isZustandItem ? (item as ZustandCartItem).price : (item as NewCartItem).price / 100;
+          const quantity = isZustandItem ? 1 : (item as NewCartItem).quantity;
+          return sum + (price * quantity);
+        }, 0).toString(),
       },
     };
 

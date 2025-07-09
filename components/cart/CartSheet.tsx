@@ -99,8 +99,8 @@ export function CartSheet() {
           </Button>
         </motion.div>
       </SheetTrigger>
-      <SheetContent className="w-full sm:w-[350px] lg:w-[400px]">
-        <SheetHeader>
+      <SheetContent className="w-full sm:w-[350px] lg:w-[400px] flex flex-col">
+        <SheetHeader className="flex-shrink-0">
           <SheetTitle>Votre panier</SheetTitle>
           <SheetDescription>
             {totalItems === 0 
@@ -110,7 +110,7 @@ export function CartSheet() {
           </SheetDescription>
         </SheetHeader>
         
-        <div className="mt-6 flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto mt-6 pr-2 -mr-2">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
               <Image
@@ -173,7 +173,7 @@ export function CartSheet() {
         </div>
         
         {items.length > 0 && (
-          <div className="mt-auto pt-4 border-t">
+          <div className="flex-shrink-0 pt-4 border-t mt-4">
             <div className="flex items-center justify-between mb-4">
               <span className="text-lg font-semibold">Total</span>
               <span className="text-lg font-semibold">
