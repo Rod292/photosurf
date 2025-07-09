@@ -118,7 +118,7 @@ export async function fulfillOrder({
       return {
         photoId: download.photoId,
         downloadUrl: download.downloadUrl,
-        thumbnailUrl: photo?.preview_s3_url,
+        thumbnailUrl: download.downloadUrl, // Utiliser l'original pour le thumbnail aussi
         expiresAt: download.expiresAt
       };
     });

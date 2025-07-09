@@ -31,11 +31,11 @@ export async function simpleFulfillOrder(orderData: SimpleOrderData) {
 
     console.log('📧 Generated download links:', downloadLinks.map(l => ({ id: l.photoId, url: l.downloadUrl })));
 
-    // Préparer les données pour l'email
+    // Préparer les données pour l'email (utiliser les originales aussi pour les thumbnails)
     const emailDownloads = downloadLinks.map(download => ({
       photoId: download.photoId,
       downloadUrl: download.downloadUrl,
-      thumbnailUrl: download.thumbnailUrl,
+      thumbnailUrl: download.downloadUrl, // Utiliser l'original pour le thumbnail aussi
       expiresAt: download.expiresAt
     }));
 

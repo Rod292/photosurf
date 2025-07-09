@@ -165,7 +165,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         console.log('🔄 Proceeding with simple fulfillment instead')
         
         // Skip database operations and go directly to simple fulfillment
-        await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId)
+        await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId, totalAmount || 0)
         return
       }
       
@@ -175,7 +175,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       console.log('🔄 Proceeding with simple fulfillment instead')
       
       // Skip database operations and go directly to simple fulfillment
-      await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId)
+      await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId, totalAmount || 0)
       return
     }
     let fulfillmentResult
@@ -200,7 +200,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           if (attempt === 3) {
             // Final attempt failed, try simple fulfillment
             console.error('❌ All fulfillment attempts failed, trying simple fulfillment for order:', order.id)
-            await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId)
+            await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId, totalAmount || 0)
           } else {
             // Wait before retry
             await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
@@ -210,7 +210,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         console.error(`❌ Order fulfillment error (attempt ${attempt}):`, fulfillmentError)
         if (attempt === 3) {
           console.error('❌ All fulfillment attempts failed, trying simple fulfillment for order:', order.id)
-          await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId)
+          await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId, totalAmount || 0)
         } else {
           // Wait before retry
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
@@ -232,7 +232,8 @@ async function trySimpleFulfillment(
   customerEmail: string, 
   customerName: string | undefined, 
   orderItems: any[],
-  sessionId: string
+  sessionId: string,
+  totalAmount: number
 ) {
   try {
     console.log('🔄 Attempting simple fulfillment for order:', orderId)
@@ -256,7 +257,7 @@ async function trySimpleFulfillment(
       orderId,
       customerEmail,
       customerName,
-      totalAmount: digitalItems.reduce((sum, item) => sum + item.price, 0),
+      totalAmount: totalAmount || 0, // Use the actual paid amount from Stripe
       photos
     })
     
