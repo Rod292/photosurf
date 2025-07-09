@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Trash2, AlertTriangle, Calendar, Image, Edit3, Check, X } from 'lucide-react'
+import { Trash2, AlertTriangle, Calendar, Image, Edit3, Check, X, Settings, ExternalLink } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,9 +19,14 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { deleteGallery, renameGallery } from './actions'
 import { Gallery } from '@/lib/database.types'
+import Link from 'next/link'
+
+interface GalleryWithPhotoCount extends Gallery {
+  photo_count?: number
+}
 
 interface GalleryListProps {
-  galleries: Gallery[]
+  galleries: GalleryWithPhotoCount[]
   onGalleryDeleted: () => void
   onGalleryRenamed: () => void
 }
@@ -179,6 +184,16 @@ export function GalleryList({ galleries, onGalleryDeleted, onGalleryRenamed }: G
                   <>
                     <CardTitle className="text-lg">{gallery.name}</CardTitle>
                     <div className="flex items-center gap-2">
+                      <Link href={`/admin/gallery/${gallery.id}`}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        >
+                          <Settings className="h-4 w-4 mr-1" />
+                          Gérer
+                        </Button>
+                      </Link>
                       <Button
                         variant="outline"
                         size="sm"
@@ -249,7 +264,11 @@ export function GalleryList({ galleries, onGalleryDeleted, onGalleryRenamed }: G
                   <Calendar className="h-4 w-4" />
                   <span>{new Date(gallery.date).toLocaleDateString('fr-FR')}</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <Image className="h-4 w-4" />
+                    <span>{gallery.photo_count || 0} photo{(gallery.photo_count || 0) > 1 ? 's' : ''}</span>
+                  </div>
                   <span className="text-xs bg-gray-100 px-2 py-1 rounded">
                     ID: {gallery.id.slice(0, 8)}...
                   </span>

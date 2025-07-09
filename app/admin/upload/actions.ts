@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { SurfSchool, Gallery } from '@/lib/database.types'
 import { cookies } from 'next/headers'
+import { deleteBulkPhotoFiles } from '@/lib/storage'
 
 // Server Actions pour récupérer les données - SIMPLIFIÉ
 export async function fetchSurfSchools(): Promise<SurfSchool[]> {
@@ -34,13 +35,20 @@ export async function fetchSurfSchools(): Promise<SurfSchool[]> {
 
 export async function fetchGalleries(): Promise<Gallery[]> {
   try {
-    console.log('🖼️ Fetching galleries with standard client...')
+    console.log('🖼️ Fetching galleries with photo count...')
     
     const supabase = await createSupabaseServerClient()
     
     const { data: galleries, error } = await supabase
       .from('galleries')
-      .select('id, name, date, school_id, created_at')
+      .select(`
+        id, 
+        name, 
+        date, 
+        school_id, 
+        created_at,
+        photos(count)
+      `)
       .order('created_at', { ascending: false })
     
     if (error) {
@@ -48,8 +56,14 @@ export async function fetchGalleries(): Promise<Gallery[]> {
       return []
     }
     
-    console.log('✅ Galleries fetched successfully:', galleries?.length || 0)
-    return galleries || []
+    // Transformer les données pour inclure le compte des photos
+    const galleriesWithCount = galleries?.map(gallery => ({
+      ...gallery,
+      photo_count: Array.isArray(gallery.photos) ? gallery.photos.length : 0
+    })) || []
+    
+    console.log('✅ Galleries fetched successfully:', galleriesWithCount?.length || 0)
+    return galleriesWithCount
   } catch (error) {
     console.error('💥 Unexpected error in fetchGalleries:', error)
     return []
@@ -338,7 +352,7 @@ export async function deleteGallery(galleryId: string): Promise<DeleteGalleryRes
     // 1. Récupérer toutes les photos de la galerie
     const { data: photos, error: photosError } = await supabase
       .from('photos')
-      .select('id, original_s3_key, preview_s3_url')
+      .select('id, original_s3_key, preview_s3_url, filename')
       .eq('gallery_id', galleryId)
 
     if (photosError) {
@@ -352,45 +366,23 @@ export async function deleteGallery(galleryId: string): Promise<DeleteGalleryRes
     const photosCount = photos?.length || 0
     console.log(`📷 Found ${photosCount} photos to delete`)
 
-    // 2. Supprimer les fichiers de stockage pour chaque photo
+    // 2. Supprimer les fichiers de stockage pour toutes les photos
     if (photos && photos.length > 0) {
-      for (const photo of photos) {
-        try {
-          // Supprimer le fichier original
-          if (photo.original_s3_key) {
-            const { error: originalDeleteError } = await supabase.storage
-              .from('originals')
-              .remove([photo.original_s3_key])
-            
-            if (originalDeleteError) {
-              console.warn(`Warning: Could not delete original file ${photo.original_s3_key}:`, originalDeleteError)
-            }
-          }
-
-          // Supprimer le fichier preview (extraire le path de l'URL)
-          if (photo.preview_s3_url) {
-            try {
-              const url = new URL(photo.preview_s3_url)
-              const pathParts = url.pathname.split('/')
-              const bucketIndex = pathParts.findIndex(part => part === 'web-previews')
-              if (bucketIndex !== -1 && bucketIndex < pathParts.length - 1) {
-                const previewPath = pathParts.slice(bucketIndex + 1).join('/')
-                
-                const { error: previewDeleteError } = await supabase.storage
-                  .from('web-previews')
-                  .remove([previewPath])
-                
-                if (previewDeleteError) {
-                  console.warn(`Warning: Could not delete preview file ${previewPath}:`, previewDeleteError)
-                }
-              }
-            } catch (urlError) {
-              console.warn(`Warning: Could not parse preview URL ${photo.preview_s3_url}:`, urlError)
-            }
-          }
-        } catch (error) {
-          console.warn(`Warning: Error deleting files for photo ${photo.id}:`, error)
-        }
+      console.log(`🗑️ Suppression des fichiers de stockage pour ${photos.length} photos...`)
+      const fileDeleteResults = await deleteBulkPhotoFiles(photos)
+      
+      const successfulFileDeletions = fileDeleteResults.filter(result => 
+        result.originalDeleted && result.previewDeleted
+      ).length
+      
+      const fileErrors = fileDeleteResults.filter(result => 
+        result.errors.length > 0
+      )
+      
+      console.log(`📁 Fichiers supprimés avec succès: ${successfulFileDeletions}/${photos.length}`)
+      
+      if (fileErrors.length > 0) {
+        console.warn(`⚠️ Erreurs lors de la suppression des fichiers:`, fileErrors)
       }
     }
 
