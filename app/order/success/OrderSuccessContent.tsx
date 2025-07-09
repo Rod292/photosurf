@@ -80,7 +80,7 @@ export function OrderSuccessContent() {
               <div>
                 <h3 className="font-medium text-amber-900">Téléchargements</h3>
                 <p className="text-sm text-amber-700">
-                  Vos photos numériques en haute résolution seront disponibles pendant 48 heures.
+                  Vos photos numériques en haute résolution seront disponibles pendant 7 jours.
                 </p>
               </div>
             </div>
