@@ -43,8 +43,8 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
 
   // Filtrer par date si sélectionnée
   const filteredSessions = selectedDate 
-    ? sessionsWithPhotos.filter((gallery: any) => gallery.date === selectedDate)
-    : sessionsWithPhotos
+    ? uniqueDates.filter(date => date === selectedDate).map(date => sessionsByDate[date])
+    : Object.values(sessionsByDate)
 
   const handleDateFilter = (date: string) => {
     setSelectedDate(date === selectedDate ? null : date)
@@ -191,13 +191,12 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
           </div>
         ) : (
           <StaggerContainer className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4" staggerDelay={0.1}>
-            {uniqueDates.map((date: string) => {
-              const dateData = sessionsByDate[date]
+            {filteredSessions.map((dateData: any) => {
               const firstSession = dateData.sessions[0]
               
               return (
-                <StaggerItem key={date}>
-                  <Link href={`/gallery?date=${date}`} className="block">
+                <StaggerItem key={dateData.date}>
+                  <Link href={`/gallery?date=${dateData.date}`} className="block">
                     <motion.div
                       className="bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer overflow-hidden group"
                       whileHover={{ y: -4 }}
@@ -208,7 +207,7 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
                         {firstSession.photos && firstSession.photos.length > 0 ? (
                           <SupabaseImage
                             src={firstSession.photos[0].preview_s3_url}
-                            alt={`Photos du ${new Date(date).toLocaleDateString('fr-FR')}`}
+                            alt={`Photos du ${new Date(dateData.date).toLocaleDateString('fr-FR')}`}
                             width={300}
                             height={400}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -234,14 +233,14 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
                       
                       <div className="p-3">
                         <h3 className="font-bold text-sm text-gray-900 mb-1 line-clamp-2 leading-tight">
-                          {new Date(date).toLocaleDateString('fr-FR', {
+                          {new Date(dateData.date).toLocaleDateString('fr-FR', {
                             weekday: 'long',
                             day: 'numeric',
                             month: 'long'
                           })}
                         </h3>
                         <p className="text-xs text-gray-600 mb-2">
-                          {new Date(date).toLocaleDateString('fr-FR', {
+                          {new Date(dateData.date).toLocaleDateString('fr-FR', {
                             day: 'numeric',
                             month: 'short'
                           })}
