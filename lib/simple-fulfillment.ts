@@ -26,7 +26,7 @@ export async function simpleFulfillOrder(orderData: SimpleOrderData) {
       photoId: photo.id,
       downloadUrl: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
       thumbnailUrl: photo.preview_s3_url,
-      expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString() // 48h from now
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
     }));
 
     console.log('📧 Generated download links:', downloadLinks.map(l => ({ id: l.photoId, url: l.downloadUrl })));
@@ -47,7 +47,7 @@ Merci pour votre commande ! Vos photos en haute résolution sont maintenant disp
 Vos liens de téléchargement (${downloadLinks.length} photos) :
 ${downloadLinks.map((link, index) => `${index + 1}. Photo ${index + 1}: ${link.downloadUrl}`).join('\n')}
 
-⚠️ Important: Ces liens sont valides pendant 48 heures.
+⚠️ Important: Ces liens sont valides pendant 7 jours.
 
 Pour toute question, n'hésitez pas à nous contacter à contact@arodestudio.com
 

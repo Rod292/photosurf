@@ -109,7 +109,7 @@ export async function fulfillOrder({
     const downloadUrls = photos.map(photo => ({
       photoId: photo.id,
       downloadUrl: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
-      expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString() // 48h from now
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
     }));
     
     // 5. Prepare email data

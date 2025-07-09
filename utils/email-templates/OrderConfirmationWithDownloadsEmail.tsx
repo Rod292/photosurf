@@ -45,7 +45,7 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
           <Section style={downloadSection}>
             <Heading style={h2}>Vos photos ({downloads.length})</Heading>
             <Text style={warningText}>
-              ⚠️ Important: Ces liens de téléchargement expireront dans 48 heures. 
+              ⚠️ Important: Ces liens de téléchargement expireront dans 7 jours. 
               Assurez-vous de télécharger vos photos avant l'expiration.
             </Text>
             
