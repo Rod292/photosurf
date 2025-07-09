@@ -23,14 +23,28 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
     .filter((gallery: any) => gallery.photos && gallery.photos.length > 0)
     .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
+  // Grouper les sessions par date avec compteur
+  const sessionsByDate = sessionsWithPhotos.reduce((acc: any, gallery: any) => {
+    const date = gallery.date
+    if (!acc[date]) {
+      acc[date] = {
+        date,
+        sessions: [],
+        totalPhotos: 0
+      }
+    }
+    acc[date].sessions.push(gallery)
+    acc[date].totalPhotos += gallery.photos?.length || 0
+    return acc
+  }, {})
+
+  const uniqueDates = Object.keys(sessionsByDate)
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+
   // Filtrer par date si sélectionnée
   const filteredSessions = selectedDate 
     ? sessionsWithPhotos.filter((gallery: any) => gallery.date === selectedDate)
     : sessionsWithPhotos
-
-  // Obtenir toutes les dates uniques pour le sélecteur
-  const uniqueDates = [...new Set(sessionsWithPhotos.map((gallery: any) => gallery.date))]
-    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
 
   const handleDateFilter = (date: string) => {
     setSelectedDate(date === selectedDate ? null : date)
@@ -177,79 +191,76 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
           </div>
         ) : (
           <StaggerContainer className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4" staggerDelay={0.1}>
-            {filteredSessions.map((gallery: any, index: number) => (
-              <StaggerItem key={gallery.id}>
-                <Link href={`/gallery/${gallery.id}`} className="block">
-                  <motion.div
-                    className="bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer overflow-hidden group"
-                    whileHover={{ y: -4 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {/* Image en format portrait optimisé */}
-                    <div className="relative aspect-[3/4] bg-gradient-to-br from-blue-400 to-blue-600">
-                      {gallery.photos && gallery.photos.length > 0 ? (
-                        <SupabaseImage
-                          src={gallery.photos[0].preview_s3_url}
-                          alt={`Photos de ${gallery.name}`}
-                          width={300}
-                          height={400}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Image
-                            src="/Logos/camera2.svg"
-                            alt="Camera"
-                            width={40}
-                            height={40}
-                            className="w-10 h-10"
-                            style={{ filter: 'brightness(0) invert(1)' }}
+            {uniqueDates.map((date: string) => {
+              const dateData = sessionsByDate[date]
+              const firstSession = dateData.sessions[0]
+              
+              return (
+                <StaggerItem key={date}>
+                  <Link href={`/gallery?date=${date}`} className="block">
+                    <motion.div
+                      className="bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer overflow-hidden group"
+                      whileHover={{ y: -4 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {/* Image en format portrait optimisé */}
+                      <div className="relative aspect-[3/4] bg-gradient-to-br from-blue-400 to-blue-600">
+                        {firstSession.photos && firstSession.photos.length > 0 ? (
+                          <SupabaseImage
+                            src={firstSession.photos[0].preview_s3_url}
+                            alt={`Photos du ${new Date(date).toLocaleDateString('fr-FR')}`}
+                            width={300}
+                            height={400}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
-                        </div>
-                      )}
-                      
-                      {/* Badge du nombre de photos */}
-                      <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
-                        {gallery.photos?.length || 0}
-                      </div>
-                    </div>
-                    
-                    <div className="p-3">
-                      <h3 className="font-bold text-sm text-gray-900 mb-1 line-clamp-2 leading-tight">
-                        {gallery.name}
-                      </h3>
-                      <p className="text-xs text-gray-600 mb-2">
-                        {new Date(gallery.date).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'short'
-                        })}
-                      </p>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-blue-600">
-                          {gallery.photos?.length || 0} photo{(gallery.photos?.length || 0) > 1 ? 's' : ''}
-                        </span>
-                        {/* École de surf si disponible */}
-                        {gallery.surf_schools && (
-                          <div className="flex items-center gap-1">
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
                             <Image
-                              src="/Logos/surfer.svg"
-                              alt="Surf school"
-                              width={12}
-                              height={12}
-                              className="w-3 h-3"
+                              src="/Logos/camera2.svg"
+                              alt="Camera"
+                              width={40}
+                              height={40}
+                              className="w-10 h-10"
+                              style={{ filter: 'brightness(0) invert(1)' }}
                             />
-                            <span className="text-xs text-gray-500 truncate max-w-[60px]">
-                              {gallery.surf_schools.name}
-                            </span>
                           </div>
                         )}
+                        
+                        {/* Badge du nombre de sessions */}
+                        <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                          {dateData.sessions.length} session{dateData.sessions.length > 1 ? 's' : ''}
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                </Link>
-              </StaggerItem>
-            ))}
+                      
+                      <div className="p-3">
+                        <h3 className="font-bold text-sm text-gray-900 mb-1 line-clamp-2 leading-tight">
+                          {new Date(date).toLocaleDateString('fr-FR', {
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long'
+                          })}
+                        </h3>
+                        <p className="text-xs text-gray-600 mb-2">
+                          {new Date(date).toLocaleDateString('fr-FR', {
+                            day: 'numeric',
+                            month: 'short'
+                          })}
+                        </p>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-blue-600">
+                            {dateData.totalPhotos} photo{dateData.totalPhotos > 1 ? 's' : ''}
+                          </span>
+                          <span className="text-xs font-medium text-green-600">
+                            {dateData.sessions.length} session{dateData.sessions.length > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </Link>
+                </StaggerItem>
+              )
+            })}
           </StaggerContainer>
         )}
       </div>

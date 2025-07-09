@@ -101,7 +101,8 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
             <p className="text-sm text-gray-600 mb-2">
               Téléchargement haute résolution immédiat
             </p>
-            <p className="font-semibold text-blue-600">15€</p>
+            <p className="font-semibold text-blue-600">15€ → 10€ → 5€</p>
+            <p className="text-xs text-gray-500 mt-1">Prix dégressif selon la quantité</p>
           </div>
           <div className="bg-white p-4 rounded-lg">
             <h4 className="font-medium mb-2 flex items-center gap-2">
@@ -112,12 +113,18 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
                 height={20}
                 className="w-5 h-5"
               />
-              Tirage A4
+              Formats disponibles
             </h4>
             <p className="text-sm text-gray-600 mb-2">
-              Impression professionnelle sur papier photo
+              Impression professionnelle + JPEG haute résolution
             </p>
-            <p className="font-semibold text-blue-600">25€</p>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-blue-600">A5 + JPEG: 20€</p>
+              <p className="text-sm font-medium text-blue-600">A4 + JPEG: 30€</p>
+              <p className="text-sm font-medium text-blue-600">A3 + JPEG: 50€</p>
+              <p className="text-sm font-medium text-blue-600">A2 + JPEG: 80€</p>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Prix fixes, pas de dégressif</p>
           </div>
           <div className="bg-white p-4 rounded-lg border-2 border-blue-200">
             <h4 className="font-medium mb-2 flex items-center gap-2">
@@ -128,12 +135,12 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
                 height={20}
                 className="w-5 h-5"
               />
-              Pack Complet
+              Recommandé
             </h4>
             <p className="text-sm text-gray-600 mb-2">
-              Numérique + Tirage A4 (économie de 5€)
+              Commencez par le numérique, ajoutez vos tirages ensuite
             </p>
-            <p className="font-semibold text-blue-600">35€</p>
+            <p className="font-semibold text-blue-600">Numérique à partir de 5€</p>
           </div>
         </div>
       </div>

@@ -254,7 +254,7 @@ export default async function GalleriesListPage({
                 <span className="text-base">💰</span>
               </div>
               <p className="text-center text-white font-medium text-sm">
-                <span className="font-bold">Réductions dégressives :</span> 2ème photo 10€ • 3ème+ photos 5€
+                <span className="font-bold">Tarifs dégressifs :</span> 1ère photo 15€ • 2ème photo 10€ • 3ème+ photos 5€
               </p>
             </div>
           </div>

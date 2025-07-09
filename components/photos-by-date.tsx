@@ -149,116 +149,65 @@ export function PhotosByDate() {
       </div>
       
       <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-4">
-        {galleryGroups.map((group) => (
-          <div key={group.date} className="flex gap-4">
-            {/* Si une seule session, affichage simple */}
-            {group.galleries.length === 1 ? (
-              <Link href={`/gallery/${group.galleries[0].id}`} className="flex-shrink-0">
-                <div className="w-44 bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
-                  <div className="relative h-64 rounded-t-xl overflow-hidden">
-                    {group.galleries[0]?.coverPhoto ? (
+        {galleryGroups.map((group) => {
+          const totalPhotos = group.galleries.reduce((sum, gallery) => sum + gallery.photoCount, 0)
+          const coverPhoto = group.galleries.find(g => g.coverPhoto)?.coverPhoto || group.galleries[0]?.coverPhoto
+          
+          return (
+            <Link key={group.date} href={`/gallery?date=${group.date}`} className="flex-shrink-0">
+              <div className="w-44 bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+                <div className="relative h-64 rounded-t-xl overflow-hidden">
+                  {coverPhoto ? (
+                    <Image
+                      src={coverPhoto}
+                      alt={`Photos du ${new Date(group.date).toLocaleDateString('fr-FR')}`}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
                       <Image
-                        src={group.galleries[0].coverPhoto}
-                        alt={`Photos du ${new Date(group.date).toLocaleDateString('fr-FR')}`}
-                        fill
-                        className="object-cover"
+                        src="/Logos/camera2.svg"
+                        alt="Camera"
+                        width={40}
+                        height={40}
+                        className="w-10 h-10"
+                        style={{ filter: 'brightness(0) invert(1)' }}
                       />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                        <Image
-                          src="/Logos/camera2.svg"
-                          alt="Camera"
-                          width={40}
-                          height={40}
-                          className="w-10 h-10"
-                          style={{ filter: 'brightness(0) invert(1)' }}
-                        />
-                      </div>
-                    )}
-                    
-                  </div>
+                    </div>
+                  )}
                   
-                  <div className="p-3">
-                    <h3 className="text-center font-medium text-black text-xs leading-tight">
-                      {group.galleries[0].name}
-                    </h3>
-                    <p className="text-center text-xs text-gray-600 mt-1">
-                      {new Date(group.date).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'short'
-                      })}
-                    </p>
-                    {group.galleries[0].session_period && (
-                      <p className="text-center text-xs text-blue-600 mt-1 font-medium capitalize">
-                        {group.galleries[0].session_period === 'matin' && '🌅 Matin'}
-                        {group.galleries[0].session_period === 'apres-midi' && '☀️ Après-midi'}
-                        {group.galleries[0].session_period === 'journee' && '🌅☀️ Midi'}
-                      </p>
-                    )}
-                    <p className="text-center text-xs text-gray-500 mt-1">
-                      {group.galleries[0].photoCount} photo{group.galleries[0].photoCount > 1 ? 's' : ''}
-                    </p>
+                  {/* Badge nombre de sessions */}
+                  <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                    {group.galleries.length} session{group.galleries.length > 1 ? 's' : ''}
                   </div>
                 </div>
-              </Link>
-            ) : (
-              /* Plusieurs sessions - afficher chacune séparément */
-              group.galleries.map((gallery) => (
-                <Link key={gallery.id} href={`/gallery/${gallery.id}`} className="flex-shrink-0">
-                  <div className="w-44 bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
-                    <div className="relative h-64 rounded-t-xl overflow-hidden">
-                      {gallery.coverPhoto ? (
-                        <Image
-                          src={gallery.coverPhoto}
-                          alt={gallery.name}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                          <Image
-                            src="/Logos/camera2.svg"
-                            alt="Camera"
-                            width={40}
-                            height={40}
-                            className="w-10 h-10"
-                            style={{ filter: 'brightness(0) invert(1)' }}
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Badge période */}
-                      {gallery.session_period && (
-                        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
-                          <span className="text-xs font-semibold text-gray-700">
-                            {gallery.session_period === 'matin' && '🌅'}
-                            {gallery.session_period === 'apres-midi' && '☀️'}
-                            {gallery.session_period === 'journee' && '🌅☀️'}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="p-3">
-                      <h3 className="text-center font-medium text-black text-xs leading-tight">
-                        {gallery.name}
-                      </h3>
-                      <p className="text-center text-xs text-gray-600 mt-1">
-                        {new Date(group.date).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'short'
-                        })}
-                      </p>
-                      <p className="text-center text-xs text-gray-500 mt-1">
-                        {gallery.photoCount} photo{gallery.photoCount > 1 ? 's' : ''}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))
-            )}
-          </div>
-        ))}
+                
+                <div className="p-3">
+                  <h3 className="text-center font-medium text-black text-xs leading-tight">
+                    {new Date(group.date).toLocaleDateString('fr-FR', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long'
+                    })}
+                  </h3>
+                  <p className="text-center text-xs text-gray-600 mt-1">
+                    {new Date(group.date).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'short'
+                    })}
+                  </p>
+                  <p className="text-center text-xs text-blue-600 mt-1 font-medium">
+                    {group.galleries.length} session{group.galleries.length > 1 ? 's' : ''}
+                  </p>
+                  <p className="text-center text-xs text-gray-500 mt-1">
+                    {totalPhotos} photo{totalPhotos > 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          )
+        })}
       </div>
     </div>
   )

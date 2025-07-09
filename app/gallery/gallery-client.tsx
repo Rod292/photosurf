@@ -27,9 +27,19 @@ const PHOTOS_PER_PAGE = 50
 export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter }: GalleryClientProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedGallery, setSelectedGallery] = useState<string | null>(null)
+
+  // Filtrer les photos par galerie sélectionnée si applicable
+  const filteredPhotos = selectedGallery 
+    ? latestPhotos.filter(photo => {
+        // Trouver la galerie correspondante dans les galleries
+        const gallery = galleries.find(g => g.id === selectedGallery)
+        return gallery && photo.galleries.name === gallery.name
+      })
+    : latestPhotos
 
   // Transformer les photos pour être compatibles avec PhotoLightboxModal
-  const formattedPhotos = latestPhotos.map(photo => ({
+  const formattedPhotos = filteredPhotos.map(photo => ({
     id: photo.id,
     preview_s3_url: photo.preview_s3_url,
     filename: photo.galleries.name || "Photo de surf",
@@ -41,10 +51,10 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
   }))
 
   // Pagination
-  const totalPages = Math.ceil(latestPhotos.length / PHOTOS_PER_PAGE)
+  const totalPages = Math.ceil(filteredPhotos.length / PHOTOS_PER_PAGE)
   const startIndex = (currentPage - 1) * PHOTOS_PER_PAGE
   const endIndex = startIndex + PHOTOS_PER_PAGE
-  const currentPhotos = latestPhotos.slice(startIndex, endIndex)
+  const currentPhotos = filteredPhotos.slice(startIndex, endIndex)
 
   const handlePhotoClick = (index: number) => {
     const actualIndex = startIndex + index
@@ -58,6 +68,11 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
     window.scrollTo({ top: 200, behavior: 'smooth' })
+  }
+
+  const handleGalleryFilter = (galleryId: string | null) => {
+    setSelectedGallery(galleryId)
+    setCurrentPage(1) // Reset à la première page lors du changement de filtre
   }
 
   if (!schoolName && !dateFilter) {
@@ -107,11 +122,60 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
             ) : (
               <div className="relative">
                 <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+                  {/* Bouton pour voir toutes les photos */}
+                  <button 
+                    onClick={() => handleGalleryFilter(null)}
+                    className={`group flex-shrink-0 ${selectedGallery === null ? 'ring-2 ring-blue-500' : ''}`}
+                  >
+                    <div className="w-28 h-40 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-gray-200">
+                      <div className="w-full h-full relative">
+                        {/* Utiliser la première photo disponible comme image de couverture */}
+                        {latestPhotos.length > 0 ? (
+                          <Image
+                            src={latestPhotos[0].preview_s3_url}
+                            alt="Toutes les photos"
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                            <Image
+                              src="/Logos/camera2.svg"
+                              alt="Toutes les photos"
+                              width={24}
+                              height={24}
+                              className="w-6 h-6"
+                              style={{ filter: 'brightness(0) invert(1)' }}
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Overlay avec texte */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                        <div className="absolute bottom-2 left-2 right-2">
+                          <p className="text-white text-xs font-medium text-center drop-shadow-sm">
+                            Toutes les photos
+                          </p>
+                        </div>
+                        
+                        {/* Badge photo count total */}
+                        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1">
+                          <span className="text-xs font-medium text-gray-700">
+                            {latestPhotos.length}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-2 text-center">
+                      {dateFilter ? "Toutes sessions" : "Toutes photos"}
+                    </p>
+                  </button>
+                  
                   {galleries.map((gallery: any) => (
-                    <Link 
+                    <button 
                       key={gallery.id}
-                      href={`/gallery/${gallery.id}`}
-                      className="group flex-shrink-0"
+                      onClick={() => handleGalleryFilter(gallery.id)}
+                      className={`group flex-shrink-0 ${selectedGallery === gallery.id ? 'ring-2 ring-blue-500' : ''}`}
                     >
                       <div className="w-28 h-40 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-gray-200">
                         <div className="w-full h-full relative">
@@ -149,7 +213,7 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                           month: "short"
                         })}
                       </p>
-                    </Link>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -161,12 +225,11 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
         <div className="container mx-auto px-4 py-6">
           <h2 className="text-xl font-bold mb-4">
             {dateFilter 
-              ? `Photos du ${formatDisplayDate(dateFilter)}`
-              : "Photos récentes"
-            }
+              ? `Photos du ${formatDisplayDate(dateFilter)}${selectedGallery ? ' - ' + galleries.find(g => g.id === selectedGallery)?.name : ''}`
+              : `Photos récentes${selectedGallery ? ' - ' + galleries.find(g => g.id === selectedGallery)?.name : ''}`}
           </h2>
           
-          {latestPhotos.length === 0 ? (
+          {filteredPhotos.length === 0 ? (
             <div className="text-center py-8 bg-gray-50 rounded-lg">
               <div className="mb-4">
                 <Image
