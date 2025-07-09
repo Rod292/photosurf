@@ -105,8 +105,12 @@ export async function fulfillOrder({
       throw new Error('No photos found for order items');
     }
     
-    // 4. Generate download URLs for all digital photos
-    const downloadUrls = await generateBulkDownloadUrls(photos);
+    // 4. Generate download URLs for all digital photos (using public URLs)
+    const downloadUrls = photos.map(photo => ({
+      photoId: photo.id,
+      downloadUrl: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
+      expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString() // 48h from now
+    }));
     
     // 5. Prepare email data
     const emailDownloads = downloadUrls.map((download, index) => {
@@ -119,22 +123,9 @@ export async function fulfillOrder({
       };
     });
     
-    // 6. Generate real download URLs and send email with links
+    // 6. Send email with download links
     let emailData: any = null;
     try {
-      // Generate real signed URLs from Supabase
-      const downloadUrls = await generateBulkDownloadUrls(photos);
-      
-      // Prepare email data with real download links
-      const emailDownloads = downloadUrls.map((download, index) => {
-        const photo = photos.find(p => p.id === download.photoId);
-        return {
-          photoId: download.photoId,
-          downloadUrl: download.downloadUrl,
-          thumbnailUrl: photo?.preview_s3_url,
-          expiresAt: download.expiresAt
-        };
-      });
 
       // Generate plain text version
       const plainTextContent = generatePlainTextEmail({

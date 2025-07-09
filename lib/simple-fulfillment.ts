@@ -29,6 +29,8 @@ export async function simpleFulfillOrder(orderData: SimpleOrderData) {
       expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString() // 48h from now
     }));
 
+    console.log('📧 Generated download links:', downloadLinks.map(l => ({ id: l.photoId, url: l.downloadUrl })));
+
     // Préparer les données pour l'email
     const emailDownloads = downloadLinks.map(download => ({
       photoId: download.photoId,
@@ -37,7 +39,23 @@ export async function simpleFulfillOrder(orderData: SimpleOrderData) {
       expiresAt: download.expiresAt
     }));
 
-    // Envoyer l'email
+    // Envoyer l'email avec template et version texte
+    const plainTextContent = `Bonjour ${orderData.customerName || orderData.customerEmail.split('@')[0]},
+
+Merci pour votre commande ! Vos photos en haute résolution sont maintenant disponibles au téléchargement.
+
+Vos liens de téléchargement (${downloadLinks.length} photos) :
+${downloadLinks.map((link, index) => `${index + 1}. Photo ${index + 1}: ${link.downloadUrl}`).join('\n')}
+
+⚠️ Important: Ces liens sont valides pendant 48 heures.
+
+Pour toute question, n'hésitez pas à nous contacter à contact@arodestudio.com
+
+Merci de votre confiance,
+L'équipe Arode Studio
+La Torche, Bretagne
+https://www.arodestudio.com`;
+
     const { data, error } = await resend.emails.send({
       from: 'Arode Studio <contact@arodestudio.com>',
       to: orderData.customerEmail,
@@ -46,7 +64,8 @@ export async function simpleFulfillOrder(orderData: SimpleOrderData) {
         customerName: orderData.customerName || orderData.customerEmail.split('@')[0],
         totalPrice: orderData.totalAmount / 100,
         downloads: emailDownloads
-      })
+      }),
+      text: plainTextContent
     });
 
     if (error) {

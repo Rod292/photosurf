@@ -53,14 +53,14 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
               <div key={download.photoId} style={photoCard}>
                 {download.thumbnailUrl && (
                   <Img
-                    src={proxySupabaseUrl(download.thumbnailUrl)}
+                    src={download.thumbnailUrl}
                     alt={`Photo ${index + 1}`}
                     style={thumbnail}
                   />
                 )}
                 <div style={downloadInfo}>
                   <Text style={photoName}>Photo {index + 1}</Text>
-                  <Link href={proxySupabaseUrl(download.downloadUrl)} style={downloadButton}>
+                  <Link href={download.downloadUrl} style={downloadButton}>
                     Télécharger
                   </Link>
                   <Text style={expiryText}>

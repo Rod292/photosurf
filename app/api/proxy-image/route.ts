@@ -23,18 +23,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(publicUrl)
     }
     
-    // Pour les images privées (originals) - générer URL signée
+    // Pour les images originales (maintenant publiques)
     if (bucket === 'originals') {
-      const { data, error } = await supabase.storage
+      const { data: { publicUrl } } = supabase.storage
         .from('originals')
-        .createSignedUrl(path, 86400) // 24 heures
+        .getPublicUrl(path)
       
-      if (error || !data) {
-        return NextResponse.json({ error: 'Failed to generate signed URL' }, { status: 500 })
-      }
-      
-      // Rediriger vers l'URL signée
-      return NextResponse.redirect(data.signedUrl)
+      // Rediriger vers l'URL publique
+      return NextResponse.redirect(publicUrl)
     }
     
     return NextResponse.json({ error: 'Invalid bucket' }, { status: 400 })
