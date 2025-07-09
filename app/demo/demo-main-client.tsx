@@ -41,6 +41,7 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedSession, setSelectedSession] = useState<string | null>(null)
 
   // Extraire toutes les photos de toutes les galeries et les trier par date de création
   const allPhotos: DemoPhoto[] = galleries
@@ -76,18 +77,35 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
     setDemoPhotos(photosWithUrls)
   }, [allPhotos.length])
 
-  // Filtrer les photos par date si sélectionnée (mais inclure toutes les photos, même sans demoUrl)
-  const filteredPhotos = selectedDate 
-    ? demoPhotos.filter(photo => photo.gallery?.date === selectedDate)
-    : demoPhotos
+  // Extraire les dates uniques pour le filtre
+  const uniqueDates = Array.from(new Set(galleries.map(g => g.date))).sort((a, b) => 
+    new Date(b).getTime() - new Date(a).getTime()
+  )
+
+  // Extraire les sessions disponibles pour la date sélectionnée
+  const availableSessions = selectedDate 
+    ? galleries.filter(g => g.date === selectedDate)
+    : []
+
+  // Filtrer les photos par date et/ou session
+  let filteredPhotos = demoPhotos
+  
+  if (selectedDate) {
+    filteredPhotos = filteredPhotos.filter(photo => photo.gallery?.date === selectedDate)
+  }
+  
+  if (selectedSession) {
+    filteredPhotos = filteredPhotos.filter(photo => photo.gallery?.id === selectedSession)
+  }
     
   // Toutes les photos ont maintenant une URL d'origine
   const photosWithDemo = filteredPhotos
 
-  // Pagination
-  const totalPages = Math.ceil(filteredPhotos.length / PHOTOS_PER_PAGE)
-  const startIndex = (currentPage - 1) * PHOTOS_PER_PAGE
-  const endIndex = startIndex + PHOTOS_PER_PAGE
+  // Pagination avec limite encore plus stricte pour les performances
+  const DEMO_PHOTOS_PER_PAGE = 20 // Réduction pour les gros fichiers
+  const totalPages = Math.ceil(filteredPhotos.length / DEMO_PHOTOS_PER_PAGE)
+  const startIndex = (currentPage - 1) * DEMO_PHOTOS_PER_PAGE
+  const endIndex = startIndex + DEMO_PHOTOS_PER_PAGE
   const currentPhotos = filteredPhotos.slice(startIndex, endIndex)
 
   const handlePhotoClick = (index: number) => {
@@ -101,6 +119,12 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
 
   const handleDateFilter = (date: string) => {
     setSelectedDate(date === selectedDate ? null : date)
+    setSelectedSession(null) // Reset session filter when changing date
+    setCurrentPage(1) // Reset pagination when filtering
+  }
+
+  const handleSessionFilter = (sessionId: string) => {
+    setSelectedSession(sessionId === selectedSession ? null : sessionId)
     setCurrentPage(1) // Reset pagination when filtering
   }
 
@@ -200,11 +224,50 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
           ))}
         </div>
 
+        {/* Filtre par session - Affiché seulement si une date est sélectionnée */}
+        {selectedDate && availableSessions.length > 1 && (
+          <div>
+            <h4 className="text-lg font-semibold text-gray-900 mb-3">Sessions du jour</h4>
+            <div className="flex gap-2 flex-wrap">
+              {availableSessions.map((session: any) => (
+                <button
+                  key={session.id}
+                  onClick={() => handleSessionFilter(session.id)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                    selectedSession === session.id
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {session.name}
+                  <span className="ml-2 text-xs opacity-75">
+                    ({session.photos?.length || 0})
+                  </span>
+                </button>
+              ))}
+              {selectedSession && (
+                <button
+                  onClick={() => setSelectedSession(null)}
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-all duration-200"
+                >
+                  ✕ Toutes les sessions
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Toutes les photos */}
         <div>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-900">
-              {selectedDate 
+              {selectedSession 
+                ? `${availableSessions.find(s => s.id === selectedSession)?.name || 'Session'} - ${new Date(selectedDate!).toLocaleDateString('fr-FR', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}`
+                : selectedDate 
                 ? `Photos du ${new Date(selectedDate).toLocaleDateString('fr-FR', { 
                     day: 'numeric', 
                     month: 'long', 
@@ -213,15 +276,19 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
                 : 'Toutes les photos'
               }
             </h3>
-            {selectedDate && (
+            {(selectedDate || selectedSession) && (
               <button
-                onClick={() => setSelectedDate(null)}
+                onClick={() => {
+                  setSelectedDate(null)
+                  setSelectedSession(null)
+                }}
                 className="text-purple-600 hover:text-purple-800 text-sm font-medium"
               >
                 Voir toutes les photos
               </button>
             )}
           </div>
+
           
           {filteredPhotos.length === 0 ? (
             <div className="text-center py-12">
@@ -233,7 +300,9 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
                 className="w-16 h-16 mx-auto mb-4 opacity-50"
               />
               <p className="text-gray-500">
-                {selectedDate 
+                {selectedSession
+                  ? "Aucune photo disponible pour cette session"
+                  : selectedDate 
                   ? "Aucune photo disponible pour cette date"
                   : "Aucune photo disponible en mode démonstration"
                 }
@@ -250,7 +319,7 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
                   galleryName={photo.gallery?.name}
                   galleryDate={photo.gallery?.date}
                   onClick={() => handlePhotoClick(index)}
-                  priority={index < 5} // Priorité aux 5 premières images
+                  priority={index < 3} // Priorité seulement aux 3 premières images
                   demoUrl={photo.demoUrl}
                 />
               ))}

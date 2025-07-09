@@ -51,7 +51,7 @@ export function LazyImage({
       },
       {
         threshold: 0,
-        rootMargin: '50px'
+        rootMargin: '200px' // Chargement plus précoce pour éviter les délais
       }
     )
 

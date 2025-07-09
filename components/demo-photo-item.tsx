@@ -30,7 +30,12 @@ export function DemoPhotoItem({
   priority = false,
   demoUrl
 }: DemoPhotoItemProps) {
+  const [useHighRes, setUseHighRes] = useState(false)
   const originalUrl = demoUrl || getOriginalUrl(original_s3_key)
+  
+  // Utiliser la preview par défaut pour des performances optimales
+  // Les originales sont réservées au lightbox seulement
+  const displayUrl = preview_s3_url
 
   const handleClick = () => {
     onClick()
@@ -41,9 +46,9 @@ export function DemoPhotoItem({
       onClick={handleClick}
       className="group relative aspect-[2/3] overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
     >
-      {/* Utiliser directement l'URL d'origine pour de meilleures performances */}
+      {/* Utiliser les previews légères pour un chargement rapide */}
       <LazyImage
-        src={originalUrl || preview_s3_url}
+        src={displayUrl}
         alt="Photo de surf"
         width={400}
         height={600}
