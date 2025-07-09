@@ -25,6 +25,7 @@ export async function fulfillOrder({
   totalAmount
 }: FulfillOrderOptions) {
   try {
+    console.log('🔄 Starting order fulfillment for:', orderId)
     const supabase = createServiceRoleClient();
     
     // 1. Fetch order items with photo details
@@ -216,6 +217,24 @@ export async function fulfillOrder({
     
   } catch (error) {
     console.error('Order fulfillment error:', error);
+    
+    // Handle specific connection errors
+    if (error instanceof Error) {
+      if (error.message.includes('ECONNRESET') || error.message.includes('TLS connection')) {
+        return {
+          success: false,
+          message: 'Database connection failed - will retry automatically'
+        };
+      }
+      
+      if (error.message.includes('fetch failed')) {
+        return {
+          success: false,
+          message: 'Network connection failed - will retry automatically'
+        };
+      }
+    }
+    
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred'

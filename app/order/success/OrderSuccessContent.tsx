@@ -6,11 +6,11 @@ import { CheckCircle, Mail, Download, Home, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { useCart } from '@/contexts/CartContext';
+import { useCartStore } from '@/context/cart-context';
 
 export function OrderSuccessContent() {
   const searchParams = useSearchParams();
-  const { clearCart } = useCart();
+  const { clearCart } = useCartStore();
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   useEffect(() => {
