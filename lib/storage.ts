@@ -28,36 +28,31 @@ interface GenerateDownloadUrlOptions {
 }
 
 /**
- * Generates a time-limited download URL for an original photo
+ * Generates a public download URL for an original photo
  * @param options - The options for generating the download URL
- * @returns The signed URL and expiration date
+ * @returns The public URL and expiration date (now indefinite)
  */
 export async function generateDownloadUrl({
   originalS3Key,
-  expiresIn = 48 * 60 * 60 // 48 hours in seconds
+  expiresIn = 48 * 60 * 60 // 48 hours in seconds (kept for compatibility)
 }: GenerateDownloadUrlOptions) {
-  const supabase = createServiceRoleClient();
-  
-  // Generate a signed URL for the original photo
-  const { data, error } = await supabase.storage
-    .from('originals')
-    .createSignedUrl(originalS3Key, expiresIn);
-    
-  if (error) {
-    console.error('Error generating signed URL:', error);
-    throw new Error(`Failed to generate download URL: ${error.message}`);
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set');
   }
   
-  if (!data?.signedUrl) {
-    throw new Error('No signed URL returned');
+  if (!originalS3Key) {
+    throw new Error('originalS3Key is required');
   }
   
-  // Calculate expiration date
+  // Generate a public URL for the original photo (bucket is now public)
+  const downloadUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${originalS3Key}`;
+  
+  // Calculate expiration date (kept for compatibility, but URLs don't expire)
   const expiresAt = new Date();
   expiresAt.setSeconds(expiresAt.getSeconds() + expiresIn);
   
   return {
-    downloadUrl: data.signedUrl,
+    downloadUrl,
     expiresAt: expiresAt.toISOString()
   };
 }
