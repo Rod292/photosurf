@@ -1,19 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Gallery, Photo } from "@/lib/database.types"
-import { DemoPhotoLightboxModal } from "@/components/demo-photo-lightbox-modal"
+import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { SupabaseImage } from "@/components/ui/supabase-image"
+import { LazyImage } from "@/components/ui/lazy-image"
+import { DemoPhotoItem } from "@/components/demo-photo-item"
 
 interface DemoMainClientProps {
   galleries: any[]
 }
 
 interface DemoPhoto extends Photo {
-  demoUrl?: string
+  demoUrl?: string | null
   expiresAt?: string
   created_at?: string
   gallery?: {
@@ -22,14 +23,22 @@ interface DemoPhoto extends Photo {
     date: string
     school_id?: number
   }
+  preview_s3_url: string
+  original_s3_key: string // Pour construire l'URL publique
 }
 
 const PHOTOS_PER_PAGE = 50
 
+// Fonction helper pour construire l'URL publique du bucket originals
+const getOriginalUrl = (original_s3_key: string) => {
+  if (!original_s3_key) return null
+  return `https://chwddsmqzjzpfikuupuf.supabase.co/storage/v1/object/public/originals/${original_s3_key}`
+}
+
 export function DemoMainClient({ galleries }: DemoMainClientProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [demoPhotos, setDemoPhotos] = useState<DemoPhoto[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
@@ -59,77 +68,21 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
     })
 
   useEffect(() => {
-    async function loadDemoUrls() {
-      console.log('Demo photos disponibles:', allPhotos.length)
-      
-      if (allPhotos.length === 0) {
-        setLoading(false)
-        return
-      }
-
-      try {
-        // Charger les URLs demo par batch de 20 photos pour éviter trop de requêtes
-        const batchSize = 20
-        const photoBatches = []
-        
-        for (let i = 0; i < allPhotos.length; i += batchSize) {
-          photoBatches.push(allPhotos.slice(i, i + batchSize))
-        }
-
-        const updatedPhotos = [...allPhotos]
-        let loadedCount = 0
-
-        // Charger les URLs par batch pour éviter de surcharger l'API
-        for (const batch of photoBatches) {
-          try {
-            const photoIds = batch.map(p => p.id).join(',')
-            const response = await fetch(`/api/demo-photos?photoIds=${photoIds}`)
-            
-            if (response.ok) {
-              const data = await response.json()
-              
-              // Mettre à jour les URLs demo
-              if (data.photos && Array.isArray(data.photos)) {
-                data.photos.forEach((demoPhoto: any) => {
-                  const index = updatedPhotos.findIndex(p => p.id === demoPhoto.photoId)
-                  if (index !== -1) {
-                    updatedPhotos[index] = {
-                      ...updatedPhotos[index],
-                      demoUrl: demoPhoto.demoUrl,
-                      expiresAt: demoPhoto.expiresAt
-                    }
-                    loadedCount++
-                  }
-                })
-              }
-            } else {
-              console.warn(`Erreur lors du chargement du batch: ${response.status}`)
-            }
-          } catch (batchError) {
-            console.warn('Erreur lors du chargement d\'un batch:', batchError)
-            // Continuer avec les autres batchs
-          }
-        }
-
-        console.log(`URLs demo chargées: ${loadedCount}/${allPhotos.length}`)
-        setDemoPhotos(updatedPhotos)
-      } catch (error) {
-        console.error('Erreur lors du chargement des URLs demo:', error)
-        // En cas d'erreur, utiliser les photos sans URLs demo
-        setDemoPhotos(allPhotos)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadDemoUrls()
+    // Initialiser avec toutes les photos - maintenant avec URLs publiques directes
+    const photosWithUrls = allPhotos.map(photo => ({
+      ...photo,
+      demoUrl: getOriginalUrl(photo.original_s3_key) // URL publique directe
+    }))
+    setDemoPhotos(photosWithUrls)
   }, [allPhotos.length])
 
-  // Filtrer les photos: seulement celles avec demoUrl ET par date si sélectionnée
-  const photosWithDemo = demoPhotos.filter(photo => photo.demoUrl)
+  // Filtrer les photos par date si sélectionnée (mais inclure toutes les photos, même sans demoUrl)
   const filteredPhotos = selectedDate 
-    ? photosWithDemo.filter(photo => photo.gallery?.date === selectedDate)
-    : photosWithDemo
+    ? demoPhotos.filter(photo => photo.gallery?.date === selectedDate)
+    : demoPhotos
+    
+  // Toutes les photos ont maintenant une URL d'origine
+  const photosWithDemo = filteredPhotos
 
   // Pagination
   const totalPages = Math.ceil(filteredPhotos.length / PHOTOS_PER_PAGE)
@@ -138,11 +91,11 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
   const currentPhotos = filteredPhotos.slice(startIndex, endIndex)
 
   const handlePhotoClick = (index: number) => {
-    // Ajuster l'index pour tenir compte de la pagination et du filtrage
-    const actualIndex = startIndex + index
-    // Trouver l'index dans la liste complète des photos
-    const photoId = currentPhotos[index].id
-    const globalIndex = photosWithDemo.findIndex(photo => photo.id === photoId)
+    const photo = currentPhotos[index]
+    const photoId = photo.id
+    
+    // Trouver l'index global dans toutes les photos
+    const globalIndex = filteredPhotos.findIndex(p => p.id === photoId)
     setLightboxIndex(globalIndex)
   }
 
@@ -205,7 +158,7 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
               }`}>
                 <div className="relative h-32 rounded-t-lg overflow-hidden">
                   {gallery.photos && gallery.photos.length > 0 ? (
-                    <SupabaseImage
+                    <LazyImage
                       src={gallery.photos[0].preview_s3_url}
                       alt={`Photos du ${new Date(gallery.date).toLocaleDateString('fr-FR')}`}
                       width={128}
@@ -289,42 +242,17 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {currentPhotos.map((photo, index) => (
-                <div
+                <DemoPhotoItem
                   key={photo.id}
+                  photoId={photo.id}
+                  preview_s3_url={photo.preview_s3_url}
+                  original_s3_key={photo.original_s3_key}
+                  galleryName={photo.gallery?.name}
+                  galleryDate={photo.gallery?.date}
                   onClick={() => handlePhotoClick(index)}
-                  className="group relative aspect-[2/3] overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
-                >
-                  {photo.demoUrl ? (
-                    <SupabaseImage
-                      src={photo.demoUrl}
-                      alt="Photo de surf"
-                      width={400}
-                      height={600}
-                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={() => console.error(`Erreur de chargement image: "${photo.demoUrl}"`)}
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                      <div className="text-gray-500 text-center">
-                        <div className="text-2xl mb-2">📷</div>
-                        <div className="text-xs">Chargement...</div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Overlay simple */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
-                    <div className="text-white text-center">
-                      <p className="text-xs font-medium">
-                        {photo.gallery?.name}
-                      </p>
-                      <p className="text-xs opacity-75">
-                        {new Date(photo.gallery?.date || '').toLocaleDateString('fr-FR')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                  priority={index < 5} // Priorité aux 5 premières images
+                  demoUrl={photo.demoUrl}
+                />
               ))}
             </div>
           )}
@@ -385,10 +313,18 @@ export function DemoMainClient({ galleries }: DemoMainClientProps) {
 
       {/* Modal Lightbox */}
       {lightboxIndex !== null && (
-        <DemoPhotoLightboxModal
+        <PhotoLightboxModal
           isOpen={true}
           onClose={handleCloseModal}
-          photos={photosWithDemo}
+          photos={filteredPhotos.map(photo => ({
+            ...photo,
+            // Utiliser l'URL publique pour l'affichage et l'achat
+            preview_s3_url: photo.demoUrl || photo.preview_s3_url,
+            original_s3_key: photo.original_s3_key,
+            filename: photo.filename,
+            gallery_id: photo.gallery?.id || '',
+            created_at: photo.created_at
+          }))}
           currentIndex={lightboxIndex}
           onNavigate={setLightboxIndex}
         />

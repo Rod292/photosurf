@@ -2,9 +2,10 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { SupabaseImage } from "@/components/ui/supabase-image"
+import { LazyImage } from "@/components/ui/lazy-image"
 import { Gallery, Photo } from "@/lib/database.types"
 import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
+import { useLazyLoad } from "@/hooks/use-lazy-load"
 
 interface GalleryClientProps {
   photos: Photo[]
@@ -13,6 +14,17 @@ interface GalleryClientProps {
 
 export function GalleryClient({ photos, gallery }: GalleryClientProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  
+  const {
+    visibleItems: visiblePhotos,
+    sentinelRef,
+    loadedCount,
+    totalCount,
+    hasMore
+  } = useLazyLoad(photos, {
+    loadAhead: 20,
+    rootMargin: '100px'
+  })
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -30,42 +42,58 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
       {photos.length > 0 ? (
         <div className="mb-8">
           <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-            {photos.map((photo, index) => (
-              <div 
-                key={photo.id} 
-                className="cursor-pointer group"
-                onClick={() => setLightboxIndex(index)}
-              >
-                <div className="relative w-full pt-[150%] overflow-hidden rounded-lg bg-gray-200">
-                  <div className="absolute inset-0">
-                    <SupabaseImage
-                      src={photo.preview_s3_url}
-                      alt={photo.filename}
-                      width={400}
-                      height={600}
-                      className="w-full h-full object-cover"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                    />
-                  </div>
-                  {/* Overlay avec date */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
-                    <div className="text-white text-center">
-                      <p className="text-sm font-medium">
-                        {new Date(photo.created_at || gallery.date).toLocaleDateString('fr-FR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric'
-                        })}
-                      </p>
+            {visiblePhotos.map((photo, visibleIndex) => {
+              // Trouver l'index réel dans la liste complète
+              const realIndex = photos.findIndex(p => p.id === photo.id)
+              
+              return (
+                <div 
+                  key={photo.id} 
+                  className="cursor-pointer group"
+                  onClick={() => setLightboxIndex(realIndex)}
+                >
+                  <div className="relative w-full pt-[150%] overflow-hidden rounded-lg bg-gray-200">
+                    <div className="absolute inset-0">
+                      <LazyImage
+                        src={photo.preview_s3_url}
+                        alt={photo.filename}
+                        width={400}
+                        height={600}
+                        className="w-full h-full object-cover"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                        priority={visibleIndex < 10}
+                      />
+                    </div>
+                    {/* Overlay avec date */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
+                      <div className="text-white text-center">
+                        <p className="text-sm font-medium">
+                          {new Date(photo.created_at || gallery.date).toLocaleDateString('fr-FR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-2 right-2 bg-white/90 px-2 py-1 rounded text-xs font-medium opacity-70">
+                      Arode Studio
                     </div>
                   </div>
-                  <div className="absolute bottom-2 right-2 bg-white/90 px-2 py-1 rounded text-xs font-medium opacity-70">
-                    Arode Studio
-                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
+          
+          {/* Sentinel pour charger plus */}
+          {hasMore && (
+            <div ref={sentinelRef} className="mt-8 text-center">
+              <div className="inline-flex items-center gap-2 text-gray-500">
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm">Chargement de {loadedCount}/{totalCount} photos...</span>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center py-16">
