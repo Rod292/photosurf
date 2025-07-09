@@ -213,46 +213,53 @@ const photoCard = {
   border: "1px solid #e5e7eb",
   borderRadius: "8px",
   marginBottom: "16px",
-  padding: "16px",
+  padding: "20px",
   display: "flex",
-  alignItems: "center",
-  gap: "16px",
+  alignItems: "flex-start",
+  gap: "20px",
 }
 
 const thumbnail = {
-  width: "80px",
-  height: "80px",
+  width: "90px",
+  height: "90px",
   objectFit: "cover" as const,
-  borderRadius: "4px",
+  borderRadius: "6px",
+  flexShrink: 0,
 }
 
 const downloadInfo = {
   flex: 1,
+  minWidth: 0,
 }
 
 const photoName = {
   color: "#1a1a1a",
-  fontSize: "14px",
-  fontWeight: "500",
-  margin: "0 0 12px 0",
+  fontSize: "16px",
+  fontWeight: "600",
+  margin: "0 0 16px 0",
+  lineHeight: "1.4",
 }
 
 const downloadButton = {
   backgroundColor: "#10b981",
-  borderRadius: "6px",
+  borderRadius: "8px",
   color: "#ffffff",
   display: "inline-block",
   fontSize: "14px",
-  fontWeight: "500",
-  padding: "10px 20px",
+  fontWeight: "600",
+  padding: "12px 24px",
   textDecoration: "none",
-  margin: "0 0 16px 0",
+  margin: "0 0 20px 0",
+  textAlign: "center" as const,
+  minWidth: "120px",
 }
 
 const expiryText = {
   color: "#6b7280",
   fontSize: "12px",
   margin: "0",
+  lineHeight: "1.4",
+  fontStyle: "italic",
 }
 
 const downloadAllContainer = {
