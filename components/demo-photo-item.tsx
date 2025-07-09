@@ -33,9 +33,9 @@ export function DemoPhotoItem({
   const [useHighRes, setUseHighRes] = useState(false)
   const originalUrl = demoUrl || getOriginalUrl(original_s3_key)
   
-  // Utiliser la preview par défaut pour des performances optimales
-  // Les originales sont réservées au lightbox seulement
-  const displayUrl = preview_s3_url
+  // Pour la page demo (admin), utiliser les originales directement
+  // Elles sont plus rapides maintenant que le bucket est public
+  const displayUrl = originalUrl || preview_s3_url
 
   const handleClick = () => {
     onClick()
