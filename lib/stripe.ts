@@ -21,7 +21,9 @@ export type ProductType = keyof typeof PRODUCT_PRICES
 export async function createStripeProduct(
   photoId: string,
   productType: ProductType,
-  photoName: string
+  photoName: string,
+  originalS3Key?: string,
+  previewS3Url?: string
 ): Promise<Stripe.Product> {
   try {
     // Check if product already exists
@@ -40,6 +42,8 @@ export async function createStripeProduct(
       metadata: {
         photo_id: photoId,
         product_type: productType,
+        original_s3_key: originalS3Key || '',
+        preview_s3_url: previewS3Url || '',
       },
       images: [], // You could add the photo preview URL here
     })
@@ -52,6 +56,8 @@ export async function createStripeProduct(
       metadata: {
         photo_id: photoId,
         product_type: productType,
+        original_s3_key: originalS3Key || '',
+        preview_s3_url: previewS3Url || '',
       },
     })
 
@@ -83,6 +89,8 @@ export async function createCheckoutSession(
     productType: ProductType
     photoName: string
     quantity?: number
+    originalS3Key?: string
+    previewS3Url?: string
   }>,
   customerEmail?: string,
   successUrl?: string,
@@ -95,7 +103,9 @@ export async function createCheckoutSession(
         const product = await createStripeProduct(
           item.photoId,
           item.productType,
-          item.photoName
+          item.photoName,
+          item.originalS3Key,
+          item.previewS3Url
         )
         
         const prices = await getProductPrices(product.id)

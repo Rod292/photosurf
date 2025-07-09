@@ -63,6 +63,34 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
         galleryId = newItem.photo.gallery_id;
       }
       
+      // Get original_s3_key from the photo data
+      let originalS3Key = '';
+      let previewS3Url = '';
+      
+      if (isZustandItem) {
+        // For zustand items, we need to fetch the photo data from database
+        const zustandItem = item as ZustandCartItem;
+        try {
+          const { data: photo } = await supabase
+            .from('photos')
+            .select('original_s3_key, preview_s3_url')
+            .eq('id', zustandItem.photo_id)
+            .single();
+          
+          originalS3Key = photo?.original_s3_key || zustandItem.photo_id + '.jpg';
+          previewS3Url = photo?.preview_s3_url || imageUrl;
+        } catch (error) {
+          console.error('Error fetching photo data:', error);
+          originalS3Key = zustandItem.photo_id + '.jpg';
+          previewS3Url = imageUrl;
+        }
+      } else {
+        // For new cart items, we have the photo data
+        const newItem = item as NewCartItem;
+        originalS3Key = newItem.photo.original_s3_key || newItem.photo.id + '.jpg';
+        previewS3Url = newItem.photo.preview_s3_url;
+      }
+
       const product = await stripe.products.create({
         name: productName,
         description: productDescription,
@@ -73,6 +101,8 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
           gallery_id: galleryId,
           delivery_option: isZustandItem ? (item as ZustandCartItem).delivery_option || '' : '',
           delivery_price: isZustandItem ? ((item as ZustandCartItem).delivery_price || 0).toString() : '0',
+          original_s3_key: originalS3Key,
+          preview_s3_url: previewS3Url,
         },
       });
 
