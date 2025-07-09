@@ -50,8 +50,21 @@ export function createSupabaseAdminClient() {
         fetch: (url, options = {}) => {
           return fetch(url, {
             ...options,
-            signal: AbortSignal.timeout(30000) // 30 second timeout
+            signal: AbortSignal.timeout(15000), // Reduce timeout to 15 seconds
+            headers: {
+              ...options.headers,
+              'Connection': 'keep-alive',
+              'Keep-Alive': 'timeout=5, max=1000'
+            }
           });
+        }
+      },
+      db: {
+        schema: 'public'
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 10
         }
       }
     }

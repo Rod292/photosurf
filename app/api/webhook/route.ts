@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { createSupabaseAdminClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import { fulfillOrder } from '@/lib/order-fulfillment'
+import { simpleFulfillOrder } from '@/lib/simple-fulfillment'
 import { resend } from '@/lib/resend'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -116,6 +117,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         photo_id: metadata.photo_id,
         product_type: metadata.product_type as 'digital' | 'print',
         price: item.price?.unit_amount || 0, // Price in cents
+        original_s3_key: metadata.original_s3_key,
+        preview_s3_url: metadata.preview_s3_url
       }
 
       orderItems.push(orderItem)
@@ -125,19 +128,33 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       throw new Error('No valid order items found')
     }
 
-    // Insert order items
-    const { error: orderItemsError } = await supabase
-      .from('order_items')
-      .insert(orderItems)
-
-    if (orderItemsError) {
-      throw new Error(`Failed to create order items: ${orderItemsError.message}`)
-    }
-
-    console.log('✅ Created', orderItems.length, 'order items for order:', order.id)
-
     // Fulfill the order by sending download links with retry logic
     const customerName = session.customer_details?.name || undefined
+
+    // Try to insert order items in database, but don't fail if it doesn't work
+    try {
+      const { error: orderItemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems)
+
+      if (orderItemsError) {
+        console.error('⚠️ Failed to create order items in database:', orderItemsError.message)
+        console.log('🔄 Proceeding with simple fulfillment instead')
+        
+        // Skip database operations and go directly to simple fulfillment
+        await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId)
+        return
+      }
+      
+      console.log('✅ Created', orderItems.length, 'order items for order:', order.id)
+    } catch (dbError) {
+      console.error('⚠️ Database connection failed:', dbError)
+      console.log('🔄 Proceeding with simple fulfillment instead')
+      
+      // Skip database operations and go directly to simple fulfillment
+      await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId)
+      return
+    }
     let fulfillmentResult
     
     // Retry fulfillment up to 3 times
@@ -158,9 +175,9 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         } else {
           console.error(`❌ Order fulfillment failed (attempt ${attempt}):`, fulfillmentResult.message)
           if (attempt === 3) {
-            // Final attempt failed, send fallback email
-            console.error('❌ All fulfillment attempts failed for order:', order.id)
-            await sendFallbackEmail(customerEmail, customerName, order.id)
+            // Final attempt failed, try simple fulfillment
+            console.error('❌ All fulfillment attempts failed, trying simple fulfillment for order:', order.id)
+            await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId)
           } else {
             // Wait before retry
             await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
@@ -169,8 +186,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       } catch (fulfillmentError) {
         console.error(`❌ Order fulfillment error (attempt ${attempt}):`, fulfillmentError)
         if (attempt === 3) {
-          console.error('❌ All fulfillment attempts failed for order:', order.id)
-          await sendFallbackEmail(customerEmail, customerName, order.id)
+          console.error('❌ All fulfillment attempts failed, trying simple fulfillment for order:', order.id)
+          await trySimpleFulfillment(order.id, customerEmail, customerName, orderItems, sessionId)
         } else {
           // Wait before retry
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
@@ -184,6 +201,52 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     // Log the error but don't throw - we want to return 200 to Stripe
     // to acknowledge receipt of the webhook, even if our processing failed
     console.error('❌ Full session data:', JSON.stringify(session, null, 2))
+  }
+}
+
+async function trySimpleFulfillment(
+  orderId: string, 
+  customerEmail: string, 
+  customerName: string | undefined, 
+  orderItems: any[],
+  sessionId: string
+) {
+  try {
+    console.log('🔄 Attempting simple fulfillment for order:', orderId)
+    
+    // Récupérer les photos directement via les métadonnées Stripe
+    const digitalItems = orderItems.filter(item => item.product_type === 'digital')
+    
+    if (digitalItems.length === 0) {
+      console.log('No digital items to fulfill')
+      return
+    }
+    
+    // Utiliser les données des orderItems qui contiennent déjà les métadonnées
+    const photos = digitalItems.map(item => ({
+      id: item.photo_id,
+      original_s3_key: item.original_s3_key || `${item.photo_id}.jpg`,
+      preview_s3_url: item.preview_s3_url || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/web-previews/${item.photo_id}.jpg`
+    }))
+    
+    const result = await simpleFulfillOrder({
+      orderId,
+      customerEmail,
+      customerName,
+      totalAmount: digitalItems.reduce((sum, item) => sum + item.price, 0),
+      photos
+    })
+    
+    if (result.success) {
+      console.log('✅ Simple fulfillment successful for order:', orderId)
+    } else {
+      console.error('❌ Simple fulfillment also failed:', result.message)
+      await sendFallbackEmail(customerEmail, customerName, orderId)
+    }
+    
+  } catch (error) {
+    console.error('❌ Simple fulfillment error:', error)
+    await sendFallbackEmail(customerEmail, customerName, orderId)
   }
 }
 
