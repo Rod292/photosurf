@@ -11,10 +11,15 @@ export function MobileHeader() {
   const router = useRouter()
   const { scrollY } = useScroll()
 
-  // Simplified animations for better performance
-  const headerOpacity = useTransform(scrollY, [0, 100], [1, 0.8])
+  // Animations for navigation icons and text - restore original behavior
+  const iconOpacity = useTransform(scrollY, [0, 100], [1, 0])
+  const iconScale = useTransform(scrollY, [0, 100], [1, 0.7])
+  const textY = useTransform(scrollY, [0, 100], [0, -20])
+  
+  // Animations for tagline
   const taglineOpacity = useTransform(scrollY, [0, 60], [1, 0])
   const taglineHeight = useTransform(scrollY, [0, 80], ["28px", "0px"])
+  const taglineY = useTransform(scrollY, [0, 60], [0, -15])
 
   useEffect(() => {
     const checkMobile = () => {
@@ -37,7 +42,7 @@ export function MobileHeader() {
   return (
     <div className="sticky top-0 z-40 bg-white">
       {/* Main Search Bar - Fixed at top */}
-      <div className="px-4 py-2 pb-1 flex items-center gap-2">
+      <div className="px-4 py-2 pb-0 flex items-center gap-2">
         <div className="flex-1">
           <MorphingSearch />
         </div>
@@ -45,17 +50,20 @@ export function MobileHeader() {
 
       {/* Navigation Row */}
       <motion.div 
-        className="px-4 pb-2 border-b border-gray-200"
-        style={{ opacity: headerOpacity }}
+        className="px-4 pb-1 pt-1 border-b border-gray-200"
+        style={{ y: textY }}
       >
         <div className="flex items-center justify-around">
           {/* Photos */}
           <motion.button
             onClick={() => handleNavigation("/gallery")}
-            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px]"
+            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px]"
             whileTap={{ scale: 0.98 }}
           >
-            <div className="w-6 h-6 flex items-center justify-center">
+            <motion.div 
+              className="w-6 h-6 flex items-center justify-center"
+              style={{ opacity: iconOpacity, scale: iconScale }}
+            >
               <Image
                 src="/Logos/camera2.svg"
                 alt="Camera"
@@ -63,7 +71,7 @@ export function MobileHeader() {
                 height={24}
                 className="w-full h-full"
               />
-            </div>
+            </motion.div>
             <span className="text-sm font-medium text-gray-700">
               Photos
             </span>
@@ -72,10 +80,13 @@ export function MobileHeader() {
           {/* Nos produits */}
           <motion.button
             onClick={() => handleNavigation("/boutique")}
-            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px]"
+            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px]"
             whileTap={{ scale: 0.98 }}
           >
-            <div className="w-6 h-6 flex items-center justify-center">
+            <motion.div 
+              className="w-6 h-6 flex items-center justify-center"
+              style={{ opacity: iconOpacity, scale: iconScale }}
+            >
               <Image
                 src="/Logos/Nos-produits.svg"
                 alt="Nos produits"
@@ -83,7 +94,7 @@ export function MobileHeader() {
                 height={24}
                 className="w-full h-full"
               />
-            </div>
+            </motion.div>
             <span className="text-sm font-medium text-gray-700">
               Nos produits
             </span>
@@ -92,10 +103,13 @@ export function MobileHeader() {
           {/* Contact */}
           <motion.button
             onClick={() => handleNavigation("/contact")}
-            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px]"
+            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px]"
             whileTap={{ scale: 0.98 }}
           >
-            <div className="w-6 h-6 flex items-center justify-center">
+            <motion.div 
+              className="w-6 h-6 flex items-center justify-center"
+              style={{ opacity: iconOpacity, scale: iconScale }}
+            >
               <Image
                 src="/Logos/Call-gesture.svg"
                 alt="Contact"
@@ -103,7 +117,7 @@ export function MobileHeader() {
                 height={24}
                 className="w-full h-full"
               />
-            </div>
+            </motion.div>
             <span className="text-sm font-medium text-gray-700">
               Contact
             </span>
@@ -116,11 +130,12 @@ export function MobileHeader() {
         className="overflow-hidden border-b border-gray-200 transition-all"
         style={{ 
           opacity: taglineOpacity,
-          height: taglineHeight
+          height: taglineHeight,
+          y: taglineY
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <div className="flex items-center justify-center gap-4 text-xs text-black py-1 relative">
+        <div className="flex items-center justify-center gap-4 text-xs text-black py-0.5 relative">
           <motion.div
             animate={{ 
               x: [-8, -4, 0, -4, -8],
