@@ -323,18 +323,6 @@ export function PhotoLightboxModal({
                 {currentIndex + 1} / {photos.length}
               </div>
               
-              {/* Heart button */}
-              <div className="absolute top-2 right-2 md:top-4 md:right-4 z-10">
-                <HeartButton 
-                  photo={{
-                    id: currentPhoto.id,
-                    gallery_id: currentPhoto.gallery_id,
-                    gallery_name: currentPhoto.gallery?.name,
-                    preview_url: currentPhoto.preview_s3_url
-                  }}
-                  size="md"
-                />
-              </div>
               <div className="relative w-full h-full max-w-none max-h-none">
                 <Image
                   src={currentPhoto.preview_s3_url}
@@ -590,22 +578,44 @@ export function PhotoLightboxModal({
               </div>
 
               {/* Button - fixed at bottom */}
-              <div className="flex-shrink-0 pt-3 border-t border-gray-200 mt-3">
-                <Button 
-                  onClick={handleAddToCart}
-                  disabled={isPhotoInCart()}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                  size="default"
-                >
-                  <Image
-                    src="/Logos/shopping-cart.svg"
-                    alt="Shopping Cart"
-                    width={20}
-                    height={20}
-                    className="h-5 w-5 mr-2 inline-block"
-                  />
-                  {isPhotoInCart() ? "Déjà dans le panier" : "Ajouter au panier"}
-                </Button>
+              <div className="flex-shrink-0 pt-3 border-t border-gray-200 mt-3 space-y-3">
+                {/* Message informatif sur les favoris */}
+                <p className="text-xs text-gray-600 text-center leading-relaxed">
+                  Ajoute à tes favoris et reviens en fin de semaine pour sélectionner les meilleures photos.
+                </p>
+                
+                {/* Conteneur pour le bouton favori et le bouton panier */}
+                <div className="flex gap-3 items-center">
+                  {/* Bouton favori plus grand */}
+                  <div className="flex-shrink-0">
+                    <HeartButton 
+                      photo={{
+                        id: currentPhoto.id,
+                        gallery_id: currentPhoto.gallery_id,
+                        gallery_name: currentPhoto.gallery?.name,
+                        preview_url: currentPhoto.preview_s3_url
+                      }}
+                      size="lg"
+                    />
+                  </div>
+                  
+                  {/* Bouton ajouter au panier */}
+                  <Button 
+                    onClick={handleAddToCart}
+                    disabled={isPhotoInCart()}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    size="default"
+                  >
+                    <Image
+                      src="/Logos/shopping-cart.svg"
+                      alt="Shopping Cart"
+                      width={20}
+                      height={20}
+                      className="h-5 w-5 mr-2 inline-block"
+                    />
+                    {isPhotoInCart() ? "Déjà dans le panier" : "Ajouter au panier"}
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </div>
