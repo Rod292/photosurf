@@ -29,10 +29,17 @@ const COOKIE_EXPIRY_DAYS = 30
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const [favorites, setFavorites] = useState<FavoritePhoto[]>([])
   const [mounted, setMounted] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(false)
 
   // Load favorites from cookies on mount
   useEffect(() => {
     setMounted(true)
+    
+    // Set hydrated after a brief delay to ensure client-side is ready
+    const timer = setTimeout(() => {
+      setIsHydrated(true)
+    }, 100)
+    
     const savedFavorites = Cookies.get(FAVORITES_COOKIE_NAME)
     if (savedFavorites) {
       try {
@@ -44,18 +51,20 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
         console.error('Error parsing favorites from cookies:', error)
       }
     }
+    
+    return () => clearTimeout(timer)
   }, [])
 
   // Save favorites to cookies whenever they change
   useEffect(() => {
-    if (mounted) {
+    if (mounted && isHydrated) {
       Cookies.set(FAVORITES_COOKIE_NAME, JSON.stringify(favorites), { 
         expires: COOKIE_EXPIRY_DAYS,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production'
       })
     }
-  }, [favorites, mounted])
+  }, [favorites, mounted, isHydrated])
 
   const addToFavorites = useCallback((photo: FavoritePhoto) => {
     setFavorites(prev => {
@@ -97,11 +106,8 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     favoritesCount: favorites.length
   }
 
-  // Prevent hydration mismatch by not rendering until mounted
-  if (!mounted) {
-    return <>{children}</>
-  }
-
+  // Always provide the context, even during hydration
+  // This prevents the "must be used within a FavoritesProvider" error
   return (
     <FavoritesContext.Provider value={value}>
       {children}
@@ -112,8 +118,8 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 export function useFavorites() {
   const context = useContext(FavoritesContext)
   if (!context) {
-    // During SSR/prerendering, return default values instead of throwing
-    if (typeof window === 'undefined') {
+    // During SSR/prerendering or hydration issues, return default values instead of throwing
+    if (typeof window === 'undefined' || !document.body) {
       return {
         favorites: [],
         addToFavorites: () => {},
@@ -123,6 +129,20 @@ export function useFavorites() {
         favoritesCount: 0
       }
     }
+    
+    // Give a warning instead of throwing during development
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('useFavorites must be used within a FavoritesProvider - returning default values')
+      return {
+        favorites: [],
+        addToFavorites: () => {},
+        removeFromFavorites: () => {},
+        isInFavorites: () => false,
+        clearFavorites: () => {},
+        favoritesCount: 0
+      }
+    }
+    
     throw new Error('useFavorites must be used within a FavoritesProvider')
   }
   return context
