@@ -8,6 +8,7 @@ import { CartSheet } from "@/components/cart/CartSheet"
 import { SearchBar } from "@/components/search-bar"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { createSupabaseClient } from "@/lib/supabase/client"
+import { useFavorites } from "@/contexts/FavoritesContext"
 
 interface HeaderProps {
   alwaysVisible?: boolean
@@ -19,6 +20,15 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const router = useRouter()
+  
+  // Handle favorites context safely
+  let favoritesCount = 0
+  try {
+    const favoritesContext = useFavorites()
+    favoritesCount = favoritesContext.favoritesCount
+  } catch (error) {
+    // FavoritesProvider not available, use default value
+  }
 
   useEffect(() => {
     const checkMobile = () => {
@@ -118,12 +128,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
           whileTap={{ scale: 0.98 }}
           style={{ scale: logoScale }}
         >
-          <motion.div
-            style={{ 
-              width: isScrolled ? 28 : 32,
-              height: isScrolled ? 28 : 32
-            }}
-          >
+          <motion.div className="w-8 h-8">
             <Image
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/arodelogowhitepng-HNnXW50qCnMuNb7pxKVPk3x4zxq9mP.png"
               alt="Arode Logo"
@@ -132,12 +137,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
               className="w-full h-full brightness-0"
             />
           </motion.div>
-          <motion.span 
-            className="font-bold text-gray-900 font-playfair"
-            style={{ 
-              fontSize: isScrolled ? "1.25rem" : "1.5rem"
-            }}
-          >
+          <motion.span className="font-bold text-gray-900 font-playfair text-2xl">
             Arode Studio
           </motion.span>
         </motion.button>
@@ -149,7 +149,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             opacity: navOpacity,
             scale: navScale,
             y: navY,
-            gap: isScrolled ? "1.5rem" : "2rem",
+            gap: "2rem",
             pointerEvents: navPointerEvents
           }}
         >
@@ -159,18 +159,11 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
               variants={navItemVariants}
               whileHover="hover"
               whileTap={{ scale: 0.95 }}
-              style={{ 
-                padding: isScrolled ? "0.375rem 0.75rem" : "0.5rem 1rem"
-              }}
             >
             <motion.div
               whileHover={{ rotate: 10 }}
               transition={{ duration: 0.2 }}
-              className="flex items-center justify-center"
-              style={{ 
-                width: isScrolled ? "1.5rem" : "1.75rem",
-                height: isScrolled ? "1.5rem" : "1.75rem"
-              }}
+              className="flex items-center justify-center w-7 h-7"
             >
               <Image
                 src="/Logos/camera2.svg"
@@ -180,9 +173,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
                 className="w-full h-full"
               />
             </motion.div>
-            <motion.span
-              style={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
-            >
+            <motion.span className="text-base">
               Photos
             </motion.span>
             </motion.button>
@@ -193,18 +184,11 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             variants={navItemVariants}
             whileHover="hover"
             whileTap={{ scale: 0.95 }}
-            style={{ 
-              padding: isScrolled ? "0.375rem 0.75rem" : "0.5rem 1rem"
-            }}
           >
             <motion.div
               whileHover={{ rotate: -10 }}
               transition={{ duration: 0.2 }}
-              className="flex items-center justify-center"
-              style={{ 
-                width: isScrolled ? "1.5rem" : "1.75rem",
-                height: isScrolled ? "1.5rem" : "1.75rem"
-              }}
+              className="flex items-center justify-center w-7 h-7"
             >
               <Image
                 src="/Logos/Nos-produits.svg"
@@ -214,9 +198,7 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
                 className="w-full h-full"
               />
             </motion.div>
-            <motion.span
-              style={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
-            >
+            <motion.span className="text-base">
               Nos produits
             </motion.span>
             </motion.button>
@@ -258,18 +240,11 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
             variants={navItemVariants}
             whileHover="hover"
             whileTap={{ scale: 0.95 }}
-            style={{ 
-              padding: isScrolled ? "0.375rem 0.75rem" : "0.5rem 1rem"
-            }}
               >
             <motion.div
               whileHover={{ rotate: 10 }}
               transition={{ duration: 0.2 }}
-              className="flex items-center justify-center"
-              style={{ 
-                width: isScrolled ? "1.5rem" : "1.75rem",
-                height: isScrolled ? "1.5rem" : "1.75rem"
-              }}
+              className="flex items-center justify-center w-7 h-7"
             >
               <Image
                 src="/Logos/Call-gesture.svg"
@@ -279,10 +254,47 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
                 className="w-full h-full"
               />
             </motion.div>
-            <motion.span
-              style={{ fontSize: isScrolled ? "0.875rem" : "1rem" }}
-            >
+            <motion.span className="text-base">
               Contact
+            </motion.span>
+            </motion.button>
+            
+            <motion.button 
+            onClick={() => handleNavigation("/favoris")}
+            className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors font-medium text-gray-700 hover:text-black pointer-events-auto relative"
+            variants={navItemVariants}
+            whileHover="hover"
+            whileTap={{ scale: 0.95 }}
+              >
+            <motion.div
+              whileHover={{ scale: 1.2 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center justify-center relative"
+              style={{ 
+                width: isScrolled ? "1.5rem" : "1.75rem",
+                height: isScrolled ? "1.5rem" : "1.75rem"
+              }}
+            >
+              <Image
+                src="/Logos/Heart copie.svg"
+                alt="Favoris"
+                width={28}
+                height={28}
+                className="w-full h-full"
+              />
+              {favoritesCount > 0 && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold"
+                  style={{ fontSize: '0.7rem' }}
+                >
+                  {favoritesCount > 99 ? '99+' : favoritesCount}
+                </motion.div>
+              )}
+            </motion.div>
+            <motion.span className="text-base">
+              Favoris
             </motion.span>
             </motion.button>
         </motion.nav>
@@ -352,7 +364,8 @@ export function Header({ alwaysVisible = false }: HeaderProps) {
               {[
                 { name: "Photos", icon: "/Logos/camera2.svg", path: "/gallery", isImage: true },
                 { name: "Nos produits", icon: "/Logos/Nos-produits.svg", path: "/boutique", isImage: true },
-                { name: "Contact", icon: "/Logos/Call-gesture.svg", path: "/contact", isImage: true }
+                { name: "Contact", icon: "/Logos/Call-gesture.svg", path: "/contact", isImage: true },
+                { name: "Favoris", icon: "/Logos/Heart copie.svg", path: "/favoris", isImage: true }
               ].map((item, index) => (
                 <motion.button
                   key={item.name}

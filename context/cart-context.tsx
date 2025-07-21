@@ -6,7 +6,7 @@ import { calculateDynamicPricing } from '@/lib/pricing'
 
 export interface CartItem {
   photo_id: string
-  product_type: 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2'
+  product_type: 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2' | 'print_polaroid_3' | 'print_polaroid_6' | 'session_pack'
   price: number
   preview_url: string
   filename: string
@@ -18,6 +18,7 @@ interface CartStore {
   items: CartItem[]
   isOpen: boolean
   addItem: (item: CartItem) => void
+  addSessionPack: (item: CartItem) => void
   removeItem: (photoId: string, productType: string) => void
   clearCart: () => void
   toggleCart: () => void
@@ -29,6 +30,9 @@ interface CartStore {
     print_a4: ReturnType<typeof calculateDynamicPricing>
     print_a3: ReturnType<typeof calculateDynamicPricing>
     print_a2: ReturnType<typeof calculateDynamicPricing>
+    print_polaroid_3: ReturnType<typeof calculateDynamicPricing>
+    print_polaroid_6: ReturnType<typeof calculateDynamicPricing>
+    session_pack: ReturnType<typeof calculateDynamicPricing>
     total: number
     totalSavings: number
   }
@@ -56,6 +60,22 @@ export const useCartStore = create<CartStore>()(
             // Ajouter le nouvel item
             return { items: [...state.items, item] }
           }
+        })
+      },
+
+      addSessionPack: (item: CartItem) => {
+        set((state) => {
+          // Vérifier si le pack session existe déjà
+          const hasSessionPack = state.items.some(i => i.product_type === 'session_pack')
+          if (hasSessionPack) {
+            return state // Ne rien faire si le pack existe déjà
+          }
+          
+          // Supprimer toutes les photos numériques existantes et ajouter le pack session
+          const newItems = state.items.filter(i => i.product_type !== 'digital')
+          newItems.push(item)
+          
+          return { items: newItems }
         })
       },
       
@@ -88,6 +108,9 @@ export const useCartStore = create<CartStore>()(
         const printA4Count = items.filter(item => item.product_type === 'print_a4').length
         const printA3Count = items.filter(item => item.product_type === 'print_a3').length
         const printA2Count = items.filter(item => item.product_type === 'print_a2').length
+        const printPolaroid3Count = items.filter(item => item.product_type === 'print_polaroid_3').length
+        const printPolaroid6Count = items.filter(item => item.product_type === 'print_polaroid_6').length
+        const sessionPackCount = items.filter(item => item.product_type === 'session_pack').length
         
         // Calculer les prix dynamiques pour chaque type
         const digitalPricing = calculateDynamicPricing(digitalCount, 'digital')
@@ -95,12 +118,15 @@ export const useCartStore = create<CartStore>()(
         const printA4Pricing = calculateDynamicPricing(printA4Count, 'print_a4')
         const printA3Pricing = calculateDynamicPricing(printA3Count, 'print_a3')
         const printA2Pricing = calculateDynamicPricing(printA2Count, 'print_a2')
+        const printPolaroid3Pricing = calculateDynamicPricing(printPolaroid3Count, 'print_polaroid_3')
+        const printPolaroid6Pricing = calculateDynamicPricing(printPolaroid6Count, 'print_polaroid_6')
+        const sessionPackPricing = calculateDynamicPricing(sessionPackCount, 'session_pack')
         
         // Calculate delivery fees
         const deliveryTotal = items.reduce((total, item) => total + (item.delivery_price || 0), 0)
         
-        const total = digitalPricing.finalTotal + printA5Pricing.finalTotal + printA4Pricing.finalTotal + printA3Pricing.finalTotal + printA2Pricing.finalTotal + deliveryTotal
-        const totalSavings = digitalPricing.totalSavings + printA5Pricing.totalSavings + printA4Pricing.totalSavings + printA3Pricing.totalSavings + printA2Pricing.totalSavings
+        const total = digitalPricing.finalTotal + printA5Pricing.finalTotal + printA4Pricing.finalTotal + printA3Pricing.finalTotal + printA2Pricing.finalTotal + printPolaroid3Pricing.finalTotal + printPolaroid6Pricing.finalTotal + sessionPackPricing.finalTotal + deliveryTotal
+        const totalSavings = digitalPricing.totalSavings + printA5Pricing.totalSavings + printA4Pricing.totalSavings + printA3Pricing.totalSavings + printA2Pricing.totalSavings + printPolaroid3Pricing.totalSavings + printPolaroid6Pricing.totalSavings + sessionPackPricing.totalSavings
         
         return {
           digital: digitalPricing,
@@ -108,6 +134,9 @@ export const useCartStore = create<CartStore>()(
           print_a4: printA4Pricing,
           print_a3: printA3Pricing,
           print_a2: printA2Pricing,
+          print_polaroid_3: printPolaroid3Pricing,
+          print_polaroid_6: printPolaroid6Pricing,
+          session_pack: sessionPackPricing,
           total,
           totalSavings
         }

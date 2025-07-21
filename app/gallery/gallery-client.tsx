@@ -4,6 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
+import { HeartButton } from "@/components/ui/heart-button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface Photo {
@@ -135,7 +136,7 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                             src={latestPhotos[0].preview_s3_url}
                             alt="Toutes les photos"
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="object-cover"
                           />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
@@ -185,7 +186,7 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                               src={gallery.photos[0].preview_s3_url}
                               alt={gallery.name}
                               fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              className="object-cover"
                             />
                           ) : (
                             <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600" />
@@ -246,20 +247,40 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {currentPhotos.map((photo: any, index: number) => (
-                  <button
+                  <div
                     key={photo.id}
-                    onClick={() => handlePhotoClick(index)}
                     className="group relative w-full pt-[150%] overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
                   >
-                    <div className="absolute inset-0">
+                    <button
+                      onClick={() => handlePhotoClick(index)}
+                      className="absolute inset-0 w-full h-full"
+                    >
                       <Image
                         src={photo.preview_s3_url}
                         alt={`Photo de ${photo.galleries.name || 'surf'}`}
                         fill
                         className="object-cover"
                       />
+                    </button>
+                    
+                    {/* Heart button - positioned in top right */}
+                    <div 
+                      className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <HeartButton 
+                        photo={{
+                          id: photo.id,
+                          gallery_id: selectedGallery || '',
+                          gallery_name: photo.galleries.name,
+                          preview_url: photo.preview_s3_url
+                        }}
+                        size="sm"
+                      />
                     </div>
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
+                    
+                    {/* Date overlay - positioned at bottom */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2 pointer-events-none">
                       <div className="text-white text-center">
                         <p className="text-sm font-medium">
                           {new Date(photo.galleries.date).toLocaleDateString('fr-FR', {
@@ -270,7 +291,7 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                         </p>
                       </div>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
 

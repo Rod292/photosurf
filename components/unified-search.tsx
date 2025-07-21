@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { SimpleCalendar } from "./ui/simple-calendar"
 import { useSurfSchools } from "@/hooks/use-surf-schools"
+import { useSearchState } from "@/hooks/use-search-state"
 
 interface UnifiedSearchProps {
   mode?: "compact" | "full"
@@ -21,6 +22,7 @@ interface SearchState {
 
 export function UnifiedSearch({ mode = "full", className = "", onModeChange }: UnifiedSearchProps) {
   const { schools } = useSurfSchools()
+  const { setSearchDropdownOpen } = useSearchState()
   const [searchState, setSearchState] = useState<SearchState>({
     date: "",
     school: "",
@@ -39,6 +41,11 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
   
   const { scrollY } = useScroll()
   const searchScale = useTransform(scrollY, [0, 150], [1, 0.92])
+  
+  // Update global search state when dropdowns open/close
+  useEffect(() => {
+    setSearchDropdownOpen(showDatePicker || showSchoolList)
+  }, [showDatePicker, showSchoolList, setSearchDropdownOpen])
   
   // Auto-switch to compact mode when scrolling past hero
   useEffect(() => {
@@ -141,7 +148,7 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
               exit={{ width: 0, opacity: 0 }}
               className="flex items-center px-3 py-1.5 border-r border-gray-200"
             >
-              <span className="text-xs font-medium text-blue-600 truncate max-w-[80px]">
+              <span className="text-xs font-medium text-gray-800 truncate max-w-[80px]">
                 {searchState.session}
               </span>
               <button
@@ -160,10 +167,10 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
             onClick={() => setShowDatePicker(!showDatePicker)}
             className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors h-full whitespace-nowrap ${
               searchState.date 
-                ? "text-blue-600 bg-blue-50" 
+                ? "text-gray-900 bg-gray-100" 
                 : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
             } ${searchState.session ? "" : "rounded-l-full"} border-r border-gray-200`}
-            whileHover={{ backgroundColor: searchState.date ? "rgb(239 246 255)" : "rgba(0,0,0,0.02)" }}
+            whileHover={{ backgroundColor: searchState.date ? "rgb(243 244 246)" : "rgba(0,0,0,0.02)" }}
             whileTap={{ scale: 0.98 }}
           >
             <Calendar className="w-4 h-4" />
@@ -188,7 +195,7 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999]"
               >
                 <SimpleCalendar
                   selectedDate={searchState.date}
@@ -208,10 +215,10 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
             onClick={() => setShowSchoolList(!showSchoolList)}
             className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors h-full whitespace-nowrap ${
               searchState.school 
-                ? "text-blue-600 bg-blue-50" 
+                ? "text-gray-900 bg-gray-100" 
                 : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
             }`}
-            whileHover={{ backgroundColor: searchState.school ? "rgb(239 246 255)" : "rgba(0,0,0,0.02)" }}
+            whileHover={{ backgroundColor: searchState.school ? "rgb(243 244 246)" : "rgba(0,0,0,0.02)" }}
             whileTap={{ scale: 0.98 }}
           >
             <School className="w-4 h-4" />
@@ -264,12 +271,12 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
           disabled={!hasValues || isSearching}
           className={`h-8 w-8 rounded-full transition-colors ml-2 mr-1 flex items-center justify-center flex-shrink-0 ${
             hasValues 
-              ? "bg-blue-600 text-white hover:bg-blue-700" 
+              ? "bg-black text-white hover:bg-gray-800" 
               : "bg-gray-200 text-gray-400 cursor-not-allowed"
           }`}
           whileHover={hasValues ? { 
             scale: 1.1,
-            backgroundColor: "#1d4ed8"
+            backgroundColor: "#1f2937"
           } : {}}
           whileTap={hasValues ? { scale: 0.95 } : {}}
         >
@@ -384,7 +391,7 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                  className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999]"
                 >
                   <SimpleCalendar
                     selectedDate={searchState.date}
@@ -466,12 +473,12 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
             disabled={!hasValues || isSearching}
             className={`p-3 rounded-full transition-colors ml-1 ${
               hasValues 
-                ? "bg-blue-600 text-white hover:bg-blue-700" 
+                ? "bg-black text-white hover:bg-gray-800" 
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
             whileHover={hasValues ? { 
               scale: 1.1,
-              backgroundColor: "#1d4ed8"
+              backgroundColor: "#1f2937"
             } : {}}
             whileTap={hasValues ? { scale: 0.95 } : {}}
             initial={{ opacity: 0, rotate: -180 }}
@@ -506,7 +513,7 @@ export function UnifiedSearch({ mode = "full", className = "", onModeChange }: U
                 <motion.button
                   key={suggestion}
                   onClick={() => updateSearchState("session", suggestion)}
-                  className="px-3 py-1 bg-gray-100 hover:bg-blue-100 hover:text-blue-700 rounded-full text-sm text-gray-700 transition-colors"
+                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-full text-sm text-gray-700 transition-colors"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   initial={{ opacity: 0, x: -20 }}

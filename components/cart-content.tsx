@@ -10,6 +10,7 @@ import { Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { PhotoModal } from "@/components/photo-modal"
 import { createCheckoutSession } from "@/app/actions/checkout"
+import { shouldApplySessionPack, getSessionPackPrice } from "@/lib/pricing"
 
 export function CartContent() {
   const items = useCartStore((state) => state.items)
@@ -90,26 +91,23 @@ export function CartContent() {
       {items.length === 0 ? (
         <div className="text-center py-16">
           <div className="mb-6 flex justify-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
-              <Image
-                src="/Logos/shopping-cart.svg"
-                alt="Panier vide"
-                width={32}
-                height={32}
-                className="w-8 h-8 opacity-60"
-              />
-            </div>
+            <Image
+              src="/Logos/shopping-cart.svg"
+              alt="Panier vide"
+              width={64}
+              height={64}
+              className="w-16 h-16 opacity-100"
+            />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-3 font-lexend-deca">Votre panier est vide</h2>
           <p className="text-gray-600 mb-6 font-lexend-deca">Parcourez nos galeries pour découvrir vos photos de surf</p>
-          <Link href="/gallery" className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors font-lexend-deca">
+          <Link href="/gallery" className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-lg font-medium border-2 border-black hover:bg-gray-50 transition-colors font-lexend-deca">
             <Image
               src="/Logos/camera2.svg"
               alt="Camera"
               width={20}
               height={20}
               className="w-5 h-5"
-              style={{ filter: 'brightness(0) invert(1)' }}
             />
             Voir les galeries
           </Link>
@@ -119,16 +117,13 @@ export function CartContent() {
           <div className="bg-white shadow-lg rounded-xl overflow-hidden mb-8 border border-gray-100">
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-5 border-b border-blue-200">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                  <Image
-                    src="/Logos/shopping-cart.svg"
-                    alt="Panier"
-                    width={20}
-                    height={20}
-                    className="w-5 h-5"
-                    style={{ filter: 'brightness(0) invert(1)' }}
-                  />
-                </div>
+                <Image
+                  src="/Logos/shopping-cart.svg"
+                  alt="Panier"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 opacity-100"
+                />
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 font-lexend-deca">Vos photos sélectionnées</h2>
                   <p className="text-sm text-blue-700 font-lexend-deca font-medium">{items.length} article{items.length > 1 ? 's' : ''} dans votre panier</p>
@@ -299,7 +294,11 @@ export function CartContent() {
                   </p>
                   {dynamicPricing.totalSavings > 0 && (
                     <p className="text-sm font-lexend-deca mt-2 text-green-700 font-medium">
-                      💰 Vous économisez {dynamicPricing.totalSavings.toFixed(2)}€ grâce à notre système de réductions dégressives !
+                      {shouldApplySessionPack(dynamicPricing.total) ? (
+                        '🎁 Pack Session 45€ - Toutes vos photos pour 45€ !'
+                      ) : (
+                        `💰 Vous économisez ${dynamicPricing.totalSavings.toFixed(2)}€ grâce à notre système de réductions dégressives !`
+                      )}
                     </p>
                   )}
                 </div>

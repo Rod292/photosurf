@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
 import { AddToCartButton } from './AddToCartButton';
 import { ProductSelection } from './ProductSelection';
+import { HeartButton } from '@/components/ui/heart-button';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,19 @@ export function PhotoCard({ photo, className }: PhotoCardProps) {
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              />
+            </div>
+            
+            {/* Heart button - always visible */}
+            <div className="absolute top-3 right-3 z-10">
+              <HeartButton 
+                photo={{
+                  id: photo.id,
+                  gallery_id: photo.gallery_id,
+                  gallery_name: photo.gallery?.name,
+                  preview_url: photo.preview_s3_url
+                }}
+                size="sm"
               />
             </div>
             

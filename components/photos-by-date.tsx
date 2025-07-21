@@ -177,32 +177,31 @@ export function PhotosByDate() {
                     </div>
                   )}
                   
-                  {/* Badge nombre de sessions */}
-                  <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                  {/* Badge du nombre de photos centré en bas */}
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                    {totalPhotos} photo{totalPhotos > 1 ? 's' : ''}
+                  </div>
+                  
+                  {/* Badge du nombre de sessions à droite */}
+                  <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
                     {group.galleries.length} session{group.galleries.length > 1 ? 's' : ''}
                   </div>
                 </div>
                 
                 <div className="p-3">
-                  <h3 className="text-center font-medium text-black text-xs leading-tight">
-                    {new Date(group.date).toLocaleDateString('fr-FR', {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'long'
-                    })}
-                  </h3>
-                  <p className="text-center text-xs text-gray-600 mt-1">
-                    {new Date(group.date).toLocaleDateString('fr-FR', {
-                      day: 'numeric',
-                      month: 'short'
-                    })}
-                  </p>
-                  <p className="text-center text-xs text-blue-600 mt-1 font-medium">
-                    {group.galleries.length} session{group.galleries.length > 1 ? 's' : ''}
-                  </p>
-                  <p className="text-center text-xs text-gray-500 mt-1">
-                    {totalPhotos} photo{totalPhotos > 1 ? 's' : ''}
-                  </p>
+                  <div className="text-center">
+                    <div className="text-sm text-gray-600 mb-1">
+                      {new Date(group.date).toLocaleDateString('fr-FR', {
+                        weekday: 'long'
+                      })}
+                    </div>
+                    <div className="text-lg font-bold text-gray-900">
+                      {new Date(group.date).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'long'
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
             </Link>

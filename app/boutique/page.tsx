@@ -90,25 +90,30 @@ export default function BoutiquePage() {
               {/* Nouveau système de tarifs dégressifs */}
               <div className="text-center">
                 <div className="mb-6 p-6 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl border-2 border-emerald-200">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">💰 Tarifs dégressifs - Photos numériques</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">💰 Tarifs</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div className="bg-white p-4 rounded-xl shadow-sm">
-                      <div className="text-2xl font-bold text-blue-600">15€</div>
+                      <div className="text-2xl font-bold text-blue-600">10€</div>
                       <div className="text-sm text-gray-600">1ère photo</div>
                     </div>
                     <div className="bg-white p-4 rounded-xl shadow-sm border-2 border-emerald-300">
-                      <div className="text-2xl font-bold text-emerald-600">10€</div>
+                      <div className="text-2xl font-bold text-emerald-600">7€</div>
                       <div className="text-sm text-gray-600">2ème photo</div>
-                      <div className="text-xs text-emerald-600 font-medium">-33%</div>
+                      <div className="text-xs text-emerald-600 font-medium">-30%</div>
                     </div>
                     <div className="bg-white p-4 rounded-xl shadow-sm border-2 border-emerald-400">
                       <div className="text-2xl font-bold text-emerald-700">5€</div>
                       <div className="text-sm text-gray-600">3ème+ photos</div>
-                      <div className="text-xs text-emerald-700 font-medium">-67%</div>
+                      <div className="text-xs text-emerald-700 font-medium">-50%</div>
+                    </div>
+                    <div className="bg-white p-4 rounded-xl shadow-sm border-2 border-purple-400">
+                      <div className="text-2xl font-bold text-purple-600">45€</div>
+                      <div className="text-sm text-gray-600">Pack session</div>
+                      <div className="text-xs text-purple-600 font-medium">ILLIMITÉ</div>
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mt-4">
-                    Plus vous commandez, plus vous économisez !
+                     <span className="font-bold text-purple-600">Pack photos illimitées : 45€</span>
                   </p>
                 </div>
                 
@@ -185,7 +190,7 @@ export default function BoutiquePage() {
                   <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                     <span className="text-gray-700 font-bold">✓</span>
                   </div>
-                  <span>Formats A5, A4, A3, A2 disponibles 📄✨</span>
+                  <span>Formats Polaroid, A5, A4, A3, A2 disponibles 📄✨</span>
                 </div>
                 
                 <div className="flex items-center gap-3 text-gray-700">
@@ -222,6 +227,14 @@ export default function BoutiquePage() {
                   <h3 className="text-lg font-bold text-gray-800 mb-4">Formats disponibles</h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <div className="text-xl font-bold text-gray-800">15€</div>
+                      <div className="text-sm text-gray-600">Polaroid x3 + JPEG</div>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <div className="text-xl font-bold text-gray-800">20€</div>
+                      <div className="text-sm text-gray-600">Polaroid x6 + JPEG</div>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
                       <div className="text-xl font-bold text-gray-800">20€</div>
                       <div className="text-sm text-gray-600">A5 + JPEG</div>
                     </div>
@@ -238,7 +251,7 @@ export default function BoutiquePage() {
                       <div className="text-sm text-gray-600">A2 + JPEG</div>
                     </div>
                   </div>
-                  <div className="text-xs text-gray-500 mt-3">Prix fixes, pas de dégressif</div>
+                  <div className="text-xs text-gray-500 mt-3">Nous contacter pour des lots d'impressions</div>
                 </div>
                 
                 <div className="mb-6 p-4 bg-blue-50 rounded-2xl border-2 border-blue-200">
@@ -249,20 +262,8 @@ export default function BoutiquePage() {
                       <span className="font-bold text-green-600">GRATUIT</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>📦 Livraison A5</span>
-                      <span className="font-bold">+5€</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>📦 Livraison A4</span>
+                      <span>📦 Livraison (tous formats)</span>
                       <span className="font-bold">+7€</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>📦 Livraison A3</span>
-                      <span className="font-bold">+10€</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>📦 Livraison A2</span>
-                      <span className="font-bold">+15€</span>
                     </div>
                   </div>
                 </div>

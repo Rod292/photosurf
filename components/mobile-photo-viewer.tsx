@@ -8,7 +8,8 @@ import { useCartStore } from "@/context/cart-context"
 import { Photo } from "@/lib/database.types"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
-import { getNextPhotoPrice, calculateDeliveryPrice } from "@/lib/pricing"
+import { HeartButton } from "@/components/ui/heart-button"
+import { getNextPhotoPrice, calculateDeliveryPrice, formatPrice as formatPriceUtil } from "@/lib/pricing"
 
 interface MobilePhotoViewerProps {
   isOpen: boolean
@@ -18,12 +19,57 @@ interface MobilePhotoViewerProps {
   onNavigate: (index: number) => void
 }
 
-const PRODUCT_OPTIONS = [
-  { id: 'digital', label: 'Photo Numérique', price: 15, description: 'Téléchargement haute résolution' },
-  { id: 'print_a5', label: 'Tirage A5', price: 20, description: 'Impression A5 + JPEG inclus' },
-  { id: 'print_a4', label: 'Tirage A4', price: 30, description: 'Impression A4 + JPEG inclus' },
-  { id: 'print_a3', label: 'Tirage A3', price: 50, description: 'Impression A3 + JPEG inclus' },
-  { id: 'print_a2', label: 'Tirage A2', price: 80, description: 'Impression A2 + JPEG inclus' }
+const DIGITAL_OPTION = {
+  id: 'digital',
+  label: 'Photo Numérique',
+  price: 15,
+  description: 'Téléchargement haute résolution'
+}
+
+const SESSION_PACK_OPTION = {
+  id: 'session_pack',
+  label: 'Pack Session Illimité',
+  price: 45,
+  description: 'Toutes vos photos numériques'
+}
+
+const PRINT_OPTIONS = [
+  {
+    id: 'print_polaroid_3',
+    label: 'Polaroid x3',
+    dimensions: '7,9 x 7,9 cm (cadre 8,8 x 10,7 cm)',
+    price: 15
+  },
+  {
+    id: 'print_polaroid_6',
+    label: 'Polaroid x6',
+    dimensions: '7,9 x 7,9 cm (cadre 8,8 x 10,7 cm)',
+    price: 20
+  },
+  {
+    id: 'print_a5',
+    label: 'A5',
+    dimensions: '14,8 cm x 21,0 cm',
+    price: 20
+  },
+  {
+    id: 'print_a4',
+    label: 'A4',
+    dimensions: '21,0 cm x 29,7 cm',
+    price: 30
+  },
+  {
+    id: 'print_a3',
+    label: 'A3',
+    dimensions: '29,7 cm x 42,0 cm',
+    price: 50
+  },
+  {
+    id: 'print_a2',
+    label: 'A2',
+    dimensions: '42,0 cm x 59,4 cm',
+    price: 80
+  }
 ] as const
 
 export function MobilePhotoViewer({
@@ -33,44 +79,90 @@ export function MobilePhotoViewer({
   currentIndex,
   onNavigate
 }: MobilePhotoViewerProps) {
-  const [selectedProduct, setSelectedProduct] = useState<string>('digital')
+  const [selectedProductType, setSelectedProductType] = useState<'digital' | 'print' | 'session_pack'>('digital')
+  const [selectedPrintFormat, setSelectedPrintFormat] = useState<string>('print_polaroid_3')
   const [showOptions, setShowOptions] = useState(false)
-  const [addedToCart, setAddedToCart] = useState(false)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'delivery'>('pickup')
-  const { addItem, items } = useCartStore()
+  const { addItem, addSessionPack, items } = useCartStore()
   const { toast } = useToast()
 
-  // Calculer le prix dynamique selon le nombre d'éléments dans le panier
-  const getDynamicPrice = (productType: string) => {
-    if (productType === 'digital') {
-      // Compter seulement les photos numériques pour le pricing dynamique
-      const digitalPhotosCount = items.filter(item => item.product_type === 'digital').length
-      return getNextPhotoPrice(digitalPhotosCount, 'digital')
-    } else {
-      // Pour les tirages, prix fixe
-      const option = PRODUCT_OPTIONS.find(opt => opt.id === productType)
-      return option?.price || 15
+  // Vérifier si le pack session est déjà dans le panier
+  const hasSessionPack = () => {
+    return items.some(item => item.product_type === 'session_pack')
+  }
+
+  const getSelectedProduct = () => {
+    if (selectedProductType === 'digital') {
+      return DIGITAL_OPTION
     }
+    if (selectedProductType === 'session_pack') {
+      return SESSION_PACK_OPTION
+    }
+    return PRINT_OPTIONS.find(option => option.id === selectedPrintFormat) || PRINT_OPTIONS[0]
+  }
+
+  // Calculer le prix pour la photo numérique
+  const getDigitalPhotoPrice = () => {
+    // Si le pack session est déjà dans le panier, les photos numériques sont gratuites
+    if (hasSessionPack()) {
+      return 0
+    }
+    const currentPhotoCount = items.filter(item => item.product_type === 'digital').length
+    const currentTotal = items.filter(item => item.product_type === 'digital').reduce((sum, item) => sum + item.price, 0)
+    return getNextPhotoPrice(currentPhotoCount, 'digital', currentTotal)
+  }
+
+  // Calculer le prix pour le pack session
+  const getSessionPackPrice = () => {
+    // Le pack session ne peut être ajouté qu'une seule fois
+    if (hasSessionPack()) {
+      return 0 // Déjà dans le panier
+    }
+    return SESSION_PACK_OPTION.price
+  }
+
+  // Calculer le prix pour le tirage sélectionné
+  const getPrintPhotoPrice = () => {
+    const currentPhotoCount = items.filter(item => item.product_type === selectedPrintFormat).length
+    const currentTotal = items.filter(item => item.product_type === selectedPrintFormat).reduce((sum, item) => sum + item.price, 0)
+    return getNextPhotoPrice(currentPhotoCount, selectedPrintFormat as 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2' | 'print_polaroid_3' | 'print_polaroid_6', currentTotal)
+  }
+
+  // Calculer le prix pour cette photo selon sa position dans le panier
+  const getPhotoPrice = () => {
+    if (selectedProductType === 'digital') {
+      return getDigitalPhotoPrice()
+    }
+    if (selectedProductType === 'session_pack') {
+      return getSessionPackPrice()
+    }
+    if (selectedProductType === 'print') {
+      return getPrintPhotoPrice()
+    }
+    return 0
   }
 
   // Calculer le prix de livraison
-  const getDeliveryPrice = (productType: string) => {
-    if (productType === 'digital') return 0
-    return calculateDeliveryPrice(productType, deliveryOption)
+  const getDeliveryPrice = () => {
+    if (selectedProductType === 'digital' || selectedProductType === 'session_pack') return 0
+    return calculateDeliveryPrice(selectedPrintFormat, deliveryOption)
   }
 
   const currentPhoto = photos[currentIndex]
 
-  useEffect(() => {
-    if (currentPhoto) {
-      const isInCart = items.some(item => 
-        item.photo_id === currentPhoto.id && 
-        item.product_type === selectedProduct
-      )
-      setAddedToCart(isInCart)
+  // Vérifier si la photo est déjà dans le panier
+  const isPhotoInCart = () => {
+    if (selectedProductType === 'session_pack') {
+      // Le pack session ne peut être ajouté qu'une fois, peu importe la photo
+      return hasSessionPack()
     }
-  }, [currentPhoto, selectedProduct, items])
+    
+    const productId = selectedProductType === 'digital' ? 'digital' : selectedPrintFormat
+    return items.some(item => 
+      item.photo_id === currentPhoto.id && item.product_type === productId
+    )
+  }
 
   useEffect(() => {
     if (isOpen) {
@@ -98,31 +190,86 @@ export function MobilePhotoViewer({
   }
 
   const handleAddToCart = () => {
-    if (!currentPhoto || addedToCart) return
+    if (!currentPhoto) return
 
-    const selectedOption = PRODUCT_OPTIONS.find(option => option.id === selectedProduct)
+    const selectedOption = getSelectedProduct()
     if (!selectedOption) return
 
-    const dynamicPrice = getDynamicPrice(selectedProduct)
-    const deliveryPrice = getDeliveryPrice(selectedProduct)
+    // Gestion spéciale pour le pack session
+    if (selectedProductType === 'session_pack') {
+      if (hasSessionPack()) {
+        toast({
+          title: "Pack déjà dans le panier",
+          description: "Le Pack Session Illimité est déjà ajouté",
+          variant: "destructive",
+          duration: 4000,
+        })
+        return
+      }
 
+      // Compter les photos numériques qui vont être remplacées
+      const digitalPhotosCount = items.filter(item => item.product_type === 'digital').length
+      
+      addSessionPack({
+        photo_id: currentPhoto.id, // On associe le pack à cette photo comme référence
+        product_type: 'session_pack' as any,
+        price: SESSION_PACK_OPTION.price,
+        preview_url: currentPhoto.preview_s3_url,
+        filename: `Pack Session Illimité`,
+        delivery_option: undefined,
+        delivery_price: 0
+      })
+
+      const message = digitalPhotosCount > 0 
+        ? `${selectedOption.label} - ${formatPriceUtil(SESSION_PACK_OPTION.price)} (${digitalPhotosCount} photo${digitalPhotosCount > 1 ? 's' : ''} numérique${digitalPhotosCount > 1 ? 's' : ''} remplacée${digitalPhotosCount > 1 ? 's' : ''})`
+        : `${selectedOption.label} - ${formatPriceUtil(SESSION_PACK_OPTION.price)}`
+
+      toast({
+        title: "Pack ajouté au panier !",
+        description: message,
+        duration: 4000,
+      })
+      return
+    }
+
+    const productId = selectedProductType === 'digital' ? 'digital' : selectedPrintFormat
+
+    // Vérifier si cette photo est déjà dans le panier pour ce type de produit
+    const existingItem = items.find(item => 
+      item.photo_id === currentPhoto.id && item.product_type === productId
+    )
+    
+    if (existingItem) {
+      toast({
+        title: "Photo déjà dans le panier",
+        description: "Cette photo est déjà ajoutée pour ce type de produit",
+        variant: "destructive",
+        duration: 4000,
+      })
+      return
+    }
+
+    // Calculer le prix selon le nombre de photos actuelles dans le panier et le total actuel
+    const photoPrice = getPhotoPrice()
+    
+    // Calculer les frais de livraison si c'est un tirage
+    const deliveryPrice = selectedProductType === 'print' ? getDeliveryPrice() : 0
+    
     addItem({
       photo_id: currentPhoto.id,
-      product_type: selectedProduct as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2',
-      price: dynamicPrice,
+      product_type: productId as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2' | 'print_polaroid_3' | 'print_polaroid_6',
+      price: photoPrice,
       preview_url: currentPhoto.preview_s3_url,
       filename: currentPhoto.filename,
-      delivery_option: selectedProduct !== 'digital' ? deliveryOption : undefined,
-      delivery_price: deliveryPrice > 0 ? deliveryPrice : undefined
+      delivery_option: selectedProductType === 'print' ? deliveryOption : undefined,
+      delivery_price: deliveryPrice
     })
 
     toast({
       title: "Photo ajoutée au panier !",
-      description: `${selectedOption.label} - ${dynamicPrice}€${deliveryPrice > 0 ? ` + ${deliveryPrice}€ livraison` : ''}`,
-      duration: 3000,
+      description: `${selectedOption.label} - ${formatPriceUtil(photoPrice)}${deliveryPrice > 0 ? ` + ${formatPriceUtil(deliveryPrice)} livraison` : ''}`,
+      duration: 4000,
     })
-
-    setAddedToCart(true)
   }
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -152,6 +299,13 @@ export function MobilePhotoViewer({
     }
   }, [swipeDirection])
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(price)
+  }
+
   if (!isOpen || !currentPhoto) return null
 
   return (
@@ -160,23 +314,9 @@ export function MobilePhotoViewer({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black"
+        className="fixed inset-0 z-50 bg-black/10 backdrop-blur-sm"
         onClick={onClose}
       >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-50 p-2 bg-white/10 backdrop-blur-sm rounded-full"
-        >
-          <X className="h-6 w-6 text-white" />
-        </button>
-
-        {/* Photo counter */}
-        <div className="absolute top-4 left-4 z-50 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full">
-          <span className="text-white text-sm font-medium">
-            {currentIndex + 1} / {photos.length}
-          </span>
-        </div>
 
         {/* Main photo display */}
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
@@ -224,78 +364,75 @@ export function MobilePhotoViewer({
                 sizes="85vw"
                 priority
               />
+              
+              {/* Photo counter - top left on image */}
+              <div className="absolute top-2 left-8 px-1.5 py-0.5 bg-black/60 backdrop-blur-sm rounded-full">
+                <span className="text-white text-[10px] font-medium">
+                  {currentIndex + 1} / {photos.length}
+                </span>
+              </div>
             </motion.div>
           </AnimatePresence>
 
           {/* Side areas for closing and navigation */}
-          {/* Left side area */}
+          {/* Left close area - expanded */}
           <div
-            className="absolute left-0 top-0 w-[5%] h-full cursor-pointer"
+            className="absolute left-0 top-0 w-[15%] h-full cursor-pointer"
             onClick={onClose}
           />
 
-          {/* Right side area */}
+          {/* Right close area - expanded */}
           <div
-            className="absolute right-0 top-0 w-[5%] h-full cursor-pointer"
+            className="absolute right-0 top-0 w-[15%] h-full cursor-pointer"
             onClick={onClose}
           />
 
-          {/* Navigation areas */}
+          {/* Navigation areas - reduced */}
           {photos.length > 1 && (
             <>
-              {/* Left navigation area */}
+              {/* Left navigation area - smaller */}
               <div
-                className="absolute left-[5%] top-0 w-[22.5%] h-full flex items-center justify-center cursor-pointer"
+                className="absolute left-[15%] top-0 w-[12.5%] h-full flex items-center justify-center cursor-pointer"
                 onClick={handlePrevious}
               >
-                <div className="bg-black/20 backdrop-blur-sm rounded-full p-2">
-                  <ChevronLeft className="h-6 w-6 text-white drop-shadow-lg" />
-                </div>
+                <ChevronLeft className="h-6 w-6 text-white drop-shadow-lg" />
               </div>
 
-              {/* Right navigation area */}
+              {/* Right navigation area - smaller */}
               <div
-                className="absolute right-[5%] top-0 w-[22.5%] h-full flex items-center justify-center cursor-pointer"
+                className="absolute right-[15%] top-0 w-[12.5%] h-full flex items-center justify-center cursor-pointer"
                 onClick={handleNext}
               >
-                <div className="bg-black/20 backdrop-blur-sm rounded-full p-2">
-                  <ChevronRight className="h-6 w-6 text-white drop-shadow-lg" />
-                </div>
+                <ChevronRight className="h-6 w-6 text-white drop-shadow-lg" />
               </div>
             </>
           )}
         </div>
 
-        {/* Bottom purchase bar */}
-        <motion.div
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-          exit={{ y: 100 }}
-          className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 pb-safe shadow-lg"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {!showOptions ? (
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-gray-900">{currentPhoto.filename}</p>
-                <p className="text-sm text-gray-600">
-                  {PRODUCT_OPTIONS.find(opt => opt.id === selectedProduct)?.label} - {getDynamicPrice(selectedProduct)}€
-                  {getDeliveryPrice(selectedProduct) > 0 && ` + ${getDeliveryPrice(selectedProduct)}€ livraison`}
-                </p>
-              </div>
+        {/* Bottom blurred panel with buttons */}
+        {!showOptions && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-0 left-0 right-0 bg-white/20 backdrop-blur-md border-t border-white/30 p-4 z-50"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between max-w-sm mx-auto">
+              {/* Cart button - left side */}
               <button
                 onClick={() => setShowOptions(true)}
                 className={cn(
-                  "px-6 py-3 rounded-full font-medium transition-all min-w-[44px] min-h-[44px]",
-                  addedToCart
+                  "px-4 py-2 rounded-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 font-medium",
+                  isPhotoInCart()
                     ? "bg-green-500 text-white"
-                    : "bg-blue-500 text-white active:scale-95"
+                    : "bg-white text-gray-800 border border-gray-300"
                 )}
               >
-                {addedToCart ? (
+                {isPhotoInCart() ? (
                   <>
-                    <Check className="h-4 w-4 inline mr-2" />
-                    Ajouté
+                    <Check className="h-4 w-4" />
+                    <span>Ajouté</span>
                   </>
                 ) : (
                   <>
@@ -304,48 +441,135 @@ export function MobilePhotoViewer({
                       alt="Shopping Cart"
                       width={16}
                       height={16}
-                      className="h-4 w-4 inline mr-2"
+                      className="h-4 w-4"
                     />
-                    Ajouter
+                    <span>Ajouter</span>
                   </>
                 )}
               </button>
+              
+              {/* Heart button - right side */}
+              <HeartButton 
+                photo={{
+                  id: currentPhoto.id,
+                  gallery_id: currentPhoto.gallery_id,
+                  gallery_name: currentPhoto.gallery?.name,
+                  preview_url: currentPhoto.preview_s3_url
+                }}
+                size="md"
+              />
             </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="font-medium text-gray-900 mb-2">Choisir une option :</p>
+          </motion.div>
+        )}
+
+        {/* Options panel */}
+        {showOptions && (
+          <motion.div
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-4 pb-8 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="space-y-4">
+              <div className="text-xs text-gray-600 text-center">
+                <p>1ère photo : 10€ • 2ème photo : 7€ • 3ème+ : 5€ • <span className="text-purple-600 font-medium">Photos illimitées : 45€</span></p>
+              </div>
               <div className="space-y-2">
-                {PRODUCT_OPTIONS.map((option) => (
+                {/* Photo Numérique */}
+                <button
+                  onClick={() => setSelectedProductType('digital')}
+                  className={cn(
+                    "w-full p-4 rounded-xl text-left transition-all border-2 shadow-sm",
+                    selectedProductType === 'digital'
+                      ? "bg-blue-50 border-blue-500 shadow-md"
+                      : "bg-gray-50 border-gray-300 hover:border-gray-400"
+                  )}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="font-medium">{DIGITAL_OPTION.label}</span>
+                      <p className="text-sm text-gray-600">{DIGITAL_OPTION.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-blue-600">
+                        {hasSessionPack() ? 'Gratuit' : formatPrice(getDigitalPhotoPrice())}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Pack Session Illimité */}
+                <button
+                  onClick={() => setSelectedProductType('session_pack')}
+                  className={cn(
+                    "w-full p-4 rounded-xl text-left transition-all border-2 shadow-sm",
+                    selectedProductType === 'session_pack'
+                      ? "bg-gradient-to-r from-purple-50 to-blue-50 border-purple-500 shadow-md"
+                      : "bg-gray-50 border-gray-300 hover:border-gray-400"
+                  )}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="font-medium">{SESSION_PACK_OPTION.label} 🎁</span>
+                      <p className="text-sm text-gray-600">{SESSION_PACK_OPTION.description}</p>
+                      <p className="text-xs text-purple-600 font-medium mt-1">
+                        💰 Économisez jusqu'à 50% sur vos photos !
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-purple-600">
+                        {hasSessionPack() ? 'Ajouté' : formatPrice(getSessionPackPrice())}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Tirage avec menu déroulant */}
+                <div className={cn(
+                  "w-full p-4 rounded-xl transition-all border-2 shadow-sm",
+                  selectedProductType === 'print'
+                    ? "bg-blue-50 border-blue-500 shadow-md"
+                    : "bg-gray-50 border-gray-300 hover:border-gray-400"
+                )}>
                   <button
-                    key={option.id}
-                    onClick={() => {
-                      setSelectedProduct(option.id)
-                    }}
-                    className={cn(
-                      "w-full p-3 rounded-lg text-left transition-all",
-                      selectedProduct === option.id
-                        ? "bg-blue-50 border-2 border-blue-500"
-                        : "bg-gray-50 border-2 border-transparent"
-                    )}
+                    onClick={() => setSelectedProductType('print')}
+                    className="w-full text-left"
                   >
                     <div className="flex justify-between items-center">
                       <div>
-                        <span className="font-medium">{option.label}</span>
-                        <p className="text-sm text-gray-600">{option.description}</p>
+                        <span className="font-medium">Tirage photo</span>
+                        <p className="text-sm text-gray-600">Impression professionnelle + JPEG inclus</p>
                       </div>
                       <div className="text-right">
-                        <span className="font-bold text-blue-600">{getDynamicPrice(option.id)}€</span>
-                        {getDeliveryPrice(option.id) > 0 && (
-                          <p className="text-xs text-gray-500">+ {getDeliveryPrice(option.id)}€ livraison</p>
-                        )}
+                        <span className="font-bold text-blue-600">
+                          {selectedProductType === 'print' ? formatPrice(getPrintPhotoPrice()) : 'À partir de 15€'}
+                        </span>
                       </div>
                     </div>
                   </button>
-                ))}
+                  
+                  {/* Menu déroulant pour les formats */}
+                  {selectedProductType === 'print' && (
+                    <div className="mt-3">
+                      <select
+                        value={selectedPrintFormat}
+                        onChange={(e) => setSelectedPrintFormat(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-lg bg-white text-sm"
+                      >
+                        {PRINT_OPTIONS.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.label} - {option.dimensions} - {option.price}€
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
               </div>
               
               {/* Options de livraison pour les tirages */}
-              {selectedProduct !== 'digital' && (
+              {selectedProductType === 'print' && (
                 <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm font-medium text-gray-700 mb-2">Options de livraison :</p>
                   <div className="space-y-2">
@@ -371,7 +595,7 @@ export function MobilePhotoViewer({
                       )}
                     >
                       <div className="font-medium">Livraison à domicile</div>
-                      <div className="text-xs text-gray-600">+ {calculateDeliveryPrice(selectedProduct, 'delivery')}€</div>
+                      <div className="text-xs text-gray-600">+ {formatPriceUtil(calculateDeliveryPrice(selectedPrintFormat, 'delivery'))}</div>
                     </button>
                   </div>
                 </div>
@@ -379,7 +603,7 @@ export function MobilePhotoViewer({
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={() => setShowOptions(false)}
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-full font-medium min-h-[44px] active:scale-95"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-medium min-h-[44px] active:scale-95"
                 >
                   Annuler
                 </button>
@@ -388,20 +612,20 @@ export function MobilePhotoViewer({
                     handleAddToCart()
                     setShowOptions(false)
                   }}
+                  disabled={isPhotoInCart()}
                   className={cn(
-                    "flex-1 px-4 py-3 rounded-full font-medium min-h-[44px] active:scale-95",
-                    addedToCart
+                    "flex-1 px-4 py-3 rounded-lg font-medium min-h-[44px] active:scale-95",
+                    isPhotoInCart()
                       ? "bg-green-500 text-white"
                       : "bg-blue-500 text-white"
                   )}
-                  disabled={addedToCart}
                 >
-                  {addedToCart ? 'Ajouté' : 'Confirmer'}
+                  {isPhotoInCart() ? 'Ajouté' : 'Confirmer'}
                 </button>
               </div>
             </div>
-          )}
-        </motion.div>
+          </motion.div>
+        )}
       </motion.div>
     </AnimatePresence>
   )

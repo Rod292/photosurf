@@ -190,7 +190,7 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
             </p>
           </div>
         ) : (
-          <StaggerContainer className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4" staggerDelay={0.1}>
+          <StaggerContainer className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3" staggerDelay={0.1}>
             {filteredSessions.map((dateData: any) => {
               const firstSession = dateData.sessions[0]
               
@@ -210,7 +210,7 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
                             alt={`Photos du ${new Date(dateData.date).toLocaleDateString('fr-FR')}`}
                             width={300}
                             height={400}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -225,34 +225,30 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
                           </div>
                         )}
                         
-                        {/* Badge du nombre de sessions */}
-                        <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                        {/* Badge du nombre de photos centré en bas */}
+                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                          {dateData.totalPhotos} photo{dateData.totalPhotos > 1 ? 's' : ''}
+                        </div>
+                        
+                        {/* Badge du nombre de sessions à droite */}
+                        <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
                           {dateData.sessions.length} session{dateData.sessions.length > 1 ? 's' : ''}
                         </div>
                       </div>
                       
                       <div className="p-3">
-                        <h3 className="font-bold text-sm text-gray-900 mb-1 line-clamp-2 leading-tight">
-                          {new Date(dateData.date).toLocaleDateString('fr-FR', {
-                            weekday: 'long',
-                            day: 'numeric',
-                            month: 'long'
-                          })}
-                        </h3>
-                        <p className="text-xs text-gray-600 mb-2">
-                          {new Date(dateData.date).toLocaleDateString('fr-FR', {
-                            day: 'numeric',
-                            month: 'short'
-                          })}
-                        </p>
-                        
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-blue-600">
-                            {dateData.totalPhotos} photo{dateData.totalPhotos > 1 ? 's' : ''}
-                          </span>
-                          <span className="text-xs font-medium text-green-600">
-                            {dateData.sessions.length} session{dateData.sessions.length > 1 ? 's' : ''}
-                          </span>
+                        <div className="text-center">
+                          <div className="text-sm text-gray-600 mb-1">
+                            {new Date(dateData.date).toLocaleDateString('fr-FR', {
+                              weekday: 'long'
+                            })}
+                          </div>
+                          <div className="text-lg font-bold text-gray-900">
+                            {new Date(dateData.date).toLocaleDateString('fr-FR', {
+                              day: 'numeric',
+                              month: 'long'
+                            })}
+                          </div>
                         </div>
                       </div>
                     </motion.div>

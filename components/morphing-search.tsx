@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { SimpleCalendar } from "./ui/simple-calendar"
 import { useSurfSchools } from "@/hooks/use-surf-schools"
+import { useSearchState } from "@/hooks/use-search-state"
 
 interface SearchState {
   date: string
@@ -14,6 +15,7 @@ interface SearchState {
 
 export function MorphingSearch() {
   const { schools } = useSurfSchools()
+  const { setSearchDropdownOpen } = useSearchState()
   const [searchState, setSearchState] = useState<SearchState>({
     date: "",
     school: ""
@@ -24,6 +26,11 @@ export function MorphingSearch() {
   const [isSearching, setIsSearching] = useState(false)
   
   const router = useRouter()
+
+  // Update global search state when dropdowns open/close
+  useEffect(() => {
+    setSearchDropdownOpen(showDatePicker || showSchoolList)
+  }, [showDatePicker, showSchoolList, setSearchDropdownOpen])
 
   const handleSearch = () => {
     if (!searchState.date && !searchState.school) return
@@ -88,7 +95,7 @@ export function MorphingSearch() {
             </button>
             
             {showDatePicker && (
-              <div className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+              <div className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-xl border border-gray-200" style={{ zIndex: 9999 }}>
                 <SimpleCalendar
                   selectedDate={searchState.date}
                   onDateSelect={(date) => {
@@ -119,7 +126,7 @@ export function MorphingSearch() {
             </button>
             
             {showSchoolList && (
-              <div className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-50 min-w-[200px]">
+              <div className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-xl border border-gray-200 p-2 min-w-[200px]" style={{ zIndex: 9999 }}>
                 {schools.map((school) => (
                   <button
                     key={school.id}
@@ -142,7 +149,7 @@ export function MorphingSearch() {
             disabled={!hasValues || isSearching}
             className={`p-2.5 rounded-full transition-colors ml-1 min-w-[44px] min-h-[44px] flex items-center justify-center ${
               hasValues 
-                ? "bg-blue-600 text-white hover:bg-blue-700" 
+                ? "bg-black text-white hover:bg-gray-800" 
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
           >

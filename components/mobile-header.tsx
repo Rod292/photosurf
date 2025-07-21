@@ -1,15 +1,31 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { motion, useScroll, useTransform } from "framer-motion"
 import { MorphingSearch } from "@/components/morphing-search"
+import { useFavorites } from "@/contexts/FavoritesContext"
+import { useSearchState } from "@/hooks/use-search-state"
 import Image from "next/image"
 
 export function MobileHeader() {
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
   const { scrollY } = useScroll()
+  const { isSearchDropdownOpen } = useSearchState()
+  
+  // Check if we're on the homepage
+  const isHomepage = pathname === '/'
+  
+  // Handle favorites context safely
+  let favoritesCount = 0
+  try {
+    const favoritesContext = useFavorites()
+    favoritesCount = favoritesContext.favoritesCount
+  } catch (error) {
+    // FavoritesProvider not available, use default value
+  }
 
   // Animations for navigation icons and text - restore original behavior
   const iconOpacity = useTransform(scrollY, [0, 100], [1, 0])
@@ -122,64 +138,120 @@ export function MobileHeader() {
               Contact
             </span>
           </motion.button>
+
+          {/* Favoris */}
+          <motion.button
+            onClick={() => handleNavigation("/favoris")}
+            className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] relative"
+            whileTap={{ scale: 0.98 }}
+          >
+            <motion.div 
+              className="w-6 h-6 flex items-center justify-center relative"
+              style={{ opacity: iconOpacity, scale: iconScale }}
+            >
+              <Image
+                src="/Logos/Heart copie.svg"
+                alt="Favoris"
+                width={24}
+                height={24}
+                className="w-full h-full"
+              />
+              {favoritesCount > 0 && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[16px] h-[16px] flex items-center justify-center font-bold"
+                  style={{ fontSize: '0.6rem' }}
+                >
+                  {favoritesCount > 99 ? '99+' : favoritesCount}
+                </motion.div>
+              )}
+            </motion.div>
+            <span className="text-sm font-medium text-gray-700">
+              Favoris
+            </span>
+          </motion.button>
         </div>
       </motion.div>
       
-      {/* Tagline */}
-      <motion.div
-        className="overflow-hidden border-b border-gray-200 transition-all"
-        style={{ 
-          opacity: taglineOpacity,
-          height: taglineHeight,
-          y: taglineY
-        }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-      >
-        <div className="flex items-center justify-center gap-4 text-xs text-black py-0.5 relative">
-          <motion.div
-            animate={{ 
-              x: [-8, -4, 0, -4, -8],
-              y: [0, -2, 0, -2, 0]
-            }}
-            transition={{ 
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            style={{ willChange: 'transform' }}
-          >
-            <Image
-              src="/Logos/surfer.svg"
-              alt="Surfer"
-              width={16}
-              height={16}
-              className="w-4 h-4"
-            />
-          </motion.div>
-          <span className="mx-2 font-bold">Vos photos de surf à la Torche</span>
-          <motion.div
-            animate={{ 
-              x: [8, 4, 0, 4, 8],
-              y: [0, -2, 0, -2, 0]
-            }}
-            transition={{ 
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 0.5
-            }}
-            style={{ willChange: 'transform' }}
-          >
-            <Image
-              src="/Logos/surfer.svg"
-              alt="Surfer"
-              width={16}
-              height={16}
-              className="w-4 h-4"
-            />
-          </motion.div>
-        </div>
-      </motion.div>
+      {/* Tagline - Scrolling Banner - Only on homepage */}
+      {isHomepage && (
+        <motion.div
+          className="overflow-hidden border-b border-gray-200 transition-all relative"
+          style={{ 
+            opacity: isSearchDropdownOpen ? 0 : taglineOpacity,
+            height: isSearchDropdownOpen ? 0 : taglineHeight,
+            y: taglineY,
+            zIndex: 1
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
+          <div className="whitespace-nowrap">
+            <div className="inline-block animate-scroll">
+              <span className="text-black font-bold text-sm mx-8 inline-flex items-center gap-2">
+                <Image
+                  src="/Logos/surfer.svg"
+                  alt="Surfer"
+                  width={16}
+                  height={16}
+                  className="w-4 h-4"
+                />
+                Vos photos de surf à la Torche
+              </span>
+              <span className="text-black font-bold text-sm mx-8 inline-flex items-center gap-2">
+                <Image
+                  src="/Logos/surfer.svg"
+                  alt="Surfer"
+                  width={16}
+                  height={16}
+                  className="w-4 h-4"
+                />
+                Vos photos de surf à la Torche
+              </span>
+              <span className="text-black font-bold text-sm mx-8 inline-flex items-center gap-2">
+                <Image
+                  src="/Logos/surfer.svg"
+                  alt="Surfer"
+                  width={16}
+                  height={16}
+                  className="w-4 h-4"
+                />
+                Vos photos de surf à la Torche
+              </span>
+              <span className="text-black font-bold text-sm mx-8 inline-flex items-center gap-2">
+                <Image
+                  src="/Logos/surfer.svg"
+                  alt="Surfer"
+                  width={16}
+                  height={16}
+                  className="w-4 h-4"
+                />
+                Vos photos de surf à la Torche
+              </span>
+              <span className="text-black font-bold text-sm mx-8 inline-flex items-center gap-2">
+                <Image
+                  src="/Logos/surfer.svg"
+                  alt="Surfer"
+                  width={16}
+                  height={16}
+                  className="w-4 h-4"
+                />
+                Vos photos de surf à la Torche
+              </span>
+              <span className="text-black font-bold text-sm mx-8 inline-flex items-center gap-2">
+                <Image
+                  src="/Logos/surfer.svg"
+                  alt="Surfer"
+                  width={16}
+                  height={16}
+                  className="w-4 h-4"
+                />
+                Vos photos de surf à la Torche
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   )
 }

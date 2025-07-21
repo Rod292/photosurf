@@ -1,5 +1,7 @@
 import { FilterProvider } from "@/context/filter-context"
 import { CartProvider } from "@/contexts/CartContext"
+import { FavoritesProvider } from "@/contexts/FavoritesContext"
+import { SearchStateProvider } from "@/components/search-state-provider"
 import {
   Playfair_Display,
   Montserrat,
@@ -109,14 +111,18 @@ export default function RootLayout({
     >
       <body className="bg-gray-50 font-sans flex flex-col min-h-screen">
         <CursorPreload />
-        <CartProvider>
-          <FilterProvider>
-            <MobileHeader />
-            <div className="flex-grow pb-16 md:pb-0">{children}</div>
-            <MobileBottomNav />
-            <ConditionalFooter />
-          </FilterProvider>
-        </CartProvider>
+        <SearchStateProvider>
+          <FavoritesProvider>
+            <CartProvider>
+              <FilterProvider>
+                <MobileHeader />
+                <div className="flex-grow pb-16 md:pb-0">{children}</div>
+                <MobileBottomNav />
+                <ConditionalFooter />
+              </FilterProvider>
+            </CartProvider>
+          </FavoritesProvider>
+        </SearchStateProvider>
         <Toaster />
         <SpeedInsights />
         <Analytics />

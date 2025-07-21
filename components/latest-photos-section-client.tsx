@@ -69,7 +69,7 @@ export function LatestPhotosSectionClient() {
       {photos.map((photo) => (
         <Link
           key={photo.id}
-          href={`/gallery/${photo.gallery_id}`}
+          href={photo.galleries?.date ? `/gallery?date=${photo.galleries.date}` : `/gallery/${photo.gallery_id}`}
           className="group flex-shrink-0 relative"
         >
           <div className="w-40 h-60 sm:w-48 sm:h-72 relative rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105">
@@ -96,10 +96,6 @@ export function LatestPhotosSectionClient() {
               </p>
             </div>
             
-            {/* Watermark discret */}
-            <div className="absolute bottom-2 right-2 bg-white/90 px-2 py-1 rounded text-xs font-medium opacity-70">
-              Arode Studio
-            </div>
           </div>
         </Link>
       ))}

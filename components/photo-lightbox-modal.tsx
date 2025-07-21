@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
@@ -11,6 +11,7 @@ import { useCartStore } from "@/context/cart-context"
 import { Photo } from "@/lib/database.types"
 import { useToast } from "@/hooks/use-toast"
 import { MobilePhotoViewer } from "./mobile-photo-viewer"
+import { HeartButton } from "@/components/ui/heart-button"
 import { motion } from "framer-motion"
 import { getNextPhotoPrice, formatPrice as formatPriceUtil, calculateSavingsPercentage, calculateDeliveryPrice } from "@/lib/pricing"
 
@@ -22,36 +23,56 @@ interface PhotoLightboxModalProps {
   onNavigate: (index: number) => void
 }
 
-const PRODUCT_OPTIONS = [
-  {
-    id: 'digital',
-    label: 'Photo Numérique',
-    price: 15,
-    description: 'Téléchargement haute résolution'
-  },
+const DIGITAL_OPTION = {
+  id: 'digital',
+  label: 'Photo Numérique',
+  price: 15,
+  description: 'Téléchargement haute résolution'
+}
+
+const SESSION_PACK_OPTION = {
+  id: 'session_pack',
+  label: 'Pack Photo Illimité',
+  price: 45,
+  description: 'Toutes vos photos numériques de la session'
+}
+
+const PRINT_OPTIONS = [
   {
     id: 'print_a5',
-    label: 'Tirage A5',
-    price: 20,
-    description: 'Impression A5 + JPEG inclus'
+    label: 'A5',
+    dimensions: '14,8 cm x 21,0 cm',
+    price: 20
   },
   {
     id: 'print_a4',
-    label: 'Tirage A4',
-    price: 30,
-    description: 'Impression A4 + JPEG inclus'
+    label: 'A4',
+    dimensions: '21,0 cm x 29,7 cm',
+    price: 30
   },
   {
     id: 'print_a3',
-    label: 'Tirage A3',
-    price: 50,
-    description: 'Impression A3 + JPEG inclus'
+    label: 'A3',
+    dimensions: '29,7 cm x 42,0 cm',
+    price: 50
   },
   {
     id: 'print_a2',
-    label: 'Tirage A2',
-    price: 80,
-    description: 'Impression A2 + JPEG inclus'
+    label: 'A2',
+    dimensions: '42,0 cm x 59,4 cm',
+    price: 80
+  },
+  {
+    id: 'print_polaroid_3',
+    label: 'Polaroid x3',
+    dimensions: '7,9 x 7,9 cm (cadre 8,8 x 10,7 cm)',
+    price: 15
+  },
+  {
+    id: 'print_polaroid_6',
+    label: 'Polaroid x6',
+    dimensions: '7,9 x 7,9 cm (cadre 8,8 x 10,7 cm)',
+    price: 20
   }
 ] as const
 
@@ -62,11 +83,21 @@ export function PhotoLightboxModal({
   currentIndex,
   onNavigate
 }: PhotoLightboxModalProps) {
-  const [selectedProduct, setSelectedProduct] = useState<string>('digital')
-  const [quantity, setQuantity] = useState(1)
+  const [selectedProductType, setSelectedProductType] = useState<'digital' | 'print' | 'session_pack'>('digital')
+  const [selectedPrintFormat, setSelectedPrintFormat] = useState<string>('print_a5')
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'delivery'>('pickup')
+  
+  const getSelectedProduct = () => {
+    if (selectedProductType === 'digital') {
+      return DIGITAL_OPTION
+    }
+    if (selectedProductType === 'session_pack') {
+      return SESSION_PACK_OPTION
+    }
+    return PRINT_OPTIONS.find(option => option.id === selectedPrintFormat) || PRINT_OPTIONS[0]
+  }
   const [isMobile, setIsMobile] = useState(false)
-  const { addItem, items } = useCartStore()
+  const { addItem, addSessionPack, items } = useCartStore()
   const { toast } = useToast()
 
   const currentPhoto = photos[currentIndex]
@@ -103,12 +134,51 @@ export function PhotoLightboxModal({
   const handleAddToCart = () => {
     if (!currentPhoto) return
 
-    const selectedOption = PRODUCT_OPTIONS.find(option => option.id === selectedProduct)
+    const selectedOption = getSelectedProduct()
     if (!selectedOption) return
+
+    // Gestion spéciale pour le pack session
+    if (selectedProductType === 'session_pack') {
+      if (hasSessionPack()) {
+        toast({
+          title: "Pack déjà dans le panier",
+          description: "Le Pack Photo Illimité est déjà ajouté",
+          variant: "destructive",
+          duration: 4000,
+        })
+        return
+      }
+
+      // Compter les photos numériques qui vont être remplacées
+      const digitalPhotosCount = items.filter(item => item.product_type === 'digital').length
+      
+      addSessionPack({
+        photo_id: currentPhoto.id, // On associe le pack à cette photo comme référence
+        product_type: 'session_pack' as any,
+        price: SESSION_PACK_OPTION.price,
+        preview_url: currentPhoto.preview_s3_url,
+        filename: `Pack Session Illimité`,
+        delivery_option: undefined,
+        delivery_price: 0
+      })
+
+      const message = digitalPhotosCount > 0 
+        ? `${selectedOption.label} - ${formatPriceUtil(SESSION_PACK_OPTION.price)} (${digitalPhotosCount} photo${digitalPhotosCount > 1 ? 's' : ''} numérique${digitalPhotosCount > 1 ? 's' : ''} remplacée${digitalPhotosCount > 1 ? 's' : ''})`
+        : `${selectedOption.label} - ${formatPriceUtil(SESSION_PACK_OPTION.price)}`
+
+      toast({
+        title: "Pack ajouté au panier !",
+        description: message,
+        duration: 4000,
+      })
+      return
+    }
+
+    const productId = selectedProductType === 'digital' ? 'digital' : selectedPrintFormat
 
     // Vérifier si cette photo est déjà dans le panier pour ce type de produit
     const existingItem = items.find(item => 
-      item.photo_id === currentPhoto.id && item.product_type === selectedProduct
+      item.photo_id === currentPhoto.id && item.product_type === productId
     )
     
     if (existingItem) {
@@ -121,20 +191,19 @@ export function PhotoLightboxModal({
       return
     }
 
-    // Calculer le prix selon le nombre de photos actuelles dans le panier
-    const currentPhotoCount = items.filter(item => item.product_type === selectedProduct).length
-    const photoPrice = getNextPhotoPrice(currentPhotoCount, selectedProduct as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2')
+    // Calculer le prix selon le nombre de photos actuelles dans le panier et le total actuel
+    const photoPrice = getPhotoPrice()
     
     // Calculer les frais de livraison si c'est un tirage
-    const deliveryPrice = selectedProduct !== 'digital' ? calculateDeliveryPrice(selectedProduct, deliveryOption) : 0
+    const deliveryPrice = selectedProductType === 'print' ? calculateDeliveryPrice(productId, deliveryOption) : 0
     
     addItem({
       photo_id: currentPhoto.id,
-      product_type: selectedProduct as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2',
+      product_type: productId as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2' | 'print_polaroid_3' | 'print_polaroid_6',
       price: photoPrice,
       preview_url: currentPhoto.preview_s3_url,
       filename: currentPhoto.filename,
-      delivery_option: selectedProduct !== 'digital' ? deliveryOption : undefined,
+      delivery_option: selectedProductType === 'print' ? deliveryOption : undefined,
       delivery_price: deliveryPrice
     })
 
@@ -152,16 +221,62 @@ export function PhotoLightboxModal({
     }).format(price)
   }
 
+  // Vérifier si le pack session est déjà dans le panier
+  const hasSessionPack = () => {
+    return items.some(item => item.product_type === 'session_pack')
+  }
+
+  // Calculer le prix pour la photo numérique
+  const getDigitalPhotoPrice = () => {
+    // Si le pack session est déjà dans le panier, les photos numériques sont gratuites
+    if (hasSessionPack()) {
+      return 0
+    }
+    const currentPhotoCount = items.filter(item => item.product_type === 'digital').length
+    const currentTotal = items.filter(item => item.product_type === 'digital').reduce((sum, item) => sum + item.price, 0)
+    return getNextPhotoPrice(currentPhotoCount, 'digital', currentTotal)
+  }
+
+  // Calculer le prix pour le pack session
+  const getSessionPackPrice = () => {
+    // Le pack session ne peut être ajouté qu'une seule fois
+    if (hasSessionPack()) {
+      return 0 // Déjà dans le panier
+    }
+    return SESSION_PACK_OPTION.price
+  }
+
+  // Calculer le prix pour le tirage sélectionné
+  const getPrintPhotoPrice = () => {
+    const currentPhotoCount = items.filter(item => item.product_type === selectedPrintFormat).length
+    const currentTotal = items.filter(item => item.product_type === selectedPrintFormat).reduce((sum, item) => sum + item.price, 0)
+    return getNextPhotoPrice(currentPhotoCount, selectedPrintFormat as 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2' | 'print_polaroid_3' | 'print_polaroid_6', currentTotal)
+  }
+
   // Calculer le prix pour cette photo selon sa position dans le panier
   const getPhotoPrice = () => {
-    const currentPhotoCount = items.filter(item => item.product_type === selectedProduct).length
-    return getNextPhotoPrice(currentPhotoCount, selectedProduct as 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2')
+    if (selectedProductType === 'digital') {
+      return getDigitalPhotoPrice()
+    }
+    if (selectedProductType === 'session_pack') {
+      return getSessionPackPrice()
+    }
+    if (selectedProductType === 'print') {
+      return getPrintPhotoPrice()
+    }
+    return 0
   }
 
   // Vérifier si la photo est déjà dans le panier
   const isPhotoInCart = () => {
+    if (selectedProductType === 'session_pack') {
+      // Le pack session ne peut être ajouté qu'une fois, peu importe la photo
+      return hasSessionPack()
+    }
+    
+    const productId = selectedProductType === 'digital' ? 'digital' : selectedPrintFormat
     return items.some(item => 
-      item.photo_id === currentPhoto.id && item.product_type === selectedProduct
+      item.photo_id === currentPhoto.id && item.product_type === productId
     )
   }
 
@@ -183,7 +298,7 @@ export function PhotoLightboxModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-5xl w-[95vw] h-[95vh] md:h-[90vh] p-0"
+        className="max-w-5xl w-[95vw] h-[95vh] md:h-[90vh] p-0 flex flex-col"
         style={{
           animation: 'none', // Disable default dialog animation
         }}
@@ -206,6 +321,19 @@ export function PhotoLightboxModal({
               {/* Photo counter overlay */}
               <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-1 md:px-3 md:py-1.5 rounded-full z-10">
                 {currentIndex + 1} / {photos.length}
+              </div>
+              
+              {/* Heart button */}
+              <div className="absolute top-2 right-2 md:top-4 md:right-4 z-10">
+                <HeartButton 
+                  photo={{
+                    id: currentPhoto.id,
+                    gallery_id: currentPhoto.gallery_id,
+                    gallery_name: currentPhoto.gallery?.name,
+                    preview_url: currentPhoto.preview_s3_url
+                  }}
+                  size="md"
+                />
               </div>
               <div className="relative w-full h-full max-w-none max-h-none">
                 <Image
@@ -259,133 +387,226 @@ export function PhotoLightboxModal({
 
             {/* Purchase options sidebar */}
             <motion.div 
-              className="w-full md:w-80 bg-gradient-to-b from-white to-gray-50 p-3 md:p-6 border-l md:border-l md:border-t-0 border-t shadow-inner overflow-y-auto max-h-[65vh] md:max-h-full"
+              className="w-full md:w-80 bg-gradient-to-b from-white to-gray-50 p-3 md:p-6 border-l md:border-l md:border-t-0 border-t shadow-inner flex flex-col min-h-0"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <div className="mb-3 md:mb-4">
+              {/* Header - fixed at top */}
+              <div className="mb-3 md:mb-4 flex-shrink-0">
                 <div className="mb-2">
                   <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Galerie</h4>
                   <p className="text-sm font-medium text-gray-800">{currentPhoto.filename}</p>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Options d'achat</h3>
-                <div className="w-12 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                <div className="text-xs text-gray-600 text-center mb-4">
+                  <p>1ère photo : 10€ • 2ème photo : 7€ • 3ème+ : 5€ • <span className="text-purple-600 font-medium">Photos illimitées : 45€</span></p>
+                </div>
               </div>
               
-              <RadioGroup 
-                value={selectedProduct} 
-                onValueChange={setSelectedProduct}
-                className="space-y-1"
-              >
-                {PRODUCT_OPTIONS.map((option, index) => (
-                  <div key={option.id} className="group relative">
+              {/* Scrollable content area */}
+              <div className="flex-1 overflow-y-auto min-h-0">
+                <div className="space-y-3">
+                  {/* Photo Numérique */}
+                  <div className="group relative">
                     <div 
-                      className="flex items-start space-x-2 p-2 border-2 rounded-lg bg-white hover:bg-gray-50 transition-all duration-200 hover:shadow-md cursor-pointer group-hover:border-blue-300"
-                      onClick={() => setSelectedProduct(option.id)}
+                      className={`flex items-start space-x-2 p-3 border-2 rounded-lg bg-white hover:bg-gray-50 transition-all duration-200 hover:shadow-md cursor-pointer ${
+                        selectedProductType === 'digital' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 group-hover:border-blue-300'
+                      }`}
+                      onClick={() => setSelectedProductType('digital')}
                     >
-                      <RadioGroupItem value={option.id} id={option.id} className="mt-0.5 scale-90 pointer-events-none" />
+                      <input
+                        type="radio"
+                        name="productType"
+                        value="digital"
+                        checked={selectedProductType === 'digital'}
+                        onChange={() => setSelectedProductType('digital')}
+                        className="mt-0.5 w-4 h-4 text-blue-600"
+                      />
                       <div className="flex-1">
                         <Label 
-                          htmlFor={option.id} 
                           className="text-sm font-semibold cursor-pointer text-gray-900 group-hover:text-blue-700 transition-colors pointer-events-none"
                         >
-                          {option.label}
+                          {DIGITAL_OPTION.label}
                         </Label>
                         <p className="text-xs text-gray-600 leading-tight pointer-events-none">
-                          {option.description}
+                          {DIGITAL_OPTION.description}
                         </p>
-                        <div className="flex items-center justify-between mt-0.5">
+                        <div className="flex items-center justify-between mt-1">
                           <p className="text-base font-bold text-blue-600 pointer-events-none">
-                            {selectedProduct === option.id ? formatPrice(getPhotoPrice()) : formatPrice(option.price)}
+                            {formatPrice(getDigitalPhotoPrice())}
                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
-                ))}
-              </RadioGroup>
 
-              {/* Options de livraison pour les tirages */}
-              {selectedProduct !== 'digital' && (
-                <div className="mt-2 p-2 bg-gray-50 rounded-lg border">
-                  <h3 className="text-sm font-medium text-gray-700 mb-1">Options de livraison</h3>
-                  <div className="space-y-1">
+                  {/* Pack Photo Illimité */}
+                  <div className="group relative">
                     <div 
-                      className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${
-                        deliveryOption === 'pickup' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                      className={`flex items-start space-x-2 p-3 border-2 rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 transition-all duration-200 hover:shadow-md cursor-pointer ${
+                        selectedProductType === 'session_pack' ? 'border-purple-500 bg-gradient-to-r from-purple-100 to-blue-100' : 'border-purple-200 group-hover:border-purple-400'
                       }`}
-                      onClick={() => setDeliveryOption('pickup')}
+                      onClick={() => setSelectedProductType('session_pack')}
                     >
                       <input
                         type="radio"
-                        name="delivery"
-                        value="pickup"
-                        checked={deliveryOption === 'pickup'}
-                        onChange={() => setDeliveryOption('pickup')}
-                        className="w-4 h-4 text-blue-600"
+                        name="productType"
+                        value="session_pack"
+                        checked={selectedProductType === 'session_pack'}
+                        onChange={() => setSelectedProductType('session_pack')}
+                        className="mt-0.5 w-4 h-4 text-purple-600"
                       />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 flex-wrap">
-                          <span className="text-sm font-medium">🏄‍♂️ Récupération</span>
-                          <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full font-medium">GRATUIT</span>
+                      <div className="flex-1">
+                        <Label 
+                          className="text-sm font-semibold cursor-pointer text-gray-900 group-hover:text-purple-700 transition-colors pointer-events-none"
+                        >
+                          {SESSION_PACK_OPTION.label} 🎁
+                        </Label>
+                        <p className="text-xs text-gray-600 leading-tight pointer-events-none">
+                          {SESSION_PACK_OPTION.description}
+                        </p>
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-base font-bold text-purple-600 pointer-events-none">
+                            {hasSessionPack() ? "Déjà dans le panier" : formatPrice(getSessionPackPrice())}
+                          </p>
                         </div>
-                        <p className="text-xs text-gray-600">La Torche Surf School</p>
                       </div>
                     </div>
-                    
+                  </div>
+
+                  {/* Tirage avec menu déroulant */}
+                  <div className="group relative">
                     <div 
-                      className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${
-                        deliveryOption === 'delivery' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                      className={`flex items-start space-x-2 p-3 border-2 rounded-lg bg-white hover:bg-gray-50 transition-all duration-200 hover:shadow-md cursor-pointer ${
+                        selectedProductType === 'print' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 group-hover:border-blue-300'
                       }`}
-                      onClick={() => setDeliveryOption('delivery')}
+                      onClick={() => setSelectedProductType('print')}
                     >
                       <input
                         type="radio"
-                        name="delivery"
-                        value="delivery"
-                        checked={deliveryOption === 'delivery'}
-                        onChange={() => setDeliveryOption('delivery')}
-                        className="w-4 h-4 text-blue-600"
+                        name="productType"
+                        value="print"
+                        checked={selectedProductType === 'print'}
+                        onChange={() => setSelectedProductType('print')}
+                        className="mt-0.5 w-4 h-4 text-blue-600"
                       />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 flex-wrap">
-                          <span className="text-sm font-medium">📦 Livraison</span>
-                          <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full font-medium">
-                            +{formatPriceUtil(calculateDeliveryPrice(selectedProduct, 'delivery'))}
-                          </span>
+                      <div className="flex-1">
+                        <Label 
+                          className="text-sm font-semibold cursor-pointer text-gray-900 group-hover:text-blue-700 transition-colors pointer-events-none"
+                        >
+                          Tirage photo
+                        </Label>
+                        <p className="text-xs text-gray-600 leading-tight pointer-events-none">
+                          Impression professionnelle + JPEG inclus
+                        </p>
+                        
+                        {/* Menu déroulant pour les formats */}
+                        {selectedProductType === 'print' && (
+                          <div className="mt-2 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+                            <Select value={selectedPrintFormat} onValueChange={setSelectedPrintFormat}>
+                              <SelectTrigger className="w-full h-8 text-xs">
+                                <SelectValue placeholder="Sélectionner un format" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {PRINT_OPTIONS.map((option) => (
+                                  <SelectItem key={option.id} value={option.id}>
+                                    <div className="flex items-center justify-between w-full">
+                                      <span className="font-medium">{option.label}</span>
+                                      <span className="text-xs text-gray-500 ml-2">{option.dimensions}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-base font-bold text-blue-600 pointer-events-none">
+                            {selectedProductType === 'print' ? formatPrice(getPrintPhotoPrice()) : `À partir de ${formatPrice(Math.min(...PRINT_OPTIONS.map(o => o.price)))}`}
+                          </p>
                         </div>
-                        <p className="text-xs text-gray-600">Tube carton sécurisé</p>
                       </div>
                     </div>
                   </div>
                 </div>
-              )}
 
-              <Button 
-                onClick={handleAddToCart}
-                disabled={isPhotoInCart()}
-                className="w-full mt-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                size="default"
-              >
-                <Image
-                  src="/Logos/shopping-cart.svg"
-                  alt="Shopping Cart"
-                  width={16}
-                  height={16}
-                  className="h-4 w-4 mr-2 inline-block"
-                />
-                {isPhotoInCart() ? "Déjà dans le panier" : "Ajouter au panier"}
-              </Button>
+                {/* Options de livraison pour les tirages */}
+                {selectedProductType === 'print' && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Options de livraison</h3>
+                    <div className="space-y-2">
+                      <div 
+                        className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${
+                          deliveryOption === 'pickup' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setDeliveryOption('pickup')}
+                      >
+                        <input
+                          type="radio"
+                          name="delivery"
+                          value="pickup"
+                          checked={deliveryOption === 'pickup'}
+                          onChange={() => setDeliveryOption('pickup')}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <span className="text-sm font-medium">🏄‍♂️ Récupération</span>
+                            <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full font-medium">GRATUIT</span>
+                          </div>
+                          <p className="text-xs text-gray-600">La Torche Surf School</p>
+                        </div>
+                      </div>
+                      
+                      <div 
+                        className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${
+                          deliveryOption === 'delivery' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setDeliveryOption('delivery')}
+                      >
+                        <input
+                          type="radio"
+                          name="delivery"
+                          value="delivery"
+                          checked={deliveryOption === 'delivery'}
+                          onChange={() => setDeliveryOption('delivery')}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <span className="text-sm font-medium">📦 Livraison</span>
+                            <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full font-medium">
+                              +{formatPriceUtil(calculateDeliveryPrice(selectedPrintFormat, 'delivery'))}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-600">Tube carton sécurisé</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-              <div className="mt-2 p-1.5 bg-gradient-to-r from-green-50 to-blue-50 rounded-md border border-green-200">
-                <p className="text-xs text-center text-gray-700">
-                  💰 <strong>Réductions dégressives :</strong> 2ème photo 10€ • 3ème+ photos 5€
-                </p>
               </div>
-              
-              {/* Padding en bas pour éviter que le bouton soit coupé */}
-              <div className="pb-6 md:pb-0"></div>
+
+              {/* Button - fixed at bottom */}
+              <div className="flex-shrink-0 pt-3 border-t border-gray-200 mt-3">
+                <Button 
+                  onClick={handleAddToCart}
+                  disabled={isPhotoInCart()}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  size="default"
+                >
+                  <Image
+                    src="/Logos/shopping-cart.svg"
+                    alt="Shopping Cart"
+                    width={20}
+                    height={20}
+                    className="h-5 w-5 mr-2 inline-block"
+                  />
+                  {isPhotoInCart() ? "Déjà dans le panier" : "Ajouter au panier"}
+                </Button>
+              </div>
             </motion.div>
           </div>
         </div>

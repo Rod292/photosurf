@@ -221,7 +221,7 @@ export default async function GalleriesListPage({
         </div>
 
         {/* Hero Section avec image de fond */}
-        <div className="relative pt-20 pb-24 overflow-hidden">
+        <div className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden">
           {/* Image de fond */}
           <div className="absolute inset-0">
             <Image
@@ -237,28 +237,15 @@ export default async function GalleriesListPage({
           
           {/* Contenu */}
           <div className="relative z-10 container mx-auto px-4 text-center text-white">
-            <h1 className="text-5xl md:text-7xl font-bold font-playfair mb-8 drop-shadow-lg">
+            <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold font-playfair mb-4 md:mb-8 drop-shadow-lg">
               Nos dernières photos
             </h1>
-            <p className="text-xl md:text-2xl font-varela-round opacity-95 max-w-4xl mx-auto leading-relaxed drop-shadow-md">
+            <p className="text-lg md:text-xl lg:text-2xl font-varela-round opacity-95 max-w-4xl mx-auto leading-relaxed drop-shadow-md">
               Découvre, télécharge, imprime tes photos de surf sur le spot de La Torche
             </p>
           </div>
         </div>
 
-        {/* Bandeau réductions */}
-        <div className="bg-gradient-to-r from-emerald-400 to-blue-500 py-3 shadow-sm">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-center gap-3">
-              <div className="bg-white/20 backdrop-blur-sm rounded-full p-1.5">
-                <span className="text-base">💰</span>
-              </div>
-              <p className="text-center text-white font-medium text-sm">
-                <span className="font-bold">Tarifs dégressifs :</span> 1ère photo 15€ • 2ème photo 10€ • 3ème+ photos 5€
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* Filtres actifs */}
         {hasFilters && (

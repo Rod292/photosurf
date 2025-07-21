@@ -1,8 +1,9 @@
 /**
  * Système de pricing dynamique avec réductions agressives
- * 1ère photo: 15€
- * 2ème photo: 10€ (-33%)
- * 3ème+ photos: 5€ (-67%)
+ * 1ère photo: 10€
+ * 2ème photo: 7€ (-30%)
+ * 3ème+ photos: 5€ (-50%)
+ * Pack Session illimité: 45€ (quand le total dépasse 45€)
  */
 
 export interface PricingTier {
@@ -22,19 +23,22 @@ export interface PricingCalculation {
   }
 }
 
-const BASE_PRICE = 15
-const TIER_2_PRICE = 10
+const BASE_PRICE = 10
+const TIER_2_PRICE = 7
 const TIER_3_PRICE = 5
+const SESSION_PACK_PRICE = 45
 
 /**
  * Calcule le prix total avec le système de réductions par paliers
  * @param photoCount Nombre de photos
  * @param productType Type de produit (digital, print_a5, print_a4, print_a3, print_a2)
+ * @param forceSessionPack Force l'application du pack session
  * @returns Calcul détaillé du pricing
  */
 export function calculateDynamicPricing(
   photoCount: number,
-  productType: 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2' = 'digital'
+  productType: 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2' | 'print_polaroid_3' | 'print_polaroid_6' | 'session_pack' = 'digital',
+  forceSessionPack: boolean = false
 ): PricingCalculation {
   if (photoCount <= 0) {
     return {
@@ -50,13 +54,31 @@ export function calculateDynamicPricing(
   }
 
   // Prix selon le type de produit
+  if (productType === 'session_pack') {
+    // Le pack session a un prix fixe de 45€
+    const finalTotal = photoCount * SESSION_PACK_PRICE
+    
+    return {
+      subtotal: finalTotal,
+      totalSavings: 0,
+      finalTotal,
+      breakdown: {
+        tier1: { count: photoCount, price: SESSION_PACK_PRICE, total: finalTotal },
+        tier2: { count: 0, price: 0, total: 0 },
+        tier3: { count: 0, price: 0, total: 0 }
+      }
+    }
+  }
+
   if (productType !== 'digital') {
     // Prix fixes pour les tirages, pas de réductions dégressives
     const printPrices = {
       'print_a5': 20,
       'print_a4': 30,
       'print_a3': 50,
-      'print_a2': 80
+      'print_a2': 80,
+      'print_polaroid_3': 15,
+      'print_polaroid_6': 20
     }
     
     const unitPrice = printPrices[productType]
@@ -89,7 +111,11 @@ export function calculateDynamicPricing(
   const tier2Total = tier2Count * tier2Price
   const tier3Total = tier3Count * tier3Price
 
-  const finalTotal = tier1Total + tier2Total + tier3Total
+  const calculatedTotal = tier1Total + tier2Total + tier3Total
+  
+  // Application du pack session si le total dépasse 45€ ou si forcé
+  const shouldApplySessionPack = forceSessionPack || calculatedTotal > SESSION_PACK_PRICE
+  const finalTotal = shouldApplySessionPack ? SESSION_PACK_PRICE : calculatedTotal
 
   // Calcul des économies (ce qu'on aurait payé au prix normal)
   const wouldHaveBeenTotal = photoCount * tier1Price
@@ -111,31 +137,53 @@ export function calculateDynamicPricing(
  * Calcule le prix pour une photo supplémentaire
  * @param currentPhotoCount Nombre actuel de photos dans le panier
  * @param productType Type de produit
- * @returns Prix de la prochaine photo
+ * @param currentTotal Total actuel du panier
+ * @returns Prix de la prochaine photo (0 si pack session déjà atteint)
  */
 export function getNextPhotoPrice(
   currentPhotoCount: number,
-  productType: 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2' = 'digital'
+  productType: 'digital' | 'print_a5' | 'print_a4' | 'print_a3' | 'print_a2' | 'print_polaroid_3' | 'print_polaroid_6' | 'session_pack' = 'digital',
+  currentTotal: number = 0
 ): number {
+  if (productType === 'session_pack') {
+    // Le pack session coûte 45€, mais ne peut être acheté qu'une fois
+    return currentPhotoCount === 0 ? SESSION_PACK_PRICE : 0
+  }
+
   if (productType !== 'digital') {
     // Prix fixes pour les tirages
     const printPrices = {
       'print_a5': 20,
       'print_a4': 30,
       'print_a3': 50,
-      'print_a2': 80
+      'print_a2': 80,
+      'print_polaroid_3': 15,
+      'print_polaroid_6': 20
     }
     return printPrices[productType]
   }
 
-  // Système de réductions dégressives pour les photos numériques uniquement
-  if (currentPhotoCount === 0) {
-    return BASE_PRICE
-  } else if (currentPhotoCount === 1) {
-    return TIER_2_PRICE
-  } else {
-    return TIER_3_PRICE
+  // Si le pack session est déjà atteint, photos gratuites
+  if (currentTotal >= SESSION_PACK_PRICE) {
+    return 0
   }
+  
+  // Calcul du prix selon le palier
+  let nextPhotoPrice
+  if (currentPhotoCount === 0) {
+    nextPhotoPrice = BASE_PRICE
+  } else if (currentPhotoCount === 1) {
+    nextPhotoPrice = TIER_2_PRICE
+  } else {
+    nextPhotoPrice = TIER_3_PRICE
+  }
+  
+  // Si l'ajout de cette photo dépasse 45€, appliquer le pack session
+  if (currentTotal + nextPhotoPrice > SESSION_PACK_PRICE) {
+    return SESSION_PACK_PRICE - currentTotal
+  }
+  
+  return nextPhotoPrice
 }
 
 /**
@@ -164,13 +212,24 @@ export function calculateDeliveryPrice(productType: string, deliveryOption: 'pic
     return 0 // Récupération gratuite
   }
   
-  // Frais de livraison selon la taille (tube carton)
-  const deliveryPrices = {
-    'print_a5': 5, // Petit tube
-    'print_a4': 7, // Tube moyen
-    'print_a3': 10, // Tube grand
-    'print_a2': 15 // Tube très grand
+  // Frais de livraison fixe de 7€ pour tous les tirages
+  if (productType.startsWith('print_')) {
+    return 7
   }
   
-  return deliveryPrices[productType as keyof typeof deliveryPrices] || 0
+  return 0
+}
+
+/**
+ * Vérifie si le pack session devrait être appliqué
+ */
+export function shouldApplySessionPack(totalAmount: number): boolean {
+  return totalAmount >= SESSION_PACK_PRICE
+}
+
+/**
+ * Obtient le prix du pack session
+ */
+export function getSessionPackPrice(): number {
+  return SESSION_PACK_PRICE
 }

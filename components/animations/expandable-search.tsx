@@ -149,7 +149,7 @@ export function ExpandableSearch({ variant = "full", onStateChange }: Expandable
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                      className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999]"
                     >
                       <SimpleCalendar
                         selectedDate={formData.date}
