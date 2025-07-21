@@ -15,11 +15,13 @@ import { shouldApplySessionPack, getSessionPackPrice } from "@/lib/pricing"
 export function CartContent() {
   const items = useCartStore((state) => state.items)
   const removeItem = useCartStore((state) => state.removeItem)
+  const clearCart = useCartStore((state) => state.clearCart)
   const getTotalPrice = useCartStore((state) => state.getTotalPrice)
   const getItemCount = useCartStore((state) => state.getItemCount)
   const getDynamicPricing = useCartStore((state) => state.getDynamicPricing)
   
   const [isLoading, setIsLoading] = useState(false)
+  const [showClearCartConfirm, setShowClearCartConfirm] = useState(false)
   const { toast } = useToast()
   const [selectedPhoto, setSelectedPhoto] = useState<null | {
     id: string
@@ -86,6 +88,16 @@ export function CartContent() {
     })
   }
 
+  const handleClearCart = () => {
+    clearCart()
+    setShowClearCartConfirm(false)
+    toast({
+      title: "Panier vidé",
+      description: "Toutes les photos ont été supprimées du panier",
+      duration: 3000,
+    })
+  }
+
   return (
     <>
       {items.length === 0 ? (
@@ -116,18 +128,31 @@ export function CartContent() {
         <>
           <div className="bg-white shadow-lg rounded-xl overflow-hidden mb-8 border border-gray-100">
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-5 border-b border-blue-200">
-              <div className="flex items-center gap-3">
-                <Image
-                  src="/Logos/shopping-cart.svg"
-                  alt="Panier"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 opacity-100"
-                />
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 font-lexend-deca">Vos photos sélectionnées</h2>
-                  <p className="text-sm text-blue-700 font-lexend-deca font-medium">{items.length} article{items.length > 1 ? 's' : ''} dans votre panier</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Image
+                    src="/Logos/shopping-cart.svg"
+                    alt="Panier"
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 opacity-100"
+                  />
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 font-lexend-deca">Vos photos sélectionnées</h2>
+                    <p className="text-sm text-blue-700 font-lexend-deca font-medium">{items.length} article{items.length > 1 ? 's' : ''} dans votre panier</p>
+                  </div>
                 </div>
+                {items.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowClearCartConfirm(true)}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 font-lexend-deca"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Vider le panier
+                  </Button>
+                )}
               </div>
             </div>
             {items.map((item) => (
@@ -336,6 +361,41 @@ export function CartContent() {
           </div>
         </>
       )}
+      
+      {/* Clear cart confirmation modal */}
+      {showClearCartConfirm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-xl">
+            <div className="text-center">
+              <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <Trash2 className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2 font-lexend-deca">
+                Vider le panier ?
+              </h3>
+              <p className="text-sm text-gray-600 mb-6 font-lexend-deca">
+                Cette action supprimera toutes les photos de votre panier. Cette action est irréversible.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowClearCartConfirm(false)}
+                  className="flex-1 font-lexend-deca"
+                >
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleClearCart}
+                  className="flex-1 bg-red-500 hover:bg-red-600 font-lexend-deca"
+                >
+                  Vider
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {selectedPhoto && selectedPhoto.surfer && (
         <PhotoModal
           isOpen={!!selectedPhoto}

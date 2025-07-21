@@ -112,20 +112,33 @@ export const useCartStore = create<CartStore>()(
         const printPolaroid6Count = items.filter(item => item.product_type === 'print_polaroid_6').length
         const sessionPackCount = items.filter(item => item.product_type === 'session_pack').length
         
-        // Calculer les prix dynamiques pour chaque type
-        const digitalPricing = calculateDynamicPricing(digitalCount, 'digital')
+        // Vérifier si le pack session a été explicitement ajouté
+        const hasExplicitSessionPack = sessionPackCount > 0
+        
+        // Calculer les prix pour les photos numériques avec application automatique du pack session
+        const digitalPricing = calculateDynamicPricing(digitalCount, 'digital', hasExplicitSessionPack)
+        
+        // Calculer les prix pour les tirages (pas affectés par le pack session)
         const printA5Pricing = calculateDynamicPricing(printA5Count, 'print_a5')
         const printA4Pricing = calculateDynamicPricing(printA4Count, 'print_a4')
         const printA3Pricing = calculateDynamicPricing(printA3Count, 'print_a3')
         const printA2Pricing = calculateDynamicPricing(printA2Count, 'print_a2')
         const printPolaroid3Pricing = calculateDynamicPricing(printPolaroid3Count, 'print_polaroid_3')
         const printPolaroid6Pricing = calculateDynamicPricing(printPolaroid6Count, 'print_polaroid_6')
-        const sessionPackPricing = calculateDynamicPricing(sessionPackCount, 'session_pack')
+        
+        // Si un pack session a été explicitement ajouté, on ne compte que les tirages
+        const sessionPackPricing = hasExplicitSessionPack ? 
+          calculateDynamicPricing(1, 'session_pack') : 
+          calculateDynamicPricing(0, 'session_pack')
         
         // Calculate delivery fees
         const deliveryTotal = items.reduce((total, item) => total + (item.delivery_price || 0), 0)
         
-        const total = digitalPricing.finalTotal + printA5Pricing.finalTotal + printA4Pricing.finalTotal + printA3Pricing.finalTotal + printA2Pricing.finalTotal + printPolaroid3Pricing.finalTotal + printPolaroid6Pricing.finalTotal + sessionPackPricing.finalTotal + deliveryTotal
+        // Si pack session explicite : on compte le pack + les tirages
+        // Sinon : on compte les photos numériques (avec application automatique du pack si > 45€) + les tirages
+        const digitalTotal = hasExplicitSessionPack ? sessionPackPricing.finalTotal : digitalPricing.finalTotal
+        const total = digitalTotal + printA5Pricing.finalTotal + printA4Pricing.finalTotal + printA3Pricing.finalTotal + printA2Pricing.finalTotal + printPolaroid3Pricing.finalTotal + printPolaroid6Pricing.finalTotal + deliveryTotal
+        
         const totalSavings = digitalPricing.totalSavings + printA5Pricing.totalSavings + printA4Pricing.totalSavings + printA3Pricing.totalSavings + printA2Pricing.totalSavings + printPolaroid3Pricing.totalSavings + printPolaroid6Pricing.totalSavings + sessionPackPricing.totalSavings
         
         return {

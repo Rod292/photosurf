@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence, PanInfo } from "framer-motion"
-import { ChevronLeft, ChevronRight, X, Check } from "lucide-react"
+import { ChevronLeft, ChevronRight, X, Check, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { useCartStore } from "@/context/cart-context"
 import { Photo } from "@/lib/database.types"
@@ -84,7 +84,8 @@ export function MobilePhotoViewer({
   const [showOptions, setShowOptions] = useState(false)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'delivery'>('pickup')
-  const { addItem, addSessionPack, items } = useCartStore()
+  const [showClearCartConfirm, setShowClearCartConfirm] = useState(false)
+  const { addItem, addSessionPack, clearCart, items } = useCartStore()
   const { toast } = useToast()
 
   // Vérifier si le pack session est déjà dans le panier
@@ -154,8 +155,10 @@ export function MobilePhotoViewer({
   // Vérifier si la photo est déjà dans le panier
   const isPhotoInCart = () => {
     if (selectedProductType === 'session_pack') {
-      // Le pack session ne peut être ajouté qu'une fois, peu importe la photo
-      return hasSessionPack()
+      // Pour le pack session, le bouton ne devrait être vert que si le pack est dans le panier
+      // et que cette photo spécifique était celle utilisée pour l'ajout
+      const sessionPackItem = items.find(item => item.product_type === 'session_pack')
+      return sessionPackItem?.photo_id === currentPhoto.id
     }
     
     const productId = selectedProductType === 'digital' ? 'digital' : selectedPrintFormat
@@ -272,6 +275,16 @@ export function MobilePhotoViewer({
     })
   }
 
+  const handleClearCart = () => {
+    clearCart()
+    setShowClearCartConfirm(false)
+    toast({
+      title: "Panier vidé",
+      description: "Toutes les photos ont été supprimées du panier",
+      duration: 3000,
+    })
+  }
+
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!isOpen) return
     
@@ -299,6 +312,12 @@ export function MobilePhotoViewer({
     }
   }, [swipeDirection])
 
+  // Reset options panel when changing photos
+  useEffect(() => {
+    setShowOptions(false)
+    setSelectedProductType('digital')
+  }, [currentIndex])
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
@@ -315,8 +334,16 @@ export function MobilePhotoViewer({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 bg-black/10 backdrop-blur-sm"
-        onClick={onClose}
       >
+
+        {/* Exit indicator - above the photo */}
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
+            <span className="text-white text-[11px] font-medium">
+              clique pour sortir
+            </span>
+          </div>
+        </div>
 
         {/* Main photo display */}
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
@@ -371,36 +398,47 @@ export function MobilePhotoViewer({
                   {currentIndex + 1} / {photos.length}
                 </span>
               </div>
+
             </motion.div>
           </AnimatePresence>
 
-          {/* Side areas for closing and navigation */}
-          {/* Left close area - expanded */}
+          {/* Close areas - top and bottom only */}
           <div
-            className="absolute left-0 top-0 w-[15%] h-full cursor-pointer"
+            className="absolute top-0 left-0 right-0 h-[17.5%] cursor-pointer"
             onClick={onClose}
           />
+          {/* Bottom close area - exclude the button panel area */}
+          {!showOptions && (
+            <div
+              className="absolute bottom-0 left-0 right-0 h-[35%] cursor-pointer"
+              onClick={onClose}
+            />
+          )}
 
-          {/* Right close area - expanded */}
-          <div
-            className="absolute right-0 top-0 w-[15%] h-full cursor-pointer"
-            onClick={onClose}
-          />
-
-          {/* Navigation areas - reduced */}
+          {/* Navigation areas - left and right, avoiding close zones */}
           {photos.length > 1 && (
             <>
-              {/* Left navigation area - smaller */}
+              {/* Left navigation area */}
               <div
-                className="absolute left-[15%] top-0 w-[12.5%] h-full flex items-center justify-center cursor-pointer"
+                className={cn(
+                  "absolute left-0 w-[40%] flex items-center justify-start pl-4 cursor-pointer",
+                  showOptions 
+                    ? "top-[17.5%] bottom-0" 
+                    : "top-[17.5%] bottom-[35%]"
+                )}
                 onClick={handlePrevious}
               >
                 <ChevronLeft className="h-6 w-6 text-white drop-shadow-lg" />
               </div>
 
-              {/* Right navigation area - smaller */}
+              {/* Right navigation area */}
               <div
-                className="absolute right-[15%] top-0 w-[12.5%] h-full flex items-center justify-center cursor-pointer"
+                className={cn(
+                  "absolute right-0 w-[40%] flex items-center justify-end pr-4 cursor-pointer",
+                  showOptions 
+                    ? "top-[17.5%] bottom-0" 
+                    : "top-[17.5%] bottom-[35%]"
+                )}
                 onClick={handleNext}
               >
                 <ChevronRight className="h-6 w-6 text-white drop-shadow-lg" />
@@ -447,17 +485,31 @@ export function MobilePhotoViewer({
                   </>
                 )}
               </button>
-              
-              {/* Heart button - right side */}
-              <HeartButton 
-                photo={{
-                  id: currentPhoto.id,
-                  gallery_id: currentPhoto.gallery_id,
-                  gallery_name: currentPhoto.gallery?.name,
-                  preview_url: currentPhoto.preview_s3_url
-                }}
-                size="md"
-              />
+
+              {/* Center buttons */}
+              <div className="flex items-center gap-2">
+                {/* Clear cart button - only show if cart has items */}
+                {items.length > 0 && (
+                  <button
+                    onClick={() => setShowClearCartConfirm(true)}
+                    className="p-2 rounded-lg bg-red-500/10 text-red-600 border border-red-200 shadow-sm transition-all active:scale-95 hover:bg-red-500/20"
+                    title="Vider le panier"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+                
+                {/* Heart button - right side */}
+                <HeartButton 
+                  photo={{
+                    id: currentPhoto.id,
+                    gallery_id: currentPhoto.gallery_id,
+                    gallery_name: currentPhoto.gallery?.name,
+                    preview_url: currentPhoto.preview_s3_url
+                  }}
+                  size="md"
+                />
+              </div>
             </div>
           </motion.div>
         )}
@@ -624,6 +676,51 @@ export function MobilePhotoViewer({
                 </button>
               </div>
             </div>
+          </motion.div>
+        )}
+
+        {/* Clear cart confirmation modal */}
+        {showClearCartConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-60"
+            onClick={() => setShowClearCartConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center">
+                <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                  <Trash2 className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Vider le panier ?
+                </h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Cette action supprimera toutes les photos de votre panier. Cette action est irréversible.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowClearCartConfirm(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 active:scale-95"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleClearCart}
+                    className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium active:scale-95"
+                  >
+                    Vider
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </motion.div>
