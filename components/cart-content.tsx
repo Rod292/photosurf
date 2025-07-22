@@ -320,7 +320,7 @@ export function CartContent() {
                   {dynamicPricing.totalSavings > 0 && (
                     <p className="text-sm font-lexend-deca mt-2 text-green-700 font-medium">
                       {shouldApplySessionPack(dynamicPricing.total) ? (
-                        '🎁 Pack Session 45€ - Toutes vos photos pour 45€ !'
+                        '🎁 Pack Session 40€ - Toutes vos photos pour 40€ !'
                       ) : (
                         `💰 Vous économisez ${dynamicPricing.totalSavings.toFixed(2)}€ grâce à notre système de réductions dégressives !`
                       )}

@@ -107,13 +107,13 @@ export default function BoutiquePage() {
                       <div className="text-xs text-emerald-700 font-medium">-50%</div>
                     </div>
                     <div className="bg-white p-4 rounded-xl shadow-sm border-2 border-purple-400">
-                      <div className="text-2xl font-bold text-purple-600">45€</div>
+                      <div className="text-2xl font-bold text-purple-600">40€</div>
                       <div className="text-sm text-gray-600">Pack session</div>
                       <div className="text-xs text-purple-600 font-medium">ILLIMITÉ</div>
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mt-4">
-                     <span className="font-bold text-purple-600">Pack photos illimitées : 45€</span>
+                     <span className="font-bold text-purple-600">Pack photos illimitées : 40€</span>
                   </p>
                 </div>
                 

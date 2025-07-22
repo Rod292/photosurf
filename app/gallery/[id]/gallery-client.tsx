@@ -131,7 +131,7 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
             </p>
             <p className="font-semibold text-blue-600">10€ → 7€ → 5€</p>
             <p className="text-xs text-gray-500 mt-1">Prix dégressif selon la quantité</p>
-            <p className="text-xs text-blue-600 mt-1 font-medium">Pack Session Illimité : 45€</p>
+            <p className="text-xs text-blue-600 mt-1 font-medium">Pack Session Illimité : 40€</p>
           </div>
           <div className="bg-white p-4 rounded-lg">
             <h4 className="font-medium mb-2 flex items-center gap-2">
@@ -170,7 +170,7 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
               Commencez par le numérique, ajoutez vos tirages ensuite
             </p>
             <p className="font-semibold text-blue-600">Numérique à partir de 5€</p>
-            <p className="text-xs text-blue-600 mt-1 font-medium">Ou Pack Session : 45€ illimité</p>
+            <p className="text-xs text-blue-600 mt-1 font-medium">Ou Pack Session : 40€ illimité</p>
           </div>
         </div>
       </div>

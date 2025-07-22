@@ -135,7 +135,7 @@ export const useCartStore = create<CartStore>()(
         const deliveryTotal = items.reduce((total, item) => total + (item.delivery_price || 0), 0)
         
         // Si pack session explicite : on compte le pack + les tirages
-        // Sinon : on compte les photos numériques (avec application automatique du pack si > 45€) + les tirages
+        // Sinon : on compte les photos numériques (avec application automatique du pack si > 40€) + les tirages
         const digitalTotal = hasExplicitSessionPack ? sessionPackPricing.finalTotal : digitalPricing.finalTotal
         const total = digitalTotal + printA5Pricing.finalTotal + printA4Pricing.finalTotal + printA3Pricing.finalTotal + printA2Pricing.finalTotal + printPolaroid3Pricing.finalTotal + printPolaroid6Pricing.finalTotal + deliveryTotal
         

@@ -3,7 +3,7 @@
  * 1ère photo: 10€
  * 2ème photo: 7€ (-30%)
  * 3ème+ photos: 5€ (-50%)
- * Pack Session illimité: 45€ (quand le total dépasse 45€)
+ * Pack Session illimité: 40€ (quand le total dépasse 40€)
  */
 
 export interface PricingTier {
@@ -26,7 +26,7 @@ export interface PricingCalculation {
 const BASE_PRICE = 10
 const TIER_2_PRICE = 7
 const TIER_3_PRICE = 5
-const SESSION_PACK_PRICE = 45
+const SESSION_PACK_PRICE = 40
 
 /**
  * Calcule le prix total avec le système de réductions par paliers
@@ -55,7 +55,7 @@ export function calculateDynamicPricing(
 
   // Prix selon le type de produit
   if (productType === 'session_pack') {
-    // Le pack session a un prix fixe de 45€
+    // Le pack session a un prix fixe de 40€
     const finalTotal = photoCount * SESSION_PACK_PRICE
     
     return {
@@ -113,7 +113,7 @@ export function calculateDynamicPricing(
 
   const calculatedTotal = tier1Total + tier2Total + tier3Total
   
-  // Application du pack session si le total dépasse 45€ ou si forcé
+  // Application du pack session si le total dépasse 40€ ou si forcé
   const shouldApplySessionPack = forceSessionPack || calculatedTotal > SESSION_PACK_PRICE
   const finalTotal = shouldApplySessionPack ? SESSION_PACK_PRICE : calculatedTotal
 
@@ -146,7 +146,7 @@ export function getNextPhotoPrice(
   currentTotal: number = 0
 ): number {
   if (productType === 'session_pack') {
-    // Le pack session coûte 45€, mais ne peut être acheté qu'une fois
+    // Le pack session coûte 40€, mais ne peut être acheté qu'une fois
     return currentPhotoCount === 0 ? SESSION_PACK_PRICE : 0
   }
 
@@ -178,7 +178,7 @@ export function getNextPhotoPrice(
     nextPhotoPrice = TIER_3_PRICE
   }
   
-  // Si l'ajout de cette photo dépasse 45€, appliquer le pack session
+  // Si l'ajout de cette photo dépasse 40€, appliquer le pack session
   if (currentTotal + nextPhotoPrice > SESSION_PACK_PRICE) {
     return SESSION_PACK_PRICE - currentTotal
   }

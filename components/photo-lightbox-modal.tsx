@@ -33,7 +33,7 @@ const DIGITAL_OPTION = {
 const SESSION_PACK_OPTION = {
   id: 'session_pack',
   label: 'Pack Photo Illimité',
-  price: 45,
+  price: 40,
   description: 'Toutes vos photos numériques de la session'
 }
 
@@ -387,7 +387,7 @@ export function PhotoLightboxModal({
                   <p className="text-sm font-medium text-gray-800">{currentPhoto.filename}</p>
                 </div>
                 <div className="text-xs text-gray-600 text-center mb-4">
-                  <p>1ère photo : 10€ • 2ème photo : 7€ • 3ème+ : 5€ • <span className="text-purple-600 font-medium">Photos illimitées : 45€</span></p>
+                  <p>1ère photo : 10€ • 2ème photo : 7€ • 3ème+ : 5€ • <span className="text-purple-600 font-medium">Photos illimitées : 40€</span></p>
                 </div>
               </div>
               
