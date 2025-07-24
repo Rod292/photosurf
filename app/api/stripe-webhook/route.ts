@@ -73,9 +73,29 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     console.log('📝 Creating order for:', customerEmail, 'Amount:', totalAmount)
 
     // Retrieve line items from the session to get photo IDs and product types
-    const lineItems = await stripe.checkout.sessions.listLineItems(sessionId, {
-      expand: ['data.price.product']
-    })
+    // Use pagination to get ALL items (Stripe returns max 10 by default)
+    let allLineItems: Stripe.LineItem[] = []
+    let hasMore = true
+    let startingAfter: string | undefined = undefined
+    
+    while (hasMore) {
+      const lineItemsPage = await stripe.checkout.sessions.listLineItems(sessionId, {
+        expand: ['data.price.product'],
+        limit: 100, // Max allowed by Stripe
+        starting_after: startingAfter
+      })
+      
+      allLineItems = allLineItems.concat(lineItemsPage.data)
+      hasMore = lineItemsPage.has_more
+      
+      if (hasMore && lineItemsPage.data.length > 0) {
+        startingAfter = lineItemsPage.data[lineItemsPage.data.length - 1].id
+      }
+    }
+    
+    const lineItems = { data: allLineItems }
+    
+    console.log('📦 Retrieved', allLineItems.length, 'line items from Stripe session')
 
     if (!lineItems.data || lineItems.data.length === 0) {
       throw new Error('No line items found in checkout session')

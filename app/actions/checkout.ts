@@ -17,110 +17,133 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
       return { error: 'Panier vide' };
     }
 
+    // Check if order is too large for Stripe
+    if (items.length > 100) {
+      return { 
+        error: `Votre commande contient ${items.length} photos, ce qui dépasse la limite de 100 articles par commande. Veuillez diviser votre commande en plusieurs parties.` 
+      };
+    }
+
     const supabase = createServiceRoleClient();
     
     // Create Stripe products and prices for each cart item
     const lineItems = [];
     
-    for (const item of items) {
-      // Detect item type and normalize data
-      const isZustandItem = 'photo_id' in item;
+    // Process items in batches to avoid timeouts
+    const batchSize = 10;
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize);
       
-      let productName: string;
-      let productDescription: string;
-      let imageUrl: string;
-      let photoId: string;
-      let productType: string;
-      let priceInCents: number;
-      let quantity: number;
-      let galleryId: string;
-      
-      if (isZustandItem) {
-        // Zustand cart item
-        const zustandItem = item as ZustandCartItem;
-        productName = `Photo ${zustandItem.product_type === 'digital' ? 'Numérique' : 
-                              zustandItem.product_type === 'session_pack' ? 'Pack Session' :
-                              zustandItem.product_type === 'print_a5' ? 'Tirage A5' :
-                              zustandItem.product_type === 'print_a4' ? 'Tirage A4' :
-                              zustandItem.product_type === 'print_a3' ? 'Tirage A3' :
-                              zustandItem.product_type === 'print_a2' ? 'Tirage A2' : 'Tirage'}`;
-        productDescription = `Photo: ${zustandItem.filename}`;
-        imageUrl = zustandItem.preview_url;
-        photoId = zustandItem.photo_id;
-        productType = zustandItem.product_type;
-        priceInCents = Math.round((zustandItem.price + (zustandItem.delivery_price || 0)) * 100); // Convert euros to cents and include delivery
-        quantity = 1; // Zustand doesn't have quantity
-        galleryId = ''; // We'll need to fetch this from the database
-      } else {
-        // New React Context cart item
-        const newItem = item as NewCartItem;
-        productName = `Photo ${newItem.productType === 'digital' ? 'Numérique' : 'Tirage'}`;
-        productDescription = `Photo: ${newItem.photo.filename}`;
-        imageUrl = newItem.photo.preview_s3_url;
-        photoId = newItem.photo.id;
-        productType = newItem.productType;
-        priceInCents = newItem.price; // Already in cents
-        quantity = newItem.quantity;
-        galleryId = newItem.photo.gallery_id;
-      }
-      
-      // Get original_s3_key from the photo data
-      let originalS3Key = '';
-      let previewS3Url = '';
-      
-      if (isZustandItem) {
-        // For zustand items, we need to fetch the photo data from database
-        const zustandItem = item as ZustandCartItem;
+      // Process batch in parallel
+      const batchPromises = batch.map(async (item) => {
         try {
-          const { data: photo } = await supabase
-            .from('photos')
-            .select('original_s3_key, preview_s3_url')
-            .eq('id', zustandItem.photo_id)
-            .single();
+          // Detect item type and normalize data
+          const isZustandItem = 'photo_id' in item;
           
-          originalS3Key = photo?.original_s3_key || zustandItem.photo_id + '.jpg';
-          previewS3Url = photo?.preview_s3_url || imageUrl;
+          let productName: string;
+          let productDescription: string;
+          let imageUrl: string;
+          let photoId: string;
+          let productType: string;
+          let priceInCents: number;
+          let quantity: number;
+          let galleryId: string;
+          
+          if (isZustandItem) {
+            // Zustand cart item
+            const zustandItem = item as ZustandCartItem;
+            productName = `Photo ${zustandItem.product_type === 'digital' ? 'Numérique' : 
+                                  zustandItem.product_type === 'session_pack' ? 'Pack Session' :
+                                  zustandItem.product_type === 'print_a5' ? 'Tirage A5' :
+                                  zustandItem.product_type === 'print_a4' ? 'Tirage A4' :
+                                  zustandItem.product_type === 'print_a3' ? 'Tirage A3' :
+                                  zustandItem.product_type === 'print_a2' ? 'Tirage A2' : 'Tirage'}`;
+            productDescription = `Photo: ${zustandItem.filename}`;
+            imageUrl = zustandItem.preview_url;
+            photoId = zustandItem.photo_id;
+            productType = zustandItem.product_type;
+            priceInCents = Math.round((zustandItem.price + (zustandItem.delivery_price || 0)) * 100); // Convert euros to cents and include delivery
+            quantity = 1; // Zustand doesn't have quantity
+            galleryId = ''; // We'll need to fetch this from the database
+          } else {
+            // New React Context cart item
+            const newItem = item as NewCartItem;
+            productName = `Photo ${newItem.productType === 'digital' ? 'Numérique' : 'Tirage'}`;
+            productDescription = `Photo: ${newItem.photo.filename}`;
+            imageUrl = newItem.photo.preview_s3_url;
+            photoId = newItem.photo.id;
+            productType = newItem.productType;
+            priceInCents = newItem.price; // Already in cents
+            quantity = newItem.quantity;
+            galleryId = newItem.photo.gallery_id;
+          }
+          
+          // Get original_s3_key from the photo data
+          let originalS3Key = '';
+          let previewS3Url = '';
+          
+          if (isZustandItem) {
+            // For zustand items, we need to fetch the photo data from database
+            const zustandItem = item as ZustandCartItem;
+            try {
+              const { data: photo } = await supabase
+                .from('photos')
+                .select('original_s3_key, preview_s3_url')
+                .eq('id', zustandItem.photo_id)
+                .single();
+              
+              originalS3Key = photo?.original_s3_key || zustandItem.photo_id + '.jpg';
+              previewS3Url = photo?.preview_s3_url || imageUrl;
+            } catch (error) {
+              console.error('Error fetching photo data:', error);
+              originalS3Key = zustandItem.photo_id + '.jpg';
+              previewS3Url = imageUrl;
+            }
+          } else {
+            // For new cart items, we have the photo data
+            const newItem = item as NewCartItem;
+            originalS3Key = newItem.photo.original_s3_key || newItem.photo.id + '.jpg';
+            previewS3Url = newItem.photo.preview_s3_url;
+          }
+
+          // For session_pack, handle differently since it doesn't represent a single photo
+          const isSessionPack = productType === 'session_pack';
+          
+          const product = await stripe.products.create({
+            name: productName,
+            description: productDescription,
+            images: isSessionPack ? [] : [imageUrl],
+            metadata: {
+              photo_id: isSessionPack ? 'session_pack' : photoId,
+              product_type: productType,
+              gallery_id: galleryId,
+              delivery_option: isZustandItem ? (item as ZustandCartItem).delivery_option || '' : '',
+              delivery_price: isZustandItem ? ((item as ZustandCartItem).delivery_price || 0).toString() : '0',
+              original_s3_key: isSessionPack ? 'session_pack' : originalS3Key,
+              preview_s3_url: isSessionPack ? 'session_pack' : previewS3Url,
+            },
+          });
+
+          // Create price for the product
+          const price = await stripe.prices.create({
+            currency: 'eur',
+            unit_amount: priceInCents,
+            product: product.id,
+          });
+
+          return {
+            price: price.id,
+            quantity: quantity,
+          };
         } catch (error) {
-          console.error('Error fetching photo data:', error);
-          originalS3Key = zustandItem.photo_id + '.jpg';
-          previewS3Url = imageUrl;
+          console.error('Error creating product for item:', item, error);
+          throw error;
         }
-      } else {
-        // For new cart items, we have the photo data
-        const newItem = item as NewCartItem;
-        originalS3Key = newItem.photo.original_s3_key || newItem.photo.id + '.jpg';
-        previewS3Url = newItem.photo.preview_s3_url;
-      }
-
-      // For session_pack, handle differently since it doesn't represent a single photo
-      const isSessionPack = productType === 'session_pack';
+      });
       
-      const product = await stripe.products.create({
-        name: productName,
-        description: productDescription,
-        images: isSessionPack ? [] : [imageUrl],
-        metadata: {
-          photo_id: isSessionPack ? 'session_pack' : photoId,
-          product_type: productType,
-          gallery_id: galleryId,
-          delivery_option: isZustandItem ? (item as ZustandCartItem).delivery_option || '' : '',
-          delivery_price: isZustandItem ? ((item as ZustandCartItem).delivery_price || 0).toString() : '0',
-          original_s3_key: isSessionPack ? 'session_pack' : originalS3Key,
-          preview_s3_url: isSessionPack ? 'session_pack' : previewS3Url,
-        },
-      });
-
-      // Create price for the product
-      const price = await stripe.prices.create({
-        currency: 'eur',
-        unit_amount: priceInCents,
-        product: product.id,
-      });
-
-      lineItems.push({
-        price: price.id,
-        quantity: quantity,
-      });
+      // Wait for batch to complete
+      const batchResults = await Promise.all(batchPromises);
+      lineItems.push(...batchResults);
     }
 
     // Validate promo code if provided
@@ -264,14 +287,36 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
       sessionData.metadata.discount_amount = promoValidation.discountAmount.toString();
     }
 
+    console.log(`📦 Creating checkout session with ${lineItems.length} line items`);
+    
     const session = await stripe.checkout.sessions.create(sessionData);
 
+    console.log(`✅ Checkout session created successfully: ${session.id}`);
+    
     return { url: session.url || undefined };
     
   } catch (error) {
-    console.error('Checkout session creation error:', error);
+    console.error('❌ Checkout session creation error:', error);
+    
+    // Provide more specific error messages
+    if (error instanceof Error) {
+      if (error.message.includes('line_items')) {
+        return { 
+          error: `Erreur lors de la création de la session: trop d'articles (${items.length}). Veuillez réduire le nombre d'articles dans votre panier.` 
+        };
+      }
+      if (error.message.includes('metadata')) {
+        return { 
+          error: 'Erreur lors de la création de la session: données trop volumineuses. Veuillez contacter le support.' 
+        };
+      }
+      return { 
+        error: `Erreur lors de la création de la session de paiement: ${error.message}` 
+      };
+    }
+    
     return { 
-      error: error instanceof Error ? error.message : 'Erreur lors de la création de la session de paiement' 
+      error: 'Une erreur inattendue est survenue lors de la création de la session de paiement. Veuillez réessayer.' 
     };
   }
 }

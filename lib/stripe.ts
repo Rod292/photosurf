@@ -98,27 +98,42 @@ export async function createCheckoutSession(
   promoValidation?: any
 ): Promise<Stripe.Checkout.Session> {
   try {
-    const stripeLineItems = await Promise.all(
-      lineItems.map(async (item) => {
-        const product = await createStripeProduct(
-          item.photoId,
-          item.productType,
-          item.photoName,
-          item.originalS3Key,
-          item.previewS3Url
-        )
-        
-        const prices = await getProductPrices(product.id)
-        if (prices.length === 0) {
-          throw new Error(`No prices found for product ${product.id}`)
-        }
+    // Check if order is too large
+    if (lineItems.length > 100) {
+      throw new Error(`Order contains ${lineItems.length} items, which exceeds Stripe's limit of 100 line items per checkout session.`)
+    }
 
-        return {
-          price: prices[0].id,
-          quantity: item.quantity || 1,
-        }
-      })
-    )
+    // Process line items in batches to avoid rate limits
+    const stripeLineItems: Array<{ price: string; quantity: number }> = []
+    const batchSize = 10
+    
+    for (let i = 0; i < lineItems.length; i += batchSize) {
+      const batch = lineItems.slice(i, i + batchSize)
+      
+      const batchResults = await Promise.all(
+        batch.map(async (item) => {
+          const product = await createStripeProduct(
+            item.photoId,
+            item.productType,
+            item.photoName,
+            item.originalS3Key,
+            item.previewS3Url
+          )
+          
+          const prices = await getProductPrices(product.id)
+          if (prices.length === 0) {
+            throw new Error(`No prices found for product ${product.id}`)
+          }
+
+          return {
+            price: prices[0].id,
+            quantity: item.quantity || 1,
+          }
+        })
+      )
+      
+      stripeLineItems.push(...batchResults)
+    }
 
     const sessionData: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
@@ -161,11 +176,26 @@ export async function createCheckoutSession(
       sessionData.metadata!.discount_amount = promoValidation.discountAmount.toString()
     }
 
+    console.log(`📦 Creating Stripe checkout session with ${stripeLineItems.length} line items`)
+    
     const session = await stripe.checkout.sessions.create(sessionData)
+    
+    console.log(`✅ Stripe checkout session created successfully: ${session.id}`)
 
     return session
   } catch (error) {
-    console.error('Error creating checkout session:', error)
+    console.error('❌ Error creating checkout session:', error)
+    
+    // Add more context to the error
+    if (error instanceof Error) {
+      if (error.message.includes('line_items')) {
+        throw new Error(`Too many items in order (${lineItems.length}). Please reduce the number of items.`)
+      }
+      if (error.message.includes('metadata')) {
+        throw new Error('Order data too large. Please contact support.')
+      }
+    }
+    
     throw error
   }
 }
