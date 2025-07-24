@@ -152,6 +152,7 @@ export function PhotoLightboxModal({
       // Compter les photos numériques qui vont être remplacées
       const digitalPhotosCount = items.filter(item => item.product_type === 'digital').length
       
+      // Ajouter le pack session
       addSessionPack({
         photo_id: currentPhoto.id, // On associe le pack à cette photo comme référence
         product_type: 'session_pack' as any,
@@ -162,9 +163,26 @@ export function PhotoLightboxModal({
         delivery_price: 0
       })
 
+      // Ajouter également la photo actuelle comme photo numérique (gratuite grâce au pack)
+      const existingDigitalPhoto = items.find(item => 
+        item.photo_id === currentPhoto.id && item.product_type === 'digital'
+      )
+      
+      if (!existingDigitalPhoto) {
+        addItem({
+          photo_id: currentPhoto.id,
+          product_type: 'digital',
+          price: 0, // Gratuite car le pack est maintenant actif
+          preview_url: currentPhoto.preview_s3_url,
+          filename: currentPhoto.filename,
+          delivery_option: undefined,
+          delivery_price: 0
+        })
+      }
+
       const message = digitalPhotosCount > 0 
-        ? `${selectedOption.label} - ${formatPriceUtil(SESSION_PACK_OPTION.price)} (${digitalPhotosCount} photo${digitalPhotosCount > 1 ? 's' : ''} numérique${digitalPhotosCount > 1 ? 's' : ''} remplacée${digitalPhotosCount > 1 ? 's' : ''})`
-        : `${selectedOption.label} - ${formatPriceUtil(SESSION_PACK_OPTION.price)}`
+        ? `${selectedOption.label} + Photo actuelle ajoutées (${digitalPhotosCount} photo${digitalPhotosCount > 1 ? 's' : ''} numérique${digitalPhotosCount > 1 ? 's' : ''} remplacée${digitalPhotosCount > 1 ? 's' : ''})`
+        : `${selectedOption.label} + Photo actuelle ajoutées au panier`
 
       toast({
         title: "Pack ajouté au panier !",
@@ -449,7 +467,7 @@ export function PhotoLightboxModal({
                         disabled={hasSessionPack()}
                         className={`mt-0.5 w-4 h-4 ${hasSessionPack() ? 'text-gray-400' : 'text-purple-600'}`}
                       />
-                      <div className="flex-1">
+                      <div className="flex-1 pr-6">
                         <Label 
                           className={`text-sm font-semibold transition-colors pointer-events-none ${
                             hasSessionPack() 
@@ -457,31 +475,7 @@ export function PhotoLightboxModal({
                               : 'cursor-pointer text-gray-900 group-hover:text-purple-700'
                           }`}
                         >
-                          <div className="flex items-center justify-between w-full">
-                            <span>{SESSION_PACK_OPTION.label} {hasSessionPack() ? '✓' : '🎁'}</span>
-                            {hasSessionPack() && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  // Retirer le pack du panier
-                                  const packInCart = items.find(item => item.product_type === 'session_pack');
-                                  if (packInCart) {
-                                    removeItem(packInCart.photo_id, 'session_pack');
-                                    toast({
-                                      title: "Pack retiré",
-                                      description: "Le Pack Photo Illimité a été retiré du panier",
-                                      duration: 3000,
-                                    });
-                                  }
-                                }}
-                                className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-colors"
-                                title="Retirer le pack du panier"
-                              >
-                                ✕
-                              </button>
-                            )}
-                          </div>
+                          <span>{SESSION_PACK_OPTION.label} {hasSessionPack() ? '✓' : '🎁'}</span>
                         </Label>
                         <p className={`text-xs leading-tight pointer-events-none ${
                           hasSessionPack() ? 'text-gray-400' : 'text-gray-600'
@@ -495,6 +489,26 @@ export function PhotoLightboxModal({
                         </div>
                       </div>
                     </div>
+                    {hasSessionPack() && (
+                      <button
+                        onClick={() => {
+                          // Retirer le pack du panier
+                          const packInCart = items.find(item => item.product_type === 'session_pack');
+                          if (packInCart) {
+                            removeItem(packInCart.photo_id, 'session_pack');
+                            toast({
+                              title: "Pack retiré",
+                              description: "Le Pack Photo Illimité a été retiré du panier",
+                              duration: 3000,
+                            });
+                          }
+                        }}
+                        className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg transition-colors z-10"
+                        title="Retirer le pack du panier"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
 
                   {/* Tirage avec menu déroulant */}
