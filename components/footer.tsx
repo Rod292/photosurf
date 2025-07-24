@@ -16,7 +16,7 @@ export function Footer() {
               className="mb-2"
             />
             <p className="text-sm text-gray-400 font-lexend-deca">
-              Immortalise vos meilleures sessions de surf en Bretagne.
+              Immortalise vos meilleures sessions de surf à La Torche, en Bretagne.
             </p>
           </div>
           <div>
@@ -58,7 +58,7 @@ export function Footer() {
               </li>
               <li className="flex items-center space-x-2">
                 <MapPin size={16} className="text-gray-400" />
-                <span className="text-sm text-gray-400">Bretagne, France</span>
+                <span className="text-sm text-gray-400">La Torche, Bretagne France</span>
               </li>
             </ul>
           </div>
