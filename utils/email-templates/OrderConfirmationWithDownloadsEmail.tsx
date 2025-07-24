@@ -58,7 +58,7 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
                   Télécharger toutes les photos (ZIP)
                 </Link>
                 <Text style={zipDescription}>
-                  Un seul fichier ZIP contenant toutes vos photos ! Le fichier sera généré automatiquement dans les minutes qui suivent l'envoi de cet email.
+                  Un seul fichier ZIP contenant toutes vos photos ! Toutes les photos peuvent prendre quelques minutes à s'ajouter au dossier ZIP.
                 </Text>
               </div>
             )}
@@ -83,14 +83,6 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
                 </div>
               </div>
             ))}
-            
-            <div style={downloadAllContainer}>
-              <Text style={tipText}>
-                💡 Astuce: Pour télécharger toutes vos photos en une fois, 
-                faites un clic droit sur chaque bouton "Télécharger" et 
-                sélectionnez "Enregistrer le lien sous..."
-              </Text>
-            </div>
           </Section>
 
           <Hr style={hr} />
