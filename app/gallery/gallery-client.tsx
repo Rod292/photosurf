@@ -49,7 +49,7 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
   
   // Move cart store hook to component level
   const cartItems = useCartStore((state) => state.items)
-  const { addItem } = useCartStore((state) => ({ addItem: state.addItem }))
+  const addItem = useCartStore((state) => state.addItem)
   
   // Helper function to check if photo is in cart
   const isPhotoInCart = (photoId: string) => {
