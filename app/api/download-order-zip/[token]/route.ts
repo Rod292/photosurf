@@ -118,7 +118,7 @@ export async function GET(
     for (let i = 0; i < photosToProcess.length; i += BATCH_SIZE) {
       const batch = photosToProcess.slice(i, i + BATCH_SIZE);
       
-      await Promise.all(batch.map(async (photo, batchIndex) => {
+      await Promise.all(batch.map(async (photo: any, batchIndex: number) => {
         const photoIndex = i + batchIndex;
         
         try {
@@ -302,7 +302,7 @@ async function createZipFromStripeData(orderData: any) {
     for (let i = 0; i < photosToProcess.length; i += BATCH_SIZE) {
       const batch = photosToProcess.slice(i, i + BATCH_SIZE);
       
-      await Promise.all(batch.map(async (photo, batchIndex) => {
+      await Promise.all(batch.map(async (photo: any, batchIndex: number) => {
         const photoIndex = i + batchIndex;
         
         try {
