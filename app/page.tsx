@@ -357,83 +357,50 @@ export default function HomePage() {
         </div>
       </ContentFlowAnimation>
 
-      {/* Section SEO - Photos Surf La Torche */}
+      {/* Section Partenaire - La Torche Surf School */}
       <ContentFlowAnimation 
-        className="bg-gray-50 border-t border-gray-200"
-        layoutId="seo-latorche"
+        className="bg-white border-t border-gray-200"
+        layoutId="partner-section"
         staggerChildren={0.15}
       >
-        <div className="max-w-6xl mx-auto px-6 py-16">
+        <div className="max-w-4xl mx-auto px-6 py-16 text-center">
           <FlowItem>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Photographe Surf Professionnel à La Torche
-              </h2>
-              <div className="w-24 h-1 bg-red-500 mx-auto mb-8"></div>
-            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
+              École de Surf Partenaire
+            </h2>
           </FlowItem>
           
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <FlowItem delay={0.2}>
-              <div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-                  Sessions de Surf à La Torche Immortalisées
+          <FlowItem delay={0.2}>
+            <a 
+              href="https://latorchesurfschool.com/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-block hover:scale-105 transition-transform duration-300"
+            >
+              <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                <Image
+                  src="/Logos/LOGO-COULEURS.svg"
+                  alt="La Torche Surf School - École de surf partenaire officielle"
+                  width={120}
+                  height={120}
+                  className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-4 object-contain"
+                />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  La Torche Surf School
                 </h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  La Torche est le spot de surf emblématique de la Bretagne, et Arode Studio y capture 
-                  vos plus beaux moments sur les vagues. Que vous soyez débutant ou surfeur confirmé, 
-                  nos photographes professionnels immortalisent chaque session avec passion et expertise.
+                <p className="text-gray-600 text-sm">
+                  École de surf partenaire officielle
                 </p>
-                <div className="space-y-3">
-                  <div className="flex items-center text-gray-700">
-                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
-                    <span>Photos haute résolution en qualité professionnelle</span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
-                    <span>Livraison immédiate par email sécurisé</span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
-                    <span>Service client personnalisé pour chaque surfeur</span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
-                    <span>Présent quotidiennement sur le spot de La Torche</span>
-                  </div>
-                </div>
               </div>
-            </FlowItem>
-            
-            <FlowItem delay={0.4}>
-              <div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-                  Pourquoi Choisir Arode Studio ?
-                </h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Spécialisés dans la photographie de surf en Bretagne depuis plusieurs années, 
-                  nous connaissons parfaitement les conditions et les meilleurs angles de La Torche. 
-                  Notre expertise technique et notre passion du surf garantissent des clichés d'exception.
-                </p>
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                  <h4 className="font-semibold text-gray-900 mb-3">Zone de Couverture</h4>
-                  <p className="text-gray-600 text-sm">
-                    <strong>La Torche</strong> - Plomeur, Finistère Sud, Bretagne<br/>
-                    Couverture complète du spot : du phare jusqu'à la pointe, 
-                    tous les pics et toutes les conditions de houle.
-                  </p>
-                </div>
-              </div>
-            </FlowItem>
-          </div>
+            </a>
+          </FlowItem>
           
-          <FlowItem delay={0.6}>
-            <div className="text-center mt-12 pt-8 border-t border-gray-200">
-              <p className="text-gray-500 text-sm mb-4">
-                Mots-clés associés : photos surf la torche, photographe surf bretagne, session surf finistère, 
-                photos surf professionnel, arode studio la torche, surf photography brittany
-              </p>
-            </div>
+          <FlowItem delay={0.4}>
+            <p className="text-gray-600 mt-8 max-w-2xl mx-auto leading-relaxed">
+              En partenariat avec La Torche Surf School, nous immortalisons vos sessions d'apprentissage 
+              et vos progrès sur les vagues. Des cours débutants aux sessions perfectionnement, 
+              chaque moment sur l'eau est capturé avec professionnalisme.
+            </p>
           </FlowItem>
         </div>
       </ContentFlowAnimation>
