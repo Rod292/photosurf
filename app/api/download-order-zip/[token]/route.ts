@@ -57,10 +57,27 @@ export async function GET(
       .eq('product_type', 'digital')
 
     if (orderItemsError || !orderItems || orderItems.length === 0) {
-      console.error('❌ Order not found in database, trying Stripe fallback:', orderItemsError)
+      console.error('❌ Order items not found, trying to get stripe_checkout_id from order:', orderItemsError)
       
-      // Fallback: essayer de récupérer les données depuis Stripe
-      const stripeOrderData = await getOrderFromStripe(orderId)
+      // Première étape: récupérer le stripe_checkout_id de l'ordre
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select('stripe_checkout_id')
+        .eq('id', orderId)
+        .single()
+      
+      if (orderError || !orderData?.stripe_checkout_id) {
+        console.error('❌ Order not found or no stripe_checkout_id:', orderError)
+        return NextResponse.json(
+          { error: 'Order not found or no photos available' },
+          { status: 404 }
+        )
+      }
+      
+      console.log('✅ Found stripe_checkout_id:', orderData.stripe_checkout_id)
+      
+      // Fallback: essayer de récupérer les données depuis Stripe avec le checkout ID
+      const stripeOrderData = await getOrderFromStripe(orderId, orderData.stripe_checkout_id)
       if (stripeOrderData) {
         console.log('✅ Found order data in Stripe, using fallback method')
         return await createZipFromStripeData(stripeOrderData)
@@ -183,21 +200,35 @@ export async function GET(
 }
 
 // Fonction de fallback pour récupérer les données de commande depuis Stripe
-async function getOrderFromStripe(orderId: string) {
+async function getOrderFromStripe(orderId: string, stripeCheckoutId?: string) {
   try {
-    console.log('🔍 Searching Stripe for order:', orderId)
+    console.log('🔍 Searching Stripe for order:', orderId, 'with checkout ID:', stripeCheckoutId)
     
-    // Chercher les sessions Stripe qui correspondent à cet orderId
-    const sessions = await stripe.checkout.sessions.list({
-      limit: 100,
-    })
-    
-    // Trouver la session qui correspond à notre orderId (probablement dans les metadata)
     let targetSession = null
-    for (const session of sessions.data) {
-      if (session.id === orderId || session.metadata?.order_id === orderId) {
-        targetSession = session
-        break
+    
+    if (stripeCheckoutId) {
+      // Si on a le checkout ID, on peut récupérer directement la session
+      try {
+        targetSession = await stripe.checkout.sessions.retrieve(stripeCheckoutId)
+        console.log('✅ Found Stripe session directly:', targetSession.id)
+      } catch (error) {
+        console.error('❌ Failed to retrieve session directly:', error)
+      }
+    }
+    
+    if (!targetSession) {
+      // Fallback: chercher dans la liste des sessions
+      const sessions = await stripe.checkout.sessions.list({
+        limit: 100,
+      })
+      
+      // Trouver la session qui correspond à notre orderId ou checkout ID
+      for (const session of sessions.data) {
+        if (session.id === orderId || session.metadata?.order_id === orderId || 
+            (stripeCheckoutId && session.id === stripeCheckoutId)) {
+          targetSession = session
+          break
+        }
       }
     }
     
