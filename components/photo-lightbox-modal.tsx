@@ -97,7 +97,7 @@ export function PhotoLightboxModal({
     return PRINT_OPTIONS.find(option => option.id === selectedPrintFormat) || PRINT_OPTIONS[0]
   }
   const [isMobile, setIsMobile] = useState(false)
-  const { addItem, addSessionPack, items } = useCartStore()
+  const { addItem, addSessionPack, removeItem, items } = useCartStore()
   const { toast } = useToast()
 
   const currentPhoto = photos[currentIndex]
@@ -431,27 +431,62 @@ export function PhotoLightboxModal({
                   {/* Pack Photo Illimité */}
                   <div className="group relative">
                     <div 
-                      className={`flex items-start space-x-2 p-3 border-2 rounded-lg bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 transition-all duration-200 hover:shadow-md cursor-pointer ${
-                        selectedProductType === 'session_pack' ? 'border-purple-500 bg-gradient-to-r from-purple-100 to-blue-100' : 'border-purple-200 group-hover:border-purple-400'
+                      className={`flex items-start space-x-2 p-3 border-2 rounded-lg transition-all duration-200 ${
+                        hasSessionPack() 
+                          ? 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-60' 
+                          : selectedProductType === 'session_pack' 
+                            ? 'border-purple-500 bg-gradient-to-r from-purple-100 to-blue-100 cursor-pointer' 
+                            : 'bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 group-hover:border-purple-400 hover:shadow-md cursor-pointer'
                       }`}
-                      onClick={() => setSelectedProductType('session_pack')}
+                      onClick={() => !hasSessionPack() && setSelectedProductType('session_pack')}
                     >
                       <input
                         type="radio"
                         name="productType"
                         value="session_pack"
                         checked={selectedProductType === 'session_pack'}
-                        onChange={() => setSelectedProductType('session_pack')}
-                        className="mt-0.5 w-4 h-4 text-purple-600"
+                        onChange={() => !hasSessionPack() && setSelectedProductType('session_pack')}
+                        disabled={hasSessionPack()}
+                        className={`mt-0.5 w-4 h-4 ${hasSessionPack() ? 'text-gray-400' : 'text-purple-600'}`}
                       />
                       <div className="flex-1">
                         <Label 
-                          className="text-sm font-semibold cursor-pointer text-gray-900 group-hover:text-purple-700 transition-colors pointer-events-none"
+                          className={`text-sm font-semibold transition-colors pointer-events-none ${
+                            hasSessionPack() 
+                              ? 'text-gray-500 cursor-not-allowed' 
+                              : 'cursor-pointer text-gray-900 group-hover:text-purple-700'
+                          }`}
                         >
-                          {SESSION_PACK_OPTION.label} 🎁
+                          <div className="flex items-center justify-between w-full">
+                            <span>{SESSION_PACK_OPTION.label} {hasSessionPack() ? '✓' : '🎁'}</span>
+                            {hasSessionPack() && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Retirer le pack du panier
+                                  const packInCart = items.find(item => item.product_type === 'session_pack');
+                                  if (packInCart) {
+                                    removeItem(packInCart.photo_id, 'session_pack');
+                                    toast({
+                                      title: "Pack retiré",
+                                      description: "Le Pack Photo Illimité a été retiré du panier",
+                                      duration: 3000,
+                                    });
+                                  }
+                                }}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-colors"
+                                title="Retirer le pack du panier"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
                         </Label>
-                        <p className="text-xs text-gray-600 leading-tight pointer-events-none">
-                          {SESSION_PACK_OPTION.description}
+                        <p className={`text-xs leading-tight pointer-events-none ${
+                          hasSessionPack() ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
+                          {hasSessionPack() ? 'Déjà ajouté au panier' : SESSION_PACK_OPTION.description}
                         </p>
                         <div className="flex items-center justify-between mt-1">
                           <p className="text-base font-bold text-purple-600 pointer-events-none">

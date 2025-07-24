@@ -85,7 +85,7 @@ export function MobilePhotoViewer({
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'delivery'>('pickup')
   const [showClearCartConfirm, setShowClearCartConfirm] = useState(false)
-  const { addItem, addSessionPack, clearCart, items } = useCartStore()
+  const { addItem, addSessionPack, clearCart, removeItem, items } = useCartStore()
   const { toast } = useToast()
 
   // Vérifier si le pack session est déjà dans le panier
@@ -553,18 +553,49 @@ export function MobilePhotoViewer({
 
                 {/* Pack Session Illimité */}
                 <button
-                  onClick={() => setSelectedProductType('session_pack')}
+                  onClick={() => !hasSessionPack() && setSelectedProductType('session_pack')}
+                  disabled={hasSessionPack()}
                   className={cn(
                     "w-full p-4 rounded-xl text-left transition-all border-2 shadow-sm",
-                    selectedProductType === 'session_pack'
-                      ? "bg-gradient-to-r from-purple-50 to-blue-50 border-purple-500 shadow-md"
-                      : "bg-gray-50 border-gray-300 hover:border-gray-400"
+                    hasSessionPack()
+                      ? "bg-gray-100 border-gray-300 cursor-not-allowed opacity-60"
+                      : selectedProductType === 'session_pack'
+                        ? "bg-gradient-to-r from-purple-50 to-blue-50 border-purple-500 shadow-md"
+                        : "bg-gray-50 border-gray-300 hover:border-gray-400"
                   )}
                 >
                   <div className="flex justify-between items-center">
-                    <div>
-                      <span className="font-medium">{SESSION_PACK_OPTION.label} 🎁</span>
-                      <p className="text-sm text-gray-600">{SESSION_PACK_OPTION.description}</p>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className={`font-medium ${hasSessionPack() ? 'text-gray-500' : ''}`}>
+                          {SESSION_PACK_OPTION.label} {hasSessionPack() ? '✓' : '🎁'}
+                        </span>
+                        {hasSessionPack() && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Retirer le pack du panier
+                              const packInCart = items.find(item => item.product_type === 'session_pack');
+                              if (packInCart) {
+                                removeItem(packInCart.photo_id, 'session_pack');
+                                toast({
+                                  title: "Pack retiré",
+                                  description: "Le Pack Session Illimité a été retiré du panier",
+                                  duration: 3000,
+                                });
+                              }
+                            }}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-colors ml-2"
+                            title="Retirer le pack du panier"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                      <p className={`text-sm ${hasSessionPack() ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {hasSessionPack() ? 'Déjà ajouté au panier' : SESSION_PACK_OPTION.description}
+                      </p>
                       <p className="text-xs text-purple-600 font-medium mt-1">
                         💰 Économisez jusqu'à 50% sur vos photos !
                       </p>
