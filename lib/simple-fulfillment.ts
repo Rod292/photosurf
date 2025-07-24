@@ -107,6 +107,11 @@ https://www.arodestudio.com`;
 
     console.log('✅ Simple fulfillment successful for order:', orderData.orderId);
     
+    // Générer le ZIP en arrière-plan (ne pas attendre)
+    generateZipInBackground(orderData.orderId, orderData.photos).catch(error => {
+      console.error('❌ Background ZIP generation failed:', error)
+    })
+    
     return {
       success: true,
       message: 'Order fulfilled successfully',
@@ -119,5 +124,95 @@ https://www.arodestudio.com`;
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred'
     };
+  }
+}
+
+// Fonction pour générer le ZIP en arrière-plan
+async function generateZipInBackground(orderId: string, photos: Array<{ id: string; original_s3_key: string; preview_s3_url: string }>) {
+  try {
+    console.log('🔄 Starting background ZIP generation for order:', orderId)
+    
+    const JSZip = (await import('jszip')).default
+    const { createSupabaseAdminClient } = await import('@/lib/supabase/server')
+    
+    const zip = new JSZip()
+    
+    // Télécharger toutes les photos (sans timeout - c'est en arrière-plan)
+    for (let i = 0; i < photos.length; i++) {
+      const photo = photos[i]
+      
+      try {
+        const urlCandidates = [
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
+        ]
+
+        let response: Response | null = null
+        
+        for (const url of urlCandidates) {
+          try {
+            response = await fetch(url)
+            if (response.ok) break
+          } catch (error) {
+            console.log(`❌ URL failed: ${url}`)
+          }
+        }
+        
+        if (!response || !response.ok) {
+          console.error(`❌ Failed to download photo ${i + 1}`)
+          continue
+        }
+
+        const photoBuffer = await response.arrayBuffer()
+        const filename = `Photo_${String(i + 1).padStart(2, '0')}_${photo.id}.jpg`
+        
+        zip.file(filename, photoBuffer)
+        console.log(`✅ Added photo ${i + 1}/${photos.length} to ZIP`)
+        
+      } catch (error) {
+        console.error(`❌ Error processing photo ${i + 1}:`, error)
+      }
+    }
+
+    // Générer le ZIP
+    console.log('🔄 Generating ZIP buffer...')
+    const zipBuffer = await zip.generateAsync({ 
+      type: 'nodebuffer',
+      compression: 'STORE',
+      compressionOptions: { level: 0 }
+    })
+    
+    // Uploader le ZIP vers Supabase Storage 
+    const supabase = createSupabaseAdminClient()
+    const zipFileName = `order-${orderId}-${Date.now()}.zip`
+    
+    // Créer le bucket s'il n'existe pas
+    try {
+      await supabase.storage.createBucket('temp-zips', {
+        public: false,
+        allowedMimeTypes: ['application/zip'],
+        fileSizeLimit: 500 * 1024 * 1024 // 500MB max
+      })
+    } catch (bucketError) {
+      // Le bucket existe probablement déjà, continuer
+      console.log('ℹ️ Bucket temp-zips already exists or creation failed (continuing)')
+    }
+    
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('temp-zips')
+      .upload(zipFileName, zipBuffer, {
+        contentType: 'application/zip',
+        cacheControl: '3600', // 1 heure de cache
+      })
+    
+    if (uploadError) {
+      console.error('❌ Failed to upload ZIP:', uploadError)
+      return
+    }
+    
+    console.log('✅ ZIP generated and uploaded successfully:', zipFileName)
+    
+  } catch (error) {
+    console.error('❌ Background ZIP generation failed:', error)
   }
 }

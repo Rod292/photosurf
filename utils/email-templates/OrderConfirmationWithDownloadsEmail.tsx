@@ -53,13 +53,12 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
             
             {zipDownloadUrl && (
               <div style={zipDownloadContainer}>
-                <Text style={zipTitle}>📦 Téléchargement rapide</Text>
-                <Link href={zipDownloadUrl.replace('/api/download-order-zip/', '/download-all/')} style={zipDownloadButton} target="_blank">
-                  Télécharger toutes les photos automatiquement
+                <Text style={zipTitle}>📦 Téléchargement ZIP</Text>
+                <Link href={zipDownloadUrl.replace('/api/download-order-zip/', '/api/download-zip-v2/')} style={zipDownloadButton}>
+                  Télécharger toutes les photos (ZIP)
                 </Link>
                 <Text style={zipDescription}>
-                  Un seul clic pour lancer le téléchargement automatique de toutes vos photos. 
-                  Chaque photo sera téléchargée individuellement dans votre dossier de téléchargements !
+                  Un seul fichier ZIP contenant toutes vos photos ! Le fichier sera généré automatiquement dans les minutes qui suivent l'envoi de cet email.
                 </Text>
               </div>
             )}
