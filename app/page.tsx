@@ -12,6 +12,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { SimpleCalendar } from "@/components/ui/simple-calendar"
+import StructuredData from "@/components/structured-data"
 
 export default function HomePage() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
@@ -100,7 +101,9 @@ export default function HomePage() {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <StructuredData page="home" />
+      <div className="min-h-screen bg-gray-50">
       {/* Header toujours visible */}
       <Header alwaysVisible={true} />
       
@@ -130,7 +133,7 @@ export default function HomePage() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.5 }}
               >
-                Retrouvez vos photos de surf à{" "}
+                Photos de surf professionnel à{" "}
                 <motion.span 
                   className="text-red-500"
                   initial={{ color: "#374151" }}
@@ -139,7 +142,18 @@ export default function HomePage() {
                 >
                   La Torche
                 </motion.span>
+                {" "}- Bretagne
               </motion.h1>
+              <motion.p 
+                className="text-lg md:text-xl text-gray-600 mb-6 max-w-4xl mx-auto text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 1.0 }}
+              >
+                Arode Studio immortalise vos meilleures sessions de surf à La Torche. 
+                Retrouvez, visualisez et achetez vos photos de surf en haute qualité. 
+                Livraison immédiate par email.
+              </motion.p>
                       </motion.div>
 
             {/* Barre de recherche expansible */}
@@ -176,7 +190,7 @@ export default function HomePage() {
                   >
                     <Image
                       src="/Logos/Calendar.svg"
-                      alt="Calendar"
+                      alt="Calendrier sessions surf La Torche - Arode Studio"
                       width={24}
                       height={24}
                       className="w-6 h-6"
@@ -234,7 +248,7 @@ export default function HomePage() {
                 <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2 hover:text-gray-700 transition-colors cursor-pointer">
                   <Image
                     src="/Logos/camera2.svg"
-                    alt="Camera"
+                    alt="Appareil photo - Photos surf professionnel La Torche"
                     width={24}
                     height={24}
                     className="w-6 h-6"
@@ -327,7 +341,7 @@ export default function HomePage() {
               >
                 <Image
                   src="/Logos/phone-logo.svg"
-                  alt="Phone"
+                  alt="Téléphone - Contacter photographe surf La Torche"
                   width={20}
                   height={20}
                   className="w-5 h-5 inline"
@@ -342,7 +356,7 @@ export default function HomePage() {
               >
                 <Image
                   src="/Logos/mail-logo.svg"
-                  alt="Email"
+                  alt="Email - Contact Arode Studio photographe surf Bretagne"
                   width={20}
                   height={20}
                   className="w-5 h-5"
@@ -354,7 +368,89 @@ export default function HomePage() {
         </div>
       </ContentFlowAnimation>
 
-    </div>
+      {/* Section SEO - Photos Surf La Torche */}
+      <ContentFlowAnimation 
+        className="bg-gray-50 border-t border-gray-200"
+        layoutId="seo-latorche"
+        staggerChildren={0.15}
+      >
+        <div className="max-w-6xl mx-auto px-6 py-16">
+          <FlowItem>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                Photographe Surf Professionnel à La Torche
+              </h2>
+              <div className="w-24 h-1 bg-red-500 mx-auto mb-8"></div>
+            </div>
+          </FlowItem>
+          
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <FlowItem delay={0.2}>
+              <div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                  Sessions de Surf à La Torche Immortalisées
+                </h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  La Torche est le spot de surf emblématique de la Bretagne, et Arode Studio y capture 
+                  vos plus beaux moments sur les vagues. Que vous soyez débutant ou surfeur confirmé, 
+                  nos photographes professionnels immortalisent chaque session avec passion et expertise.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center text-gray-700">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
+                    <span>Photos haute résolution en qualité professionnelle</span>
+                  </div>
+                  <div className="flex items-center text-gray-700">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
+                    <span>Livraison immédiate par email sécurisé</span>
+                  </div>
+                  <div className="flex items-center text-gray-700">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
+                    <span>Service client personnalisé pour chaque surfeur</span>
+                  </div>
+                  <div className="flex items-center text-gray-700">
+                    <span className="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
+                    <span>Présent quotidiennement sur le spot de La Torche</span>
+                  </div>
+                </div>
+              </div>
+            </FlowItem>
+            
+            <FlowItem delay={0.4}>
+              <div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                  Pourquoi Choisir Arode Studio ?
+                </h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Spécialisés dans la photographie de surf en Bretagne depuis plusieurs années, 
+                  nous connaissons parfaitement les conditions et les meilleurs angles de La Torche. 
+                  Notre expertise technique et notre passion du surf garantissent des clichés d'exception.
+                </p>
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                  <h4 className="font-semibold text-gray-900 mb-3">Zone de Couverture</h4>
+                  <p className="text-gray-600 text-sm">
+                    <strong>La Torche</strong> - Plomeur, Finistère Sud, Bretagne<br/>
+                    Couverture complète du spot : du phare jusqu'à la pointe, 
+                    tous les pics et toutes les conditions de houle.
+                  </p>
+                </div>
+              </div>
+            </FlowItem>
+          </div>
+          
+          <FlowItem delay={0.6}>
+            <div className="text-center mt-12 pt-8 border-t border-gray-200">
+              <p className="text-gray-500 text-sm mb-4">
+                Mots-clés associés : photos surf la torche, photographe surf bretagne, session surf finistère, 
+                photos surf professionnel, arode studio la torche, surf photography brittany
+              </p>
+            </div>
+          </FlowItem>
+        </div>
+      </ContentFlowAnimation>
+
+      </div>
+    </>
   )
 }
 

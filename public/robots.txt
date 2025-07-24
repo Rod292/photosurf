@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+
+# Pages importantes pour le SEO
+Allow: /gallery
+Allow: /photos-surf-la-torche
+Allow: /a-propos
+Allow: /contact
+
+# Empêcher l'indexation des pages admin et API
+Disallow: /admin/
+Disallow: /api/
+Disallow: /test-*
+Disallow: /*?*utm_*
+Disallow: /*?*fbclid*
+Disallow: /order/canceled
+Disallow: /logout
+
+# Autoriser Google Images pour toutes les photos
+User-agent: Googlebot-Image
+Allow: /
+
+# Sitemap
+Sitemap: https://www.arodestudio.com/sitemap.xml
+
+# Fréquence d'exploration
+Crawl-delay: 1

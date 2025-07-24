@@ -226,7 +226,7 @@ export default async function GalleriesListPage({
           <div className="absolute inset-0">
             <Image
               src="/Logos/DJI_03862025LaTorche-3.jpg"
-              alt="Vue aérienne de La Torche"
+              alt="Vue aérienne La Torche Plomeur Bretagne - Spot surf emblématique photographié par Arode Studio"
               fill
               className="object-cover"
               priority
