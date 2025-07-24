@@ -133,7 +133,7 @@ export default function HomePage() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.5 }}
               >
-                Photos de surf professionnel à{" "}
+                Vos Photos de Surf à{" "}
                 <motion.span 
                   className="text-red-500"
                   initial={{ color: "#374151" }}
@@ -142,17 +142,15 @@ export default function HomePage() {
                 >
                   La Torche
                 </motion.span>
-                {" "}- Bretagne
               </motion.h1>
               <motion.p 
-                className="text-lg md:text-xl text-gray-600 mb-6 max-w-4xl mx-auto text-center"
+                className="text-base md:text-lg text-gray-500 mb-6 max-w-3xl mx-auto text-center leading-relaxed"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 1.0 }}
               >
-                Arode Studio immortalise vos meilleures sessions de surf à La Torche. 
-                Retrouvez, visualisez et achetez vos photos de surf en haute qualité. 
-                Livraison immédiate par email.
+                Photographe professionnel spécialisé en surf à La Torche, Bretagne.<br/>
+                Retrouvez et achetez vos sessions en haute qualité.
               </motion.p>
                       </motion.div>
 
