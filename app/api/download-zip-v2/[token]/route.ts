@@ -191,8 +191,8 @@ async function generateZipOnDemand(orderId: string, supabase: any): Promise<Next
     // Créer le ZIP
     const zip = new JSZip()
     
-    // Traiter toutes les photos par batch de 5 en parallèle
-    const BATCH_SIZE = 5
+    // Traiter toutes les photos par batch de 10 en parallèle pour optimiser les grandes commandes
+    const BATCH_SIZE = 10
     console.log(`📦 Processing ${photos.length} photos in batches of ${BATCH_SIZE}`)
     
     for (let i = 0; i < photos.length; i += BATCH_SIZE) {
@@ -211,7 +211,7 @@ async function generateZipOnDemand(orderId: string, supabase: any): Promise<Next
           
           for (const url of urlCandidates) {
             try {
-              response = await fetch(url, { signal: AbortSignal.timeout(2000) }) // 2s par photo
+              response = await fetch(url, { signal: AbortSignal.timeout(1000) }) // 1s par photo pour aller plus vite
               if (response.ok) break
             } catch (error) {
               continue
