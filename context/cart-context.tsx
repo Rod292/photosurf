@@ -51,14 +51,23 @@ export const useCartStore = create<CartStore>()(
             (i) => i.photo_id === item.photo_id && i.product_type === item.product_type
           )
           
+          // Vérifier s'il y a un pack session dans le panier
+          const hasSessionPack = state.items.some(i => i.product_type === 'session_pack')
+          
+          // Si c'est une photo numérique et qu'il y a un pack session, la mettre à 0€
+          let adjustedItem = item
+          if (item.product_type === 'digital' && hasSessionPack) {
+            adjustedItem = { ...item, price: 0 }
+          }
+          
           if (existingIndex >= 0) {
             // Remplacer l'item existant
             const newItems = [...state.items]
-            newItems[existingIndex] = item
+            newItems[existingIndex] = adjustedItem
             return { items: newItems }
-      } else {
+          } else {
             // Ajouter le nouvel item
-            return { items: [...state.items, item] }
+            return { items: [...state.items, adjustedItem] }
           }
         })
       },
