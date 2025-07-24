@@ -23,13 +23,45 @@ export default function DownloadAllPage() {
 
     // Décoder le token pour récupérer l'order ID
     try {
-      const decoded = atob(token)
-      const [orderId] = decoded.split(':')
+      console.log('🔍 Raw token:', token)
+      console.log('🔍 Token length:', token.length)
+      
+      // Decoder d'URL d'abord au cas où
+      let decodedToken = token
+      try {
+        decodedToken = decodeURIComponent(token)
+        console.log('🔍 URL decoded token:', decodedToken)
+      } catch (urlError) {
+        console.log('ℹ️ No URL decoding needed')
+      }
+      
+      // Nettoyer le token d'abord (enlever les caractères non-base64)
+      const cleanToken = decodedToken.replace(/[^A-Za-z0-9+/=]/g, '')
+      console.log('🔍 Clean token:', cleanToken)
+      console.log('🔍 Clean token length:', cleanToken.length)
+      
+      // Vérifier que la longueur est correcte pour base64
+      if (cleanToken.length % 4 !== 0) {
+        throw new Error(`Token length invalid: ${cleanToken.length} (should be multiple of 4)`)
+      }
+      
+      const decoded = atob(cleanToken)
+      console.log('🔍 Decoded string:', decoded)
+      
+      const [orderId, timestamp] = decoded.split(':')
+      
+      if (!orderId) {
+        throw new Error('No order ID in token')
+      }
+      
+      console.log('✅ Decoded order ID:', orderId)
+      console.log('✅ Token timestamp:', timestamp)
       
       // Récupérer les liens de téléchargement
       fetchDownloadLinks(orderId)
     } catch (error) {
-      setError('Token invalide')
+      console.error('❌ Token decode error:', error)
+      setError(`Token invalide: ${error instanceof Error ? error.message : 'Format incorrect'}`)
       setIsLoading(false)
     }
   }, [token])
@@ -185,10 +217,21 @@ export default function DownloadAllPage() {
             onClick={() => {
               setError('')
               setIsLoading(true)
-              // Retry fetch
-              const decoded = atob(token)
-              const [orderId] = decoded.split(':')
-              fetchDownloadLinks(orderId)
+              // Retry fetch with safe token decoding
+              try {
+                const cleanToken = token.replace(/[^A-Za-z0-9+/=]/g, '')
+                const decoded = atob(cleanToken)
+                const [orderId] = decoded.split(':')
+                if (orderId) {
+                  fetchDownloadLinks(orderId)
+                } else {
+                  setError('Token invalide - pas d\'ID de commande')
+                  setIsLoading(false)
+                }
+              } catch (error) {
+                setError('Token invalide - impossible de décoder')
+                setIsLoading(false)
+              }
             }}
             className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors mr-2"
           >
