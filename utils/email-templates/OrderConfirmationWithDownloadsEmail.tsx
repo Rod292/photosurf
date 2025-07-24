@@ -13,12 +13,14 @@ interface OrderConfirmationWithDownloadsEmailProps {
   customerName: string
   totalPrice: number
   downloads: PhotoDownload[]
+  zipDownloadUrl?: string
 }
 
 export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWithDownloadsEmailProps> = ({
   customerName,
   totalPrice,
   downloads,
+  zipDownloadUrl,
 }) => (
   <Html>
     <Head />
@@ -48,6 +50,19 @@ export const OrderConfirmationWithDownloadsEmail: React.FC<OrderConfirmationWith
               ⚠️ Important: Ces liens de téléchargement expireront dans 7 jours. 
               Assurez-vous de télécharger vos photos avant l'expiration.
             </Text>
+            
+            {zipDownloadUrl && (
+              <div style={zipDownloadContainer}>
+                <Text style={zipTitle}>📦 Téléchargement rapide</Text>
+                <Link href={zipDownloadUrl} style={zipDownloadButton}>
+                  Télécharger toutes les photos (ZIP)
+                </Link>
+                <Text style={zipDescription}>
+                  Un seul clic pour télécharger toutes vos photos dans un fichier ZIP. 
+                  Pratique pour les commandes avec plusieurs photos !
+                </Text>
+              </div>
+            )}
             
             {downloads.map((download, index) => (
               <div key={download.photoId} style={photoCard}>
@@ -366,4 +381,44 @@ const contactButton = {
   fontWeight: "500",
   minWidth: "200px",
   textAlign: "center" as const,
+}
+
+const zipDownloadContainer = {
+  backgroundColor: "#f0f9ff",
+  border: "2px solid #3b82f6",
+  borderRadius: "12px",
+  padding: "24px",
+  marginBottom: "32px",
+  textAlign: "center" as const,
+}
+
+const zipTitle = {
+  color: "#1e40af",
+  fontSize: "18px",
+  fontWeight: "700",
+  margin: "0 0 16px 0",
+  lineHeight: "1.3",
+}
+
+const zipDownloadButton = {
+  backgroundColor: "#3b82f6",
+  borderRadius: "8px",
+  color: "#ffffff",
+  display: "inline-block",
+  fontSize: "16px",
+  fontWeight: "700",
+  padding: "16px 32px",
+  textDecoration: "none",
+  margin: "0 0 16px 0",
+  textAlign: "center" as const,
+  minWidth: "250px",
+  boxShadow: "0 4px 6px rgba(59, 130, 246, 0.15)",
+}
+
+const zipDescription = {
+  color: "#1e40af",
+  fontSize: "14px",
+  lineHeight: "1.5",
+  margin: "0",
+  fontStyle: "italic",
 }

@@ -22,12 +22,19 @@ export async function simpleFulfillOrder(orderData: SimpleOrderData) {
     console.log('🔄 Starting simple fulfillment for order:', orderData.orderId);
     
     // Générer les liens de téléchargement directement avec les URLs publiques
+    const expirationDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     const downloadLinks = orderData.photos.map(photo => ({
       photoId: photo.id,
       downloadUrl: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
       thumbnailUrl: photo.preview_s3_url,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+      expiresAt: expirationDate.toISOString()
     }));
+
+    // Générer le token pour le téléchargement ZIP
+    const zipToken = Buffer.from(`${orderData.orderId}:${expirationDate.getTime()}`).toString('base64')
+    const zipDownloadUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.arodestudio.com'}/api/download-order-zip/${zipToken}`
+    
+    console.log('📦 Generated ZIP download URL for order:', orderData.orderId);
 
     console.log('📧 Generated download links:', downloadLinks.map(l => ({ id: l.photoId, url: l.downloadUrl })));
 
@@ -67,7 +74,8 @@ https://www.arodestudio.com`;
       react: OrderConfirmationWithDownloadsEmail({
         customerName: orderData.customerName || orderData.customerEmail.split('@')[0],
         totalPrice: orderData.totalAmount / 100,
-        downloads: emailDownloads
+        downloads: emailDownloads,
+        zipDownloadUrl: zipDownloadUrl
       }),
       text: plainTextContent
     });
