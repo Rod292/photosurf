@@ -111,67 +111,68 @@ export async function GET(
     // Créer le ZIP
     const zip = new JSZip()
     
-    // Télécharger et ajouter chaque photo au ZIP
-    for (let i = 0; i < photos.length; i++) {
-      const photo = photos[i]
+    // Télécharger toutes les photos en parallèle avec limite
+    const BATCH_SIZE = 3; // Traiter 3 photos en parallèle max
+    const photosToProcess = photos.filter(photo => photo && photo.original_s3_key);
+    
+    for (let i = 0; i < photosToProcess.length; i += BATCH_SIZE) {
+      const batch = photosToProcess.slice(i, i + BATCH_SIZE);
       
-      if (!photo || !photo.original_s3_key) {
-        console.warn(`⚠️ Skipping photo ${i + 1}: missing data`)
-        continue
-      }
-
-      try {
-        // Try multiple URL patterns for better compatibility
-        const urlCandidates = [
-          // Current format: gallery-based path
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
-          // Legacy format: UUID only
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
-          // Alternative legacy format
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpeg`,
-        ];
-
-        let response: Response | null = null;
-        let workingUrl = '';
+      await Promise.all(batch.map(async (photo, batchIndex) => {
+        const photoIndex = i + batchIndex;
         
-        console.log(`📥 Downloading photo ${i + 1}/${photos.length}: ${photo.original_s3_key}`)
-        
-        // Try each URL pattern until one works
-        for (const url of urlCandidates) {
-          try {
-            response = await fetch(url);
-            if (response.ok) {
-              workingUrl = url;
-              console.log(`✅ Found working URL for photo ${i + 1}: ${url}`);
-              break;
+        try {
+          // Try multiple URL patterns for better compatibility
+          const urlCandidates = [
+            // Current format: gallery-based path
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
+            // Legacy format: UUID only
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
+          ];
+
+          let response: Response | null = null;
+          
+          console.log(`📥 Downloading photo ${photoIndex + 1}/${photosToProcess.length}: ${photo.original_s3_key}`)
+          
+          // Try each URL pattern until one works (with timeout)
+          for (const url of urlCandidates) {
+            try {
+              response = await fetch(url, { signal: AbortSignal.timeout(5000) }); // 5s timeout per photo
+              if (response.ok) {
+                console.log(`✅ Found working URL for photo ${photoIndex + 1}: ${url}`);
+                break;
+              }
+            } catch (urlError) {
+              console.log(`❌ URL failed for photo ${photoIndex + 1}: ${url}`);
             }
-          } catch (urlError) {
-            console.log(`❌ URL failed for photo ${i + 1}: ${url}`);
           }
-        }
-        
-        if (!response || !response.ok) {
-          console.error(`❌ Failed to download photo ${i + 1}: No working URL found`);
-          continue;
-        }
+          
+          if (!response || !response.ok) {
+            console.error(`❌ Failed to download photo ${photoIndex + 1}: No working URL found`);
+            return;
+          }
 
-        // Ajouter au ZIP avec un nom propre
-        const photoBuffer = await response.arrayBuffer()
-        const filename = photo.filename || `photo-${photo.id}.jpg`
-        const cleanFilename = `Photo_${String(i + 1).padStart(2, '0')}_${filename.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-        
-        zip.file(cleanFilename, photoBuffer)
-        console.log(`✅ Added to ZIP: ${cleanFilename}`)
-        
-      } catch (error) {
-        console.error(`❌ Error processing photo ${i + 1}:`, error)
-        continue
-      }
+          // Ajouter au ZIP avec un nom propre
+          const photoBuffer = await response.arrayBuffer()
+          const filename = photo.filename || `photo-${photo.id}.jpg`
+          const cleanFilename = `Photo_${String(photoIndex + 1).padStart(2, '0')}_${filename.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+          
+          zip.file(cleanFilename, photoBuffer)
+          console.log(`✅ Added to ZIP: ${cleanFilename}`)
+          
+        } catch (error) {
+          console.error(`❌ Error processing photo ${photoIndex + 1}:`, error)
+        }
+      }));
     }
 
-    // Générer le ZIP
+    // Générer le ZIP avec compression réduite pour plus de rapidité
     console.log('🔄 Generating ZIP file...')
-    const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' })
+    const zipBuffer = await zip.generateAsync({ 
+      type: 'nodebuffer',
+      compression: 'STORE', // Pas de compression pour les images (déjà compressées)
+      compressionOptions: { level: 0 }
+    })
     console.log('✅ ZIP generated successfully')
 
     // Retourner le ZIP avec les bons headers
@@ -294,58 +295,66 @@ async function createZipFromStripeData(orderData: any) {
     
     const zip = new JSZip()
     
-    // Télécharger et ajouter chaque photo au ZIP
-    for (let i = 0; i < orderData.photos.length; i++) {
-      const photo = orderData.photos[i]
+    // Télécharger toutes les photos en parallèle avec limite (Stripe fallback)
+    const BATCH_SIZE = 3;
+    const photosToProcess = orderData.photos;
+    
+    for (let i = 0; i < photosToProcess.length; i += BATCH_SIZE) {
+      const batch = photosToProcess.slice(i, i + BATCH_SIZE);
       
-      try {
-        // Try multiple URL patterns for Stripe fallback too
-        const urlCandidates = [
-          // Current format: gallery-based path
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
-          // Legacy format: UUID only  
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
-          // Alternative legacy format
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpeg`,
-        ];
+      await Promise.all(batch.map(async (photo, batchIndex) => {
+        const photoIndex = i + batchIndex;
+        
+        try {
+          // Try multiple URL patterns for Stripe fallback
+          const urlCandidates = [
+            // Current format: gallery-based path
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
+            // Legacy format: UUID only  
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
+          ];
 
-        let response: Response | null = null;
-        
-        console.log(`📥 Downloading photo ${i + 1}/${orderData.photos.length}: ${photo.original_s3_key}`)
-        
-        // Try each URL pattern until one works
-        for (const url of urlCandidates) {
-          try {
-            response = await fetch(url);
-            if (response.ok) {
-              console.log(`✅ Found working URL for Stripe photo ${i + 1}: ${url}`);
-              break;
+          let response: Response | null = null;
+          
+          console.log(`📥 Downloading photo ${photoIndex + 1}/${photosToProcess.length}: ${photo.original_s3_key}`)
+          
+          // Try each URL pattern until one works (with timeout)
+          for (const url of urlCandidates) {
+            try {
+              response = await fetch(url, { signal: AbortSignal.timeout(5000) });
+              if (response.ok) {
+                console.log(`✅ Found working URL for Stripe photo ${photoIndex + 1}: ${url}`);
+                break;
+              }
+            } catch (urlError) {
+              console.log(`❌ URL failed for Stripe photo ${photoIndex + 1}: ${url}`);
             }
-          } catch (urlError) {
-            console.log(`❌ URL failed for Stripe photo ${i + 1}: ${url}`);
           }
-        }
-        
-        if (!response || !response.ok) {
-          console.error(`❌ Failed to download photo ${i + 1}: No working URL found in Stripe fallback`);
-          continue;
-        }
+          
+          if (!response || !response.ok) {
+            console.error(`❌ Failed to download photo ${photoIndex + 1}: No working URL found in Stripe fallback`);
+            return;
+          }
 
-        const photoBuffer = await response.arrayBuffer()
-        const cleanFilename = `Photo_${String(i + 1).padStart(2, '0')}_${photo.filename.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-        
-        zip.file(cleanFilename, photoBuffer)
-        console.log(`✅ Added to ZIP: ${cleanFilename}`)
-        
-      } catch (error) {
-        console.error(`❌ Error processing photo ${i + 1}:`, error)
-        continue
-      }
+          const photoBuffer = await response.arrayBuffer()
+          const cleanFilename = `Photo_${String(photoIndex + 1).padStart(2, '0')}_${photo.filename.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+          
+          zip.file(cleanFilename, photoBuffer)
+          console.log(`✅ Added to ZIP: ${cleanFilename}`)
+          
+        } catch (error) {
+          console.error(`❌ Error processing photo ${photoIndex + 1}:`, error)
+        }
+      }));
     }
 
-    // Générer le ZIP
+    // Générer le ZIP avec compression réduite pour plus de rapidité
     console.log('🔄 Generating ZIP file from Stripe data...')
-    const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' })
+    const zipBuffer = await zip.generateAsync({ 
+      type: 'nodebuffer',
+      compression: 'STORE', // Pas de compression pour les images (déjà compressées)
+      compressionOptions: { level: 0 }
+    })
     console.log('✅ ZIP generated successfully from Stripe data')
 
     return new NextResponse(zipBuffer, {
