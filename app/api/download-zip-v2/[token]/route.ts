@@ -198,7 +198,7 @@ async function generateZipOnDemand(orderId: string, supabase: any): Promise<Next
     for (let i = 0; i < photos.length; i += BATCH_SIZE) {
       const batch = photos.slice(i, Math.min(i + BATCH_SIZE, photos.length))
       
-      await Promise.all(batch.map(async (photo, batchIndex) => {
+      await Promise.all(batch.map(async (photo: any, batchIndex: number) => {
         const photoIndex = i + batchIndex
         
         try {
