@@ -357,51 +357,150 @@ export default function HomePage() {
         </div>
       </ContentFlowAnimation>
 
-      {/* Section Partenaire - La Torche Surf School */}
+      {/* Section SEO & Partenariat - Photos Surf La Torche */}
       <ContentFlowAnimation 
-        className="bg-white border-t border-gray-200"
-        layoutId="partner-section"
+        className="bg-gray-50 border-t border-gray-200"
+        layoutId="seo-partner-section"
         staggerChildren={0.15}
       >
-        <div className="max-w-4xl mx-auto px-6 py-16 text-center">
+        <div className="max-w-6xl mx-auto px-6 py-16">
           <FlowItem>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
-              École de Surf Partenaire
-            </h2>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Photographe Surf Professionnel à La Torche
+              </h2>
+              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                Arode Studio immortalise vos sessions de surf sur le spot emblématique de La Torche, Bretagne
+              </p>
+            </div>
           </FlowItem>
           
+          {/* Partenariat La Torche Surf School */}
           <FlowItem delay={0.2}>
-            <a 
-              href="https://latorchesurfschool.com/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-block hover:scale-105 transition-transform duration-300"
-            >
-              <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                <Image
-                  src="/Logos/LOGO-COULEURS.svg"
-                  alt="La Torche Surf School - École de surf partenaire officielle"
-                  width={120}
-                  height={120}
-                  className="w-24 h-24 md:w-32 md:h-32 mx-auto mb-4 object-contain"
-                />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  La Torche Surf School
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 mb-12">
+              <div className="text-center">
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">
+                  École de Surf Partenaire Officielle
                 </h3>
-                <p className="text-gray-600 text-sm">
-                  École de surf partenaire officielle
-                </p>
+                <a 
+                  href="https://latorchesurfschool.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block hover:scale-105 transition-transform duration-300"
+                >
+                  <div className="flex items-center justify-center gap-4">
+                    <Image
+                      src="/Logos/LOGO-COULEURS.svg"
+                      alt="La Torche Surf School - École de surf partenaire"
+                      width={80}
+                      height={80}
+                      className="w-16 h-16 md:w-20 md:h-20 object-contain"
+                    />
+                    <div className="text-left">
+                      <h4 className="text-lg font-semibold text-gray-900">La Torche Surf School</h4>
+                      <p className="text-gray-600 text-sm">Cours et stages de surf à La Torche</p>
+                    </div>
+                  </div>
+                </a>
               </div>
-            </a>
+            </div>
           </FlowItem>
           
-          <FlowItem delay={0.4}>
-            <p className="text-gray-600 mt-8 max-w-2xl mx-auto leading-relaxed">
-              En partenariat avec La Torche Surf School, nous immortalisons vos sessions d'apprentissage 
-              et vos progrès sur les vagues. Des cours débutants aux sessions perfectionnement, 
-              chaque moment sur l'eau est capturé avec professionnalisme.
-            </p>
-          </FlowItem>
+          {/* Contenu SEO en grille */}
+          <div className="grid md:grid-cols-3 gap-8">
+            <FlowItem delay={0.3}>
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+                  <Image
+                    src="/Logos/camera2.svg"
+                    alt="Photos surf professionnel"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Sessions Surf Immortalisées
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Photos haute résolution de vos sessions de surf à La Torche. 
+                  Présents quotidiennement sur le spot emblématique de Bretagne.
+                </p>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center">
+                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>
+                    Qualité professionnelle
+                  </li>
+                  <li className="flex items-center">
+                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2"></span>
+                    Livraison immédiate par email
+                  </li>
+                </ul>
+              </div>
+            </FlowItem>
+            
+            <FlowItem delay={0.4}>
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                  <Image
+                    src="/Logos/surfer.svg"
+                    alt="Expertise surf La Torche"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Expertise La Torche
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Spécialisés dans la photographie de surf en Bretagne. 
+                  Connaissance parfaite des conditions et meilleurs angles du spot.
+                </p>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center">
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
+                    Tous niveaux de surfeurs
+                  </li>
+                  <li className="flex items-center">
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
+                    Service client personnalisé
+                  </li>
+                </ul>
+              </div>
+            </FlowItem>
+            
+            <FlowItem delay={0.5}>
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                  <Image
+                    src="/Logos/maps.svg"
+                    alt="Zone couverture La Torche"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Zone de Couverture
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  <strong>La Torche</strong> - Plomeur, Finistère Sud, Bretagne. 
+                  Couverture complète du spot de surf.
+                </p>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex items-center">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
+                    Du phare à la pointe
+                  </li>
+                  <li className="flex items-center">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></span>
+                    Tous pics et conditions
+                  </li>
+                </ul>
+              </div>
+            </FlowItem>
+          </div>
         </div>
       </ContentFlowAnimation>
 
