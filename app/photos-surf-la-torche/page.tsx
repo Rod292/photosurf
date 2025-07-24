@@ -93,8 +93,19 @@ export default function PhotosSurfLaTorchePage() {
                 <div className="text-gray-600">Photos de surf prises</div>
               </div>
               <div className="space-y-2">
-                <div className="text-3xl font-bold text-red-600">365</div>
-                <div className="text-gray-600">Jours par an à La Torche</div>
+                <a 
+                  href="https://latorchesurfschool.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block hover:opacity-80 transition-opacity"
+                >
+                  <div className="flex items-center justify-center mb-2">
+                    <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                      LTS
+                    </div>
+                  </div>
+                  <div className="text-gray-600 hover:text-blue-600 transition-colors">École de surf partenaire</div>
+                </a>
               </div>
               <div className="space-y-2">
                 <div className="text-3xl font-bold text-red-600">24h</div>
