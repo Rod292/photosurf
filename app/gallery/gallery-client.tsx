@@ -27,10 +27,36 @@ interface GalleryClientProps {
 
 const PHOTOS_PER_PAGE = 50
 
+// Helper function to safely format dates
+const formatDate = (dateString: string | undefined | null): string => {
+  if (!dateString) return "Date invalide"
+  
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return "Date invalide"
+  
+  return date.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric", 
+    month: "long",
+    year: "numeric"
+  })
+}
+
 export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter }: GalleryClientProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedGallery, setSelectedGallery] = useState<string | null>(null)
+  
+  // Move cart store hook to component level
+  const cartItems = useCartStore((state) => state.items)
+  const { addItem } = useCartStore((state) => ({ addItem: state.addItem }))
+  
+  // Helper function to check if photo is in cart
+  const isPhotoInCart = (photoId: string) => {
+    return cartItems.some(item => 
+      item.photo_id === photoId && item.product_type === 'digital'
+    )
+  }
 
   // Filtrer les photos par galerie sélectionnée si applicable
   const filteredPhotos = selectedGallery 
@@ -83,14 +109,7 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
   }
 
   // Formatage de la date pour l'affichage
-  const formatDisplayDate = (date: string) => {
-    return new Date(date).toLocaleDateString("fr-FR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    })
-  }
+  const formatDisplayDate = formatDate
 
   return (
     <>
@@ -211,10 +230,10 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                         </div>
                       </div>
                       <p className="text-xs text-gray-600 mt-2 text-center">
-                        {new Date(gallery.date).toLocaleDateString("fr-FR", {
+                        {gallery.date ? new Date(gallery.date).toLocaleDateString("fr-FR", {
                           day: "numeric",
                           month: "short"
-                        })}
+                        }) : "Date invalide"}
                       </p>
                     </button>
                   ))}
@@ -270,57 +289,48 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                       className="absolute top-2 left-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {(() => {
-                        const cartItems = useCartStore((state) => state.items);
-                        const isInCart = cartItems.some(item => 
-                          item.photo_id === photo.id && item.product_type === 'digital'
-                        );
-                        
-                        return (
-                          <button
-                            onClick={() => {
-                              if (!isInCart) {
-                                // Ajouter la photo numérique au panier via Zustand
-                                const { addItem } = useCartStore.getState();
-                                const digitalPhotoCount = useCartStore.getState().items.filter(item => item.product_type === 'digital').length;
-                                const currentTotal = useCartStore.getState().items.filter(item => item.product_type === 'digital').reduce((sum, item) => sum + item.price, 0);
-                                const price = getNextPhotoPrice(digitalPhotoCount, 'digital', currentTotal);
-                                
-                                addItem({
-                                  photo_id: photo.id,
-                                  product_type: 'digital',
-                                  price: price,
-                                  preview_url: photo.preview_s3_url,
-                                  filename: photo.filename,
-                                  delivery_option: undefined,
-                                  delivery_price: 0
-                                });
-                              }
-                            }}
-                            className={`w-8 h-8 p-0 rounded-full shadow-lg flex items-center justify-center transition-colors ${
-                              isInCart 
-                                ? 'bg-green-500 hover:bg-green-600 text-white' 
-                                : 'bg-white/90 hover:bg-white text-gray-700'
-                            }`}
-                            title={isInCart ? "Déjà dans le panier" : "Ajouter au panier"}
-                            disabled={isInCart}
-                          >
-                            {isInCart ? (
-                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            ) : (
-                              <Image
-                                src="/Logos/shopping-cart.svg"
-                                alt="Ajouter au panier"
-                                width={16}
-                                height={16}
-                                className="h-4 w-4"
-                              />
-                            )}
-                          </button>
-                        );
-                      })()}
+                      <button
+                        onClick={() => {
+                          const isInCart = isPhotoInCart(photo.id)
+                          if (!isInCart) {
+                            // Ajouter la photo numérique au panier via Zustand
+                            const digitalPhotoCount = cartItems.filter(item => item.product_type === 'digital').length;
+                            const currentTotal = cartItems.filter(item => item.product_type === 'digital').reduce((sum, item) => sum + item.price, 0);
+                            const price = getNextPhotoPrice(digitalPhotoCount, 'digital', currentTotal);
+                            
+                            addItem({
+                              photo_id: photo.id,
+                              product_type: 'digital',
+                              price: price,
+                              preview_url: photo.preview_s3_url,
+                              filename: photo.filename,
+                              delivery_option: undefined,
+                              delivery_price: 0
+                            });
+                          }
+                        }}
+                        className={`w-8 h-8 p-0 rounded-full shadow-lg flex items-center justify-center transition-colors ${
+                          isPhotoInCart(photo.id)
+                            ? 'bg-green-500 hover:bg-green-600 text-white' 
+                            : 'bg-white/90 hover:bg-white text-gray-700'
+                        }`}
+                        title={isPhotoInCart(photo.id) ? "Déjà dans le panier" : "Ajouter au panier"}
+                        disabled={isPhotoInCart(photo.id)}
+                      >
+                        {isPhotoInCart(photo.id) ? (
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <Image
+                            src="/Logos/shopping-cart.svg"
+                            alt="Ajouter au panier"
+                            width={16}
+                            height={16}
+                            className="h-4 w-4"
+                          />
+                        )}
+                      </button>
                     </div>
 
                     {/* Heart button - positioned in top right */}
@@ -343,11 +353,11 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2 pointer-events-none">
                       <div className="text-white text-center">
                         <p className="text-sm font-medium">
-                          {new Date(photo.galleries.date).toLocaleDateString('fr-FR', {
+                          {photo.galleries?.date ? new Date(photo.galleries.date).toLocaleDateString('fr-FR', {
                             day: '2-digit',
                             month: '2-digit',
                             year: 'numeric'
-                          })}
+                          }) : "Date invalide"}
                         </p>
                       </div>
                     </div>

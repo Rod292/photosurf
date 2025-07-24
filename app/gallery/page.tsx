@@ -262,7 +262,9 @@ export default async function GalleriesListPage({
                       height={16}
                       className="w-4 h-4"
                     />
-                    {new Date(resolvedSearchParams.date).toLocaleDateString("fr-FR")}
+                    {resolvedSearchParams.date && !isNaN(new Date(resolvedSearchParams.date).getTime()) 
+                      ? new Date(resolvedSearchParams.date).toLocaleDateString("fr-FR")
+                      : "Date invalide"}
                   </span>
                 )}
                 {resolvedSearchParams.school && (
