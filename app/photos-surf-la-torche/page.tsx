@@ -270,7 +270,7 @@ export default function PhotosSurfLaTorchePage() {
                 </div>
                 <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-lg shadow-lg">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-red-600">7km</div>
+                    <div className="text-2xl font-bold text-red-600">2km</div>
                     <div className="text-sm text-gray-600">de plage de surf</div>
                   </div>
                 </div>
