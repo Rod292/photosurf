@@ -39,6 +39,7 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
         // Zustand cart item
         const zustandItem = item as ZustandCartItem;
         productName = `Photo ${zustandItem.product_type === 'digital' ? 'Numérique' : 
+                              zustandItem.product_type === 'session_pack' ? 'Pack Session' :
                               zustandItem.product_type === 'print_a5' ? 'Tirage A5' :
                               zustandItem.product_type === 'print_a4' ? 'Tirage A4' :
                               zustandItem.product_type === 'print_a3' ? 'Tirage A3' :
@@ -91,18 +92,21 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
         previewS3Url = newItem.photo.preview_s3_url;
       }
 
+      // For session_pack, handle differently since it doesn't represent a single photo
+      const isSessionPack = productType === 'session_pack';
+      
       const product = await stripe.products.create({
         name: productName,
         description: productDescription,
-        images: [imageUrl],
+        images: isSessionPack ? [] : [imageUrl],
         metadata: {
-          photo_id: photoId,
+          photo_id: isSessionPack ? 'session_pack' : photoId,
           product_type: productType,
           gallery_id: galleryId,
           delivery_option: isZustandItem ? (item as ZustandCartItem).delivery_option || '' : '',
           delivery_price: isZustandItem ? ((item as ZustandCartItem).delivery_price || 0).toString() : '0',
-          original_s3_key: originalS3Key,
-          preview_s3_url: previewS3Url,
+          original_s3_key: isSessionPack ? 'session_pack' : originalS3Key,
+          preview_s3_url: isSessionPack ? 'session_pack' : previewS3Url,
         },
       });
 

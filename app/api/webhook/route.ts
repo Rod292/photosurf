@@ -62,12 +62,16 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Received Stripe webhook event:', event.type, 'ID:', event.id)
+    console.log('📧 Environment check - RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY)
+    console.log('🔗 Webhook endpoint secret exists:', !!endpointSecret)
 
     // Handle the checkout.session.completed event
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session
       
       console.log('💳 Processing completed checkout session:', session.id)
+      console.log('💳 Customer email:', session.customer_email || session.customer_details?.email)
+      console.log('💳 Total amount:', session.amount_total)
       
       await handleCheckoutSessionCompleted(session)
     }
@@ -146,12 +150,26 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
     // Process each line item and create order_items
     const orderItems = []
+    let hasSessionPack = false
+    let sessionPackGalleryId = null
+    
     for (const item of lineItems.data) {
       const product = item.price?.product as Stripe.Product
       const metadata = product.metadata
 
       if (!metadata?.photo_id || !metadata?.product_type) {
         console.warn('⚠️ Line item missing required metadata:', item.price?.id)
+        console.warn('⚠️ Product metadata:', metadata)
+        console.warn('⚠️ Product name:', product.name)
+        console.warn('⚠️ Product description:', product.description)
+        continue
+      }
+
+      // Handle session_pack items separately
+      if (metadata.product_type === 'session_pack') {
+        console.log('📦 Found session_pack item')
+        hasSessionPack = true
+        sessionPackGalleryId = metadata.gallery_id
         continue
       }
 
@@ -165,6 +183,37 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       }
 
       orderItems.push(orderItem)
+    }
+    
+    // If session pack was purchased, fetch all photos from the gallery
+    if (hasSessionPack && sessionPackGalleryId) {
+      console.log('📸 Fetching all photos for session pack from gallery:', sessionPackGalleryId)
+      try {
+        const { data: galleryPhotos, error: galleryError } = await supabase
+          .from('photos')
+          .select('id, original_s3_key, preview_s3_url')
+          .eq('gallery_id', sessionPackGalleryId)
+        
+        if (galleryError) {
+          console.error('❌ Error fetching gallery photos:', galleryError)
+        } else if (galleryPhotos && galleryPhotos.length > 0) {
+          console.log(`✅ Found ${galleryPhotos.length} photos in gallery`)
+          
+          // Add all gallery photos as digital items
+          for (const photo of galleryPhotos) {
+            orderItems.push({
+              order_id: order.id,
+              photo_id: photo.id,
+              product_type: 'digital' as const,
+              price: 0, // Session pack is a fixed price
+              original_s3_key: photo.original_s3_key,
+              preview_s3_url: photo.preview_s3_url
+            })
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error processing session pack:', error)
+      }
     }
 
     if (orderItems.length === 0) {

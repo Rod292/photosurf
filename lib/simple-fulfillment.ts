@@ -56,6 +56,10 @@ L'équipe Arode Studio
 La Torche, Bretagne
 https://www.arodestudio.com`;
 
+    console.log('📧 [Simple] Attempting to send email to:', orderData.customerEmail);
+    console.log('📧 [Simple] RESEND_API_KEY configured:', !!process.env.RESEND_API_KEY);
+    console.log('📧 [Simple] Number of photos:', emailDownloads.length);
+
     const { data, error } = await resend.emails.send({
       from: 'Arode Studio <contact@arodestudio.com>',
       to: orderData.customerEmail,
@@ -69,8 +73,11 @@ https://www.arodestudio.com`;
     });
 
     if (error) {
+      console.error('❌ [Simple] Resend API error:', error);
       throw new Error(`Failed to send email: ${error.message}`);
     }
+    
+    console.log('✅ [Simple] Email sent successfully:', data?.id);
 
     console.log('✅ Simple fulfillment successful for order:', orderData.orderId);
     

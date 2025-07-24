@@ -126,6 +126,9 @@ export async function fulfillOrder({
     // 6. Send email with download links
     let emailData: any = null;
     try {
+      console.log('📧 Preparing to send email to:', customerEmail)
+      console.log('📧 Number of downloads:', emailDownloads.length)
+      console.log('📧 RESEND_API_KEY configured:', !!process.env.RESEND_API_KEY)
 
       // Generate plain text version
       const plainTextContent = generatePlainTextEmail({
@@ -156,8 +159,11 @@ export async function fulfillOrder({
       emailData = data;
       
       if (emailError) {
+        console.error('❌ Resend API error:', emailError);
         throw new Error(`Failed to send email: ${emailError.message}`);
       }
+      
+      console.log('✅ Email sent successfully:', emailData?.id);
     } catch (downloadError) {
       console.error('Error generating download URLs:', downloadError);
       
