@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseAdminClient } from '@/lib/supabase/server'
 import JSZip from 'jszip'
 import { headers } from 'next/headers'
+import Stripe from 'stripe'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-05-28.basil',
+})
 
 export async function GET(
   request: NextRequest,
@@ -52,7 +57,15 @@ export async function GET(
       .eq('product_type', 'digital')
 
     if (orderItemsError || !orderItems || orderItems.length === 0) {
-      console.error('❌ Order not found or no digital photos:', orderItemsError)
+      console.error('❌ Order not found in database, trying Stripe fallback:', orderItemsError)
+      
+      // Fallback: essayer de récupérer les données depuis Stripe
+      const stripeOrderData = await getOrderFromStripe(orderId)
+      if (stripeOrderData) {
+        console.log('✅ Found order data in Stripe, using fallback method')
+        return await createZipFromStripeData(stripeOrderData)
+      }
+      
       return NextResponse.json(
         { error: 'Order not found or no photos available' },
         { status: 404 }
@@ -91,16 +104,38 @@ export async function GET(
       }
 
       try {
-        // Construire l'URL de téléchargement de l'original
-        const originalUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`
+        // Try multiple URL patterns for better compatibility
+        const urlCandidates = [
+          // Current format: gallery-based path
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
+          // Legacy format: UUID only
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
+          // Alternative legacy format
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpeg`,
+        ];
+
+        let response: Response | null = null;
+        let workingUrl = '';
         
         console.log(`📥 Downloading photo ${i + 1}/${photos.length}: ${photo.original_s3_key}`)
         
-        // Télécharger la photo
-        const response = await fetch(originalUrl)
-        if (!response.ok) {
-          console.error(`❌ Failed to download photo ${i + 1}: HTTP ${response.status}`)
-          continue
+        // Try each URL pattern until one works
+        for (const url of urlCandidates) {
+          try {
+            response = await fetch(url);
+            if (response.ok) {
+              workingUrl = url;
+              console.log(`✅ Found working URL for photo ${i + 1}: ${url}`);
+              break;
+            }
+          } catch (urlError) {
+            console.log(`❌ URL failed for photo ${i + 1}: ${url}`);
+          }
+        }
+        
+        if (!response || !response.ok) {
+          console.error(`❌ Failed to download photo ${i + 1}: No working URL found`);
+          continue;
         }
 
         // Ajouter au ZIP avec un nom propre
@@ -142,6 +177,162 @@ export async function GET(
     console.error('❌ ZIP download error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+// Fonction de fallback pour récupérer les données de commande depuis Stripe
+async function getOrderFromStripe(orderId: string) {
+  try {
+    console.log('🔍 Searching Stripe for order:', orderId)
+    
+    // Chercher les sessions Stripe qui correspondent à cet orderId
+    const sessions = await stripe.checkout.sessions.list({
+      limit: 100,
+    })
+    
+    // Trouver la session qui correspond à notre orderId (probablement dans les metadata)
+    let targetSession = null
+    for (const session of sessions.data) {
+      if (session.id === orderId || session.metadata?.order_id === orderId) {
+        targetSession = session
+        break
+      }
+    }
+    
+    if (!targetSession) {
+      console.log('❌ No Stripe session found for order:', orderId)
+      return null
+    }
+    
+    console.log('✅ Found Stripe session:', targetSession.id)
+    
+    // Récupérer les line items de cette session
+    let allLineItems: Stripe.LineItem[] = []
+    let hasMore = true
+    let startingAfter: string | undefined = undefined
+    
+    while (hasMore) {
+      const lineItemsPage: Stripe.ApiList<Stripe.LineItem> = await stripe.checkout.sessions.listLineItems(targetSession.id, {
+        expand: ['data.price.product'],
+        limit: 100,
+        starting_after: startingAfter
+      })
+      
+      allLineItems = allLineItems.concat(lineItemsPage.data)
+      hasMore = lineItemsPage.has_more
+      
+      if (hasMore && lineItemsPage.data.length > 0) {
+        startingAfter = lineItemsPage.data[lineItemsPage.data.length - 1].id
+      }
+    }
+    
+    // Extraire les photos digitales
+    const digitalPhotos = []
+    for (const item of allLineItems) {
+      const product = item.price?.product as Stripe.Product
+      const metadata = product.metadata
+      
+      if (metadata?.product_type === 'digital' && metadata?.photo_id) {
+        digitalPhotos.push({
+          id: metadata.photo_id,
+          original_s3_key: metadata.original_s3_key || `${metadata.photo_id}.jpg`,
+          filename: metadata.filename || `photo-${metadata.photo_id}.jpg`
+        })
+      }
+    }
+    
+    console.log(`✅ Found ${digitalPhotos.length} digital photos in Stripe session`)
+    
+    return {
+      orderId,
+      photos: digitalPhotos
+    }
+    
+  } catch (error) {
+    console.error('❌ Error getting order from Stripe:', error)
+    return null
+  }
+}
+
+// Fonction pour créer un ZIP depuis les données Stripe
+async function createZipFromStripeData(orderData: any) {
+  try {
+    console.log(`📦 Creating ZIP from Stripe data for ${orderData.photos.length} photos`)
+    
+    const zip = new JSZip()
+    
+    // Télécharger et ajouter chaque photo au ZIP
+    for (let i = 0; i < orderData.photos.length; i++) {
+      const photo = orderData.photos[i]
+      
+      try {
+        // Try multiple URL patterns for Stripe fallback too
+        const urlCandidates = [
+          // Current format: gallery-based path
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
+          // Legacy format: UUID only  
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
+          // Alternative legacy format
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpeg`,
+        ];
+
+        let response: Response | null = null;
+        
+        console.log(`📥 Downloading photo ${i + 1}/${orderData.photos.length}: ${photo.original_s3_key}`)
+        
+        // Try each URL pattern until one works
+        for (const url of urlCandidates) {
+          try {
+            response = await fetch(url);
+            if (response.ok) {
+              console.log(`✅ Found working URL for Stripe photo ${i + 1}: ${url}`);
+              break;
+            }
+          } catch (urlError) {
+            console.log(`❌ URL failed for Stripe photo ${i + 1}: ${url}`);
+          }
+        }
+        
+        if (!response || !response.ok) {
+          console.error(`❌ Failed to download photo ${i + 1}: No working URL found in Stripe fallback`);
+          continue;
+        }
+
+        const photoBuffer = await response.arrayBuffer()
+        const cleanFilename = `Photo_${String(i + 1).padStart(2, '0')}_${photo.filename.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+        
+        zip.file(cleanFilename, photoBuffer)
+        console.log(`✅ Added to ZIP: ${cleanFilename}`)
+        
+      } catch (error) {
+        console.error(`❌ Error processing photo ${i + 1}:`, error)
+        continue
+      }
+    }
+
+    // Générer le ZIP
+    console.log('🔄 Generating ZIP file from Stripe data...')
+    const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' })
+    console.log('✅ ZIP generated successfully from Stripe data')
+
+    return new NextResponse(zipBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/zip',
+        'Content-Disposition': `attachment; filename="ArodestudioPhotos_Commande_${orderData.orderId}.zip"`,
+        'Content-Length': zipBuffer.length.toString(),
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
+    
+  } catch (error) {
+    console.error('❌ Error creating ZIP from Stripe data:', error)
+    return NextResponse.json(
+      { error: 'Failed to create ZIP from Stripe data' },
       { status: 500 }
     )
   }

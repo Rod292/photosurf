@@ -1,6 +1,43 @@
 import { resend } from '@/lib/resend';
 import { OrderConfirmationWithDownloadsEmail } from '@/utils/email-templates/OrderConfirmationWithDownloadsEmail';
 
+/**
+ * Generates and validates a download URL for a photo, with fallback mechanisms
+ * for legacy photo paths and missing files
+ */
+async function generateValidDownloadUrl(photo: { id: string; original_s3_key: string }): Promise<string | null> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set');
+  }
+
+  // List of possible URL patterns to try
+  const urlCandidates = [
+    // Current format: gallery-based path
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
+    // Legacy format: UUID only
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
+    // Alternative legacy format
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpeg`,
+  ];
+
+  // Test each URL candidate
+  for (const url of urlCandidates) {
+    try {
+      console.log(`🔍 Testing download URL: ${url}`);
+      const response = await fetch(url, { method: 'HEAD' });
+      if (response.ok) {
+        console.log(`✅ Valid download URL found: ${url}`);
+        return url;
+      }
+    } catch (error) {
+      console.log(`❌ URL test failed for ${url}:`, error);
+    }
+  }
+
+  console.error(`❌ No valid download URL found for photo ${photo.id}`);
+  return null;
+}
+
 interface SimpleOrderData {
   orderId: string;
   customerEmail: string;
@@ -21,14 +58,31 @@ export async function simpleFulfillOrder(orderData: SimpleOrderData) {
   try {
     console.log('🔄 Starting simple fulfillment for order:', orderData.orderId);
     
-    // Générer les liens de téléchargement directement avec les URLs publiques
-    const expirationDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    const downloadLinks = orderData.photos.map(photo => ({
-      photoId: photo.id,
-      downloadUrl: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
-      thumbnailUrl: photo.preview_s3_url,
-      expiresAt: expirationDate.toISOString()
-    }));
+    // Générer et valider les liens de téléchargement
+    const expirationDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const downloadLinks = [];
+    
+    for (const photo of orderData.photos) {
+      try {
+        const downloadUrl = await generateValidDownloadUrl(photo);
+        if (downloadUrl) {
+          downloadLinks.push({
+            photoId: photo.id,
+            downloadUrl,
+            thumbnailUrl: photo.preview_s3_url,
+            expiresAt: expirationDate.toISOString()
+          });
+        } else {
+          console.warn(`⚠️ Could not generate valid download URL for photo ${photo.id} in simple fulfillment`);
+        }
+      } catch (error) {
+        console.error(`❌ Error generating download URL for photo ${photo.id} in simple fulfillment:`, error);
+      }
+    }
+
+    if (downloadLinks.length === 0) {
+      throw new Error('No valid download URLs could be generated for any photos');
+    }
 
     // Générer le token pour le téléchargement ZIP
     const zipToken = Buffer.from(`${orderData.orderId}:${expirationDate.getTime()}`).toString('base64')

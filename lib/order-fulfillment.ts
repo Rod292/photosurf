@@ -6,6 +6,43 @@ import { SimpleOrderConfirmationEmail } from '@/utils/email-templates/SimpleOrde
 import { generatePlainTextEmail } from '@/lib/email-utils';
 import type { Order, OrderItem, Photo } from '@/lib/database.types';
 
+/**
+ * Generates and validates a download URL for a photo, with fallback mechanisms
+ * for legacy photo paths and missing files
+ */
+async function generateValidDownloadUrl(photo: { id: string; original_s3_key: string }): Promise<string | null> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set');
+  }
+
+  // List of possible URL patterns to try
+  const urlCandidates = [
+    // Current format: gallery-based path
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
+    // Legacy format: UUID only
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
+    // Alternative legacy format
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpeg`,
+  ];
+
+  // Test each URL candidate
+  for (const url of urlCandidates) {
+    try {
+      console.log(`🔍 Testing download URL: ${url}`);
+      const response = await fetch(url, { method: 'HEAD' });
+      if (response.ok) {
+        console.log(`✅ Valid download URL found: ${url}`);
+        return url;
+      }
+    } catch (error) {
+      console.log(`❌ URL test failed for ${url}:`, error);
+    }
+  }
+
+  console.error(`❌ No valid download URL found for photo ${photo.id}`);
+  return null;
+}
+
 interface FulfillOrderOptions {
   orderId: string;
   customerEmail: string;
@@ -105,13 +142,36 @@ export async function fulfillOrder({
       throw new Error('No photos found for order items');
     }
     
-    // 4. Generate download URLs for all digital photos (using public URLs)
-    const downloadUrls = photos.map(photo => ({
-      photoId: photo.id,
-      downloadUrl: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
-    }));
+    // 4. Generate and validate download URLs for all digital photos
+    const downloadUrls = [];
+    for (const photo of photos) {
+      try {
+        const downloadUrl = await generateValidDownloadUrl(photo);
+        if (downloadUrl) {
+          downloadUrls.push({
+            photoId: photo.id,
+            downloadUrl,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+          });
+        } else {
+          console.warn(`⚠️ Could not generate valid download URL for photo ${photo.id}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error generating download URL for photo ${photo.id}:`, error);
+      }
+    }
     
+    // Check if we have any valid downloads
+    if (downloadUrls.length === 0) {
+      throw new Error('No valid download URLs could be generated for any photos');
+    }
+
+    // Log if some photos were missing
+    const missingPhotos = digitalItems.length - downloadUrls.length;
+    if (missingPhotos > 0) {
+      console.warn(`⚠️ ${missingPhotos} out of ${digitalItems.length} photos could not be processed for order ${orderId}`);
+    }
+
     // 5. Prepare email data
     const emailDownloads = downloadUrls.map((download, index) => {
       const photo = photos.find(p => p.id === download.photoId);
