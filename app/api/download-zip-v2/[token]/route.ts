@@ -191,43 +191,48 @@ async function generateZipOnDemand(orderId: string, supabase: any): Promise<Next
     // Créer le ZIP
     const zip = new JSZip()
     
-    // Télécharger max 10 photos pour éviter le timeout
-    const photosToProcess = photos.slice(0, 10)
+    // Traiter toutes les photos par batch de 5 en parallèle
+    const BATCH_SIZE = 5
+    console.log(`📦 Processing ${photos.length} photos in batches of ${BATCH_SIZE}`)
     
-    for (let i = 0; i < photosToProcess.length; i++) {
-      const photo = photosToProcess[i]
+    for (let i = 0; i < photos.length; i += BATCH_SIZE) {
+      const batch = photos.slice(i, Math.min(i + BATCH_SIZE, photos.length))
       
-      try {
-        const urlCandidates = [
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
-        ]
-
-        let response: Response | null = null
+      await Promise.all(batch.map(async (photo, batchIndex) => {
+        const photoIndex = i + batchIndex
         
-        for (const url of urlCandidates) {
-          try {
-            response = await fetch(url, { signal: AbortSignal.timeout(3000) })
-            if (response.ok) break
-          } catch (error) {
-            continue
+        try {
+          const urlCandidates = [
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
+          ]
+
+          let response: Response | null = null
+          
+          for (const url of urlCandidates) {
+            try {
+              response = await fetch(url, { signal: AbortSignal.timeout(2000) }) // 2s par photo
+              if (response.ok) break
+            } catch (error) {
+              continue
+            }
           }
-        }
-        
-        if (!response || !response.ok) {
-          console.error(`❌ Failed to download photo ${i + 1}`)
-          continue
-        }
+          
+          if (!response || !response.ok) {
+            console.error(`❌ Failed to download photo ${photoIndex + 1}`)
+            return
+          }
 
-        const photoBuffer = await response.arrayBuffer()
-        const filename = `Photo_${String(i + 1).padStart(2, '0')}_${photo.filename || photo.id}.jpg`
-        
-        zip.file(filename, photoBuffer)
-        console.log(`✅ Added photo ${i + 1}/${photosToProcess.length} to on-demand ZIP`)
-        
-      } catch (error) {
-        console.error(`❌ Error processing photo ${i + 1}:`, error)
-      }
+          const photoBuffer = await response.arrayBuffer()
+          const filename = `Photo_${String(photoIndex + 1).padStart(2, '0')}_${photo.filename || photo.id}.jpg`
+          
+          zip.file(filename, photoBuffer)
+          console.log(`✅ Added photo ${photoIndex + 1}/${photos.length} to on-demand ZIP`)
+          
+        } catch (error) {
+          console.error(`❌ Error processing photo ${photoIndex + 1}:`, error)
+        }
+      }))
     }
 
     // Générer le ZIP
@@ -245,7 +250,7 @@ async function generateZipOnDemand(orderId: string, supabase: any): Promise<Next
       status: 200,
       headers: {
         'Content-Type': 'application/zip',
-        'Content-Disposition': `attachment; filename="ArodestudioPhotos_Commande_${orderId}_sample.zip"`,
+        'Content-Disposition': `attachment; filename="ArodestudioPhotos_Commande_${orderId}.zip"`,
         'Content-Length': zipBuffer.byteLength.toString(),
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
