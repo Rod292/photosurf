@@ -79,7 +79,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     let startingAfter: string | undefined = undefined
     
     while (hasMore) {
-      const lineItemsPage = await stripe.checkout.sessions.listLineItems(sessionId, {
+      const lineItemsPage: Stripe.ApiList<Stripe.LineItem> = await stripe.checkout.sessions.listLineItems(sessionId, {
         expand: ['data.price.product'],
         limit: 100, // Max allowed by Stripe
         starting_after: startingAfter
