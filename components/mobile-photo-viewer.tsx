@@ -552,17 +552,16 @@ export function MobilePhotoViewer({
                 </button>
 
                 {/* Pack Session Illimité */}
-                <button
-                  onClick={() => !hasSessionPack() && setSelectedProductType('session_pack')}
-                  disabled={hasSessionPack()}
+                <div
                   className={cn(
                     "w-full p-4 rounded-xl text-left transition-all border-2 shadow-sm",
                     hasSessionPack()
-                      ? "bg-gray-100 border-gray-300 cursor-not-allowed opacity-60"
+                      ? "bg-gray-100 border-gray-300 opacity-60"
                       : selectedProductType === 'session_pack'
-                        ? "bg-gradient-to-r from-purple-50 to-blue-50 border-purple-500 shadow-md"
-                        : "bg-gray-50 border-gray-300 hover:border-gray-400"
+                        ? "bg-gradient-to-r from-purple-50 to-blue-50 border-purple-500 shadow-md cursor-pointer"
+                        : "bg-gray-50 border-gray-300 hover:border-gray-400 cursor-pointer"
                   )}
+                  onClick={() => !hasSessionPack() && setSelectedProductType('session_pack')}
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex-1">
@@ -606,7 +605,7 @@ export function MobilePhotoViewer({
                       </span>
                     </div>
                   </div>
-                </button>
+                </div>
 
                 {/* Tirage avec menu déroulant */}
                 <div className={cn(

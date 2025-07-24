@@ -2,7 +2,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { calculateDynamicPricing } from '@/lib/pricing'
+import { calculateDynamicPricing, getNextPhotoPrice } from '@/lib/pricing'
 
 export interface CartItem {
   photo_id: string
@@ -80,11 +80,42 @@ export const useCartStore = create<CartStore>()(
       },
       
       removeItem: (photoId: string, productType: string) => {
-        set((state) => ({
-          items: state.items.filter(
-            (item) => !(item.photo_id === photoId && item.product_type === productType)
-          )
-        }))
+        set((state) => {
+          // Si on supprime le pack session, il faut recalculer le prix de toutes les photos numériques
+          if (productType === 'session_pack') {
+            const updatedItems = state.items.filter(
+              (item) => !(item.photo_id === photoId && item.product_type === productType)
+            )
+            
+            // Recalculer le prix de toutes les photos numériques
+            const recalculatedItems = updatedItems.map((item, index) => {
+              if (item.product_type === 'digital') {
+                // Compter combien de photos numériques il y a avant celle-ci
+                const digitalItemsBefore = updatedItems
+                  .slice(0, index)
+                  .filter(i => i.product_type === 'digital').length
+                
+                // Calculer le nouveau prix basé sur l'ordre d'ajout
+                const newPrice = getNextPhotoPrice(digitalItemsBefore, 'digital')
+                
+                return {
+                  ...item,
+                  price: newPrice
+                }
+              }
+              return item
+            })
+            
+            return { items: recalculatedItems }
+          }
+          
+          // Suppression normale pour les autres types
+          return {
+            items: state.items.filter(
+              (item) => !(item.photo_id === photoId && item.product_type === productType)
+            )
+          }
+        })
       },
       
       clearCart: () => set({ items: [] }),

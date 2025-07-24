@@ -433,7 +433,7 @@ export function PhotoLightboxModal({
                     <div 
                       className={`flex items-start space-x-2 p-3 border-2 rounded-lg transition-all duration-200 ${
                         hasSessionPack() 
-                          ? 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-60' 
+                          ? 'bg-gray-100 border-gray-300 opacity-60' 
                           : selectedProductType === 'session_pack' 
                             ? 'border-purple-500 bg-gradient-to-r from-purple-100 to-blue-100 cursor-pointer' 
                             : 'bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 group-hover:border-purple-400 hover:shadow-md cursor-pointer'
