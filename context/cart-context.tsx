@@ -71,11 +71,21 @@ export const useCartStore = create<CartStore>()(
             return state // Ne rien faire si le pack existe déjà
           }
           
-          // Supprimer toutes les photos numériques existantes et ajouter le pack session
-          const newItems = state.items.filter(i => i.product_type !== 'digital')
-          newItems.push(item)
+          // Conserver toutes les photos existantes mais mettre les photos numériques à 0€
+          const updatedItems = state.items.map(existingItem => {
+            if (existingItem.product_type === 'digital') {
+              return {
+                ...existingItem,
+                price: 0 // Les photos numériques deviennent gratuites avec le pack
+              }
+            }
+            return existingItem
+          })
           
-          return { items: newItems }
+          // Ajouter le pack session
+          updatedItems.push(item)
+          
+          return { items: updatedItems }
         })
       },
       
