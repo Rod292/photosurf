@@ -143,15 +143,6 @@ export default function HomePage() {
                   La Torche
                 </motion.span>
               </motion.h1>
-              <motion.p 
-                className="text-base md:text-lg text-gray-500 mb-6 max-w-3xl mx-auto text-center leading-relaxed"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1.0 }}
-              >
-                Photographe professionnel spécialisé en surf à La Torche, Bretagne.<br/>
-                Retrouvez et achetez vos sessions en haute qualité.
-              </motion.p>
                       </motion.div>
 
             {/* Barre de recherche expansible */}
