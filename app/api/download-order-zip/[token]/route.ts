@@ -44,23 +44,32 @@ export async function GET(
       )
     }
 
-    // Récupérer les détails de la commande et les photos
-    const { data: orderItems, error: orderError } = await supabase
+    // Récupérer les détails de la commande - méthode en 2 étapes comme dans order-fulfillment.ts
+    const { data: orderItems, error: orderItemsError } = await supabase
       .from('order_items')
-      .select(`
-        *,
-        photos (
-          id,
-          original_s3_key,
-          filename,
-          gallery_id
-        )
-      `)
+      .select('id, photo_id, product_type, price')
       .eq('order_id', orderId)
       .eq('product_type', 'digital')
 
-    if (orderError || !orderItems || orderItems.length === 0) {
-      console.error('❌ Order not found or no digital photos:', orderError)
+    if (orderItemsError || !orderItems || orderItems.length === 0) {
+      console.error('❌ Order not found or no digital photos:', orderItemsError)
+      return NextResponse.json(
+        { error: 'Order not found or no photos available' },
+        { status: 404 }
+      )
+    }
+
+    console.log(`📋 Found ${orderItems.length} digital photos in order`)
+
+    // Récupérer les photos correspondantes
+    const digitalPhotoIds = orderItems.map(item => item.photo_id)
+    const { data: photos, error: photosError } = await supabase
+      .from('photos')
+      .select('id, original_s3_key, filename, gallery_id')
+      .in('id', digitalPhotoIds)
+
+    if (photosError || !photos || photos.length === 0) {
+      console.error('❌ Photos not found:', photosError)
       return NextResponse.json(
         { error: 'Order not found or no photos available' },
         { status: 404 }
@@ -73,9 +82,8 @@ export async function GET(
     const zip = new JSZip()
     
     // Télécharger et ajouter chaque photo au ZIP
-    for (let i = 0; i < orderItems.length; i++) {
-      const item = orderItems[i]
-      const photo = item.photos
+    for (let i = 0; i < photos.length; i++) {
+      const photo = photos[i]
       
       if (!photo || !photo.original_s3_key) {
         console.warn(`⚠️ Skipping photo ${i + 1}: missing data`)
@@ -86,7 +94,7 @@ export async function GET(
         // Construire l'URL de téléchargement de l'original
         const originalUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`
         
-        console.log(`📥 Downloading photo ${i + 1}/${orderItems.length}: ${photo.original_s3_key}`)
+        console.log(`📥 Downloading photo ${i + 1}/${photos.length}: ${photo.original_s3_key}`)
         
         // Télécharger la photo
         const response = await fetch(originalUrl)
