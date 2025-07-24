@@ -50,11 +50,10 @@ export async function GET(
       })
     
     if (listError || !files || files.length === 0) {
-      console.error('❌ ZIP not found in storage:', listError)
-      return NextResponse.json(
-        { error: 'ZIP file not found. It may still be generating or has expired.' },
-        { status: 404 }
-      )
+      console.error('❌ ZIP not found in storage, generating on-demand:', listError)
+      
+      // Fallback: générer le ZIP à la demande
+      return await generateZipOnDemand(orderId, supabase)
     }
     
     // Prendre le ZIP le plus récent pour cet ordre
@@ -63,11 +62,10 @@ export async function GET(
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
     
     if (!zipFile) {
-      console.error('❌ No ZIP file found for order:', orderId)
-      return NextResponse.json(
-        { error: 'ZIP file not found for this order' },
-        { status: 404 }
-      )
+      console.error('❌ No ZIP file found for order, generating on-demand:', orderId)
+      
+      // Fallback: générer le ZIP à la demande
+      return await generateZipOnDemand(orderId, supabase)
     }
     
     console.log('✅ Found ZIP file:', zipFile.name)
@@ -109,5 +107,156 @@ export async function GET(
       { error: 'Internal server error' },
       { status: 500 }
     )
+  }
+}
+
+// Fonction fallback pour générer le ZIP à la demande
+async function generateZipOnDemand(orderId: string, supabase: any): Promise<NextResponse> {
+  try {
+    console.log('🔄 Generating ZIP on-demand for order:', orderId)
+    
+    // Importer JSZip dynamiquement
+    const JSZip = (await import('jszip')).default
+    const Stripe = (await import('stripe')).default
+    
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-05-28.basil',
+    })
+    
+    // Récupérer les données de la commande
+    const { data: orderItems, error: orderItemsError } = await supabase
+      .from('order_items')
+      .select('id, photo_id, product_type, price')
+      .eq('order_id', orderId)
+      .eq('product_type', 'digital')
+
+    let photos = []
+    
+    if (orderItemsError || !orderItems || orderItems.length === 0) {
+      console.log('❌ Order items not found, using Stripe fallback')
+      
+      // Fallback Stripe
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select('stripe_checkout_id')
+        .eq('id', orderId)
+        .single()
+      
+      if (orderError || !orderData?.stripe_checkout_id) {
+        return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+      }
+      
+      // Récupérer depuis Stripe
+      const stripeSession = await stripe.checkout.sessions.retrieve(orderData.stripe_checkout_id)
+      const lineItems = await stripe.checkout.sessions.listLineItems(stripeSession.id, {
+        expand: ['data.price.product'],
+        limit: 100
+      })
+      
+      photos = lineItems.data
+        .filter(item => {
+          const product = item.price?.product as any
+          return product.metadata?.product_type === 'digital'
+        })
+        .map(item => {
+          const product = item.price?.product as any  
+          const metadata = product.metadata
+          return {
+            id: metadata.photo_id,
+            original_s3_key: metadata.original_s3_key || `${metadata.photo_id}.jpg`,
+            filename: metadata.filename || `photo-${metadata.photo_id}.jpg`
+          }
+        })
+    } else {
+      // Récupérer les photos depuis la DB
+      const digitalPhotoIds = orderItems.map((item: any) => item.photo_id)
+      const { data: photosData, error: photosError } = await supabase
+        .from('photos')
+        .select('id, original_s3_key, filename, gallery_id')
+        .in('id', digitalPhotoIds)
+
+      if (photosError || !photosData) {
+        return NextResponse.json({ error: 'Photos not found' }, { status: 404 })
+      }
+      
+      photos = photosData
+    }
+
+    if (photos.length === 0) {
+      return NextResponse.json({ error: 'No photos found for this order' }, { status: 404 })
+    }
+
+    console.log(`📦 Generating ZIP on-demand with ${photos.length} photos`)
+    
+    // Créer le ZIP
+    const zip = new JSZip()
+    
+    // Télécharger max 10 photos pour éviter le timeout
+    const photosToProcess = photos.slice(0, 10)
+    
+    for (let i = 0; i < photosToProcess.length; i++) {
+      const photo = photosToProcess[i]
+      
+      try {
+        const urlCandidates = [
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.original_s3_key}`,
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/originals/${photo.id}.jpg`,
+        ]
+
+        let response: Response | null = null
+        
+        for (const url of urlCandidates) {
+          try {
+            response = await fetch(url, { signal: AbortSignal.timeout(3000) })
+            if (response.ok) break
+          } catch (error) {
+            continue
+          }
+        }
+        
+        if (!response || !response.ok) {
+          console.error(`❌ Failed to download photo ${i + 1}`)
+          continue
+        }
+
+        const photoBuffer = await response.arrayBuffer()
+        const filename = `Photo_${String(i + 1).padStart(2, '0')}_${photo.filename || photo.id}.jpg`
+        
+        zip.file(filename, photoBuffer)
+        console.log(`✅ Added photo ${i + 1}/${photosToProcess.length} to on-demand ZIP`)
+        
+      } catch (error) {
+        console.error(`❌ Error processing photo ${i + 1}:`, error)
+      }
+    }
+
+    // Générer le ZIP
+    console.log('🔄 Generating on-demand ZIP buffer...')
+    const zipBuffer = await zip.generateAsync({ 
+      type: 'nodebuffer',
+      compression: 'STORE',
+      compressionOptions: { level: 0 }
+    })
+    
+    console.log('✅ On-demand ZIP generated successfully')
+    
+    // Retourner le ZIP directement
+    return new NextResponse(zipBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/zip',
+        'Content-Disposition': `attachment; filename="ArodestudioPhotos_Commande_${orderId}_sample.zip"`,
+        'Content-Length': zipBuffer.byteLength.toString(),
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
+    
+  } catch (error) {
+    console.error('❌ On-demand ZIP generation failed:', error)
+    return NextResponse.json({ 
+      error: 'Failed to generate ZIP. Please try again in a few minutes.' 
+    }, { status: 500 })
   }
 }
