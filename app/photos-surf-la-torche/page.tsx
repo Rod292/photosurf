@@ -100,9 +100,13 @@ export default function PhotosSurfLaTorchePage() {
                   className="block hover:opacity-80 transition-opacity"
                 >
                   <div className="flex items-center justify-center mb-2">
-                    <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                      LTS
-                    </div>
+                    <Image
+                      src="/Logos/LOGO-COULEURS.svg"
+                      alt="La Torche Surf School - École de surf partenaire Arode Studio"
+                      width={64}
+                      height={64}
+                      className="w-16 h-16 object-contain"
+                    />
                   </div>
                   <div className="text-gray-600 hover:text-blue-600 transition-colors">École de surf partenaire</div>
                 </a>
