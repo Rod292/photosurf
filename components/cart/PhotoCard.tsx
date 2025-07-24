@@ -46,7 +46,27 @@ export function PhotoCard({ photo, className }: PhotoCardProps) {
               />
             </div>
             
-            {/* Heart button - always visible */}
+            {/* Cart button - top left corner */}
+            <div className="absolute top-3 left-3 z-10">
+              <AddToCartButton
+                photo={photo}
+                productType="digital"
+                price={1500}
+                size="sm"
+                className="w-8 h-8 p-0 rounded-full bg-white/90 hover:bg-white shadow-lg text-xs"
+                showIcon={false}
+              >
+                <Image
+                  src="/Logos/shopping-cart.svg"
+                  alt="Ajouter au panier"
+                  width={16}
+                  height={16}
+                  className="h-4 w-4"
+                />
+              </AddToCartButton>
+            </div>
+
+            {/* Heart button - top right corner */}
             <div className="absolute top-3 right-3 z-10">
               <HeartButton 
                 photo={{

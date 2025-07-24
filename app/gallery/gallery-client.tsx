@@ -5,6 +5,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { PhotoLightboxModal } from "@/components/photo-lightbox-modal"
 import { HeartButton } from "@/components/ui/heart-button"
+import { useCartStore } from "@/context/cart-context"
+import { getNextPhotoPrice } from "@/lib/pricing"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface Photo {
@@ -263,6 +265,64 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                       />
                     </button>
                     
+                    {/* Cart button - positioned in top left */}
+                    <div 
+                      className="absolute top-2 left-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {(() => {
+                        const cartItems = useCartStore((state) => state.items);
+                        const isInCart = cartItems.some(item => 
+                          item.photo_id === photo.id && item.product_type === 'digital'
+                        );
+                        
+                        return (
+                          <button
+                            onClick={() => {
+                              if (!isInCart) {
+                                // Ajouter la photo numérique au panier via Zustand
+                                const { addItem } = useCartStore.getState();
+                                const digitalPhotoCount = useCartStore.getState().items.filter(item => item.product_type === 'digital').length;
+                                const currentTotal = useCartStore.getState().items.filter(item => item.product_type === 'digital').reduce((sum, item) => sum + item.price, 0);
+                                const price = getNextPhotoPrice(digitalPhotoCount, 'digital', currentTotal);
+                                
+                                addItem({
+                                  photo_id: photo.id,
+                                  product_type: 'digital',
+                                  price: price,
+                                  preview_url: photo.preview_s3_url,
+                                  filename: photo.filename,
+                                  delivery_option: undefined,
+                                  delivery_price: 0
+                                });
+                              }
+                            }}
+                            className={`w-8 h-8 p-0 rounded-full shadow-lg flex items-center justify-center transition-colors ${
+                              isInCart 
+                                ? 'bg-green-500 hover:bg-green-600 text-white' 
+                                : 'bg-white/90 hover:bg-white text-gray-700'
+                            }`}
+                            title={isInCart ? "Déjà dans le panier" : "Ajouter au panier"}
+                            disabled={isInCart}
+                          >
+                            {isInCart ? (
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            ) : (
+                              <Image
+                                src="/Logos/shopping-cart.svg"
+                                alt="Ajouter au panier"
+                                width={16}
+                                height={16}
+                                className="h-4 w-4"
+                              />
+                            )}
+                          </button>
+                        );
+                      })()}
+                    </div>
+
                     {/* Heart button - positioned in top right */}
                     <div 
                       className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
