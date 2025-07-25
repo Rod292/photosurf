@@ -21,15 +21,26 @@ export default function HomePage() {
   const router = useRouter()
   const dateRef = useRef<HTMLDivElement>(null)
   const { scrollY } = useScroll()
+  const [isMobile, setIsMobile] = useState(false)
   
-  // Animations de réduction du titre et de la search bar au scroll
-  const titleScale = useTransform(scrollY, [0, 200], [1, 0])
-  const titleOpacity = useTransform(scrollY, [100, 200], [1, 0])
-  const titleY = useTransform(scrollY, [0, 200], [0, -50])
+  // Détecter si on est sur mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   
-  const searchScale = useTransform(scrollY, [0, 200], [1, 0])
-  const searchOpacity = useTransform(scrollY, [100, 200], [1, 0])
-  const searchY = useTransform(scrollY, [0, 200], [0, -50])
+  // Animations de réduction du titre et de la search bar au scroll (réduites sur mobile)
+  const titleScale = useTransform(scrollY, [0, isMobile ? 100 : 200], [1, isMobile ? 0.8 : 0])
+  const titleOpacity = useTransform(scrollY, [isMobile ? 50 : 100, isMobile ? 100 : 200], [1, 0])
+  const titleY = useTransform(scrollY, [0, isMobile ? 100 : 200], [0, isMobile ? -20 : -50])
+  
+  const searchScale = useTransform(scrollY, [0, isMobile ? 100 : 200], [1, isMobile ? 0.9 : 0])
+  const searchOpacity = useTransform(scrollY, [isMobile ? 50 : 100, isMobile ? 100 : 200], [1, 0])
+  const searchY = useTransform(scrollY, [0, isMobile ? 100 : 200], [0, isMobile ? -20 : -50])
   
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -175,14 +186,14 @@ export default function HomePage() {
                 <div className="relative mb-6" ref={dateRef}>
                   <button 
                     onClick={handleCalendarClick}
-                    className="text-xl font-semibold text-gray-900 flex items-center gap-2 hover:text-gray-700 transition-colors cursor-pointer"
+                    className="text-lg md:text-xl font-semibold text-gray-900 flex items-center gap-2 hover:text-gray-700 transition-colors cursor-pointer p-2 -m-2 rounded-lg hover:bg-gray-100"
                   >
                     <Image
                       src="/Logos/Calendar.svg"
                       alt="Calendrier sessions surf La Torche - Arode Studio"
                       width={24}
                       height={24}
-                      className="w-6 h-6"
+                      className="w-5 h-5 md:w-6 md:h-6"
                     />
                     Sessions par jour {'>'}
                   </button>

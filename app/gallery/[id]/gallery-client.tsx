@@ -41,7 +41,7 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
       {/* Galerie de photos */}
       {photos.length > 0 ? (
         <div className="mb-8">
-          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
             {visiblePhotos.map((photo, visibleIndex) => {
               // Trouver l'index réel dans la liste complète
               const realIndex = photos.findIndex(p => p.id === photo.id)
@@ -64,10 +64,10 @@ export function GalleryClient({ photos, gallery }: GalleryClientProps) {
                         priority={visibleIndex < 10}
                       />
                     </div>
-                    {/* Overlay avec date */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2">
+                    {/* Overlay avec date - visible au tap sur mobile */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-2 md:opacity-0">
                       <div className="text-white text-center">
-                        <p className="text-sm font-medium">
+                        <p className="text-xs sm:text-sm font-medium">
                           {new Date(photo.created_at || gallery.date).toLocaleDateString('fr-FR', {
                             day: '2-digit',
                             month: '2-digit',

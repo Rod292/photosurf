@@ -127,19 +127,19 @@ export function CartContent() {
       ) : (
         <>
           <div className="bg-white shadow-lg rounded-xl overflow-hidden mb-8 border border-gray-100">
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-5 border-b border-blue-200">
-              <div className="flex items-center justify-between">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-4 sm:px-6 py-4 sm:py-5 border-b border-blue-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <Image
                     src="/Logos/shopping-cart.svg"
                     alt="Panier"
                     width={32}
                     height={32}
-                    className="w-8 h-8 opacity-100"
+                    className="w-6 sm:w-8 h-6 sm:h-8 opacity-100"
                   />
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900 font-lexend-deca">Vos photos sélectionnées</h2>
-                    <p className="text-sm text-blue-700 font-lexend-deca font-medium">{items.length} article{items.length > 1 ? 's' : ''} dans votre panier</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 font-lexend-deca">Vos photos sélectionnées</h2>
+                    <p className="text-xs sm:text-sm text-blue-700 font-lexend-deca font-medium">{items.length} article{items.length > 1 ? 's' : ''} dans votre panier</p>
                   </div>
                 </div>
                 {items.length > 0 && (
@@ -147,28 +147,29 @@ export function CartContent() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowClearCartConfirm(true)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 font-lexend-deca"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 font-lexend-deca self-end sm:self-auto"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Vider le panier
+                    <Trash2 className="h-4 w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Vider le panier</span>
+                    <span className="sm:hidden">Vider</span>
                   </Button>
                 )}
               </div>
             </div>
             {items.map((item) => (
-              <div key={`${item.photo_id}-${item.product_type}`} className="flex items-center p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
-                <div className="cursor-pointer mr-4" onClick={() => handlePhotoClick(item)}>
+              <div key={`${item.photo_id}-${item.product_type}`} className="flex items-center p-4 sm:p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                <div className="cursor-pointer mr-3 sm:mr-4 flex-shrink-0" onClick={() => handlePhotoClick(item)}>
                   <Image
                     src={item.preview_url || "/placeholder.svg"}
                     alt={item.filename}
                     width={100}
                     height={67}
-                    className="rounded-md object-cover"
+                    className="rounded-md object-cover w-16 h-12 sm:w-24 sm:h-16"
                   />
                 </div>
-                <div className="flex-grow">
-                  <h3 className="font-semibold font-lexend-deca">{item.filename}</h3>
-                  <p className="text-sm text-gray-600 font-lexend-deca">
+                <div className="flex-grow min-w-0">
+                  <h3 className="font-semibold font-lexend-deca text-sm sm:text-base truncate">{item.filename}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 font-lexend-deca">
                     {item.product_type === 'digital' ? (
                       <span className="flex items-center gap-1">
                         <Image
@@ -176,9 +177,10 @@ export function CartContent() {
                           alt="Phone"
                           width={16}
                           height={16}
-                          className="w-4 h-4"
+                          className="w-3 sm:w-4 h-3 sm:h-4"
                         />
-                        Numérique
+                        <span className="hidden sm:inline">Numérique</span>
+                        <span className="sm:hidden">Num.</span>
                       </span>
                     ) : item.product_type === 'print_a5' ? (
                       <span className="flex items-center gap-1">
@@ -187,9 +189,9 @@ export function CartContent() {
                           alt="Print"
                           width={16}
                           height={16}
-                          className="w-4 h-4"
+                          className="w-3 sm:w-4 h-3 sm:h-4"
                         />
-                        Tirage A5
+                        <span>A5</span>
                       </span>
                     ) : item.product_type === 'print_a4' ? (
                       <span className="flex items-center gap-1">
@@ -198,9 +200,9 @@ export function CartContent() {
                           alt="Print"
                           width={16}
                           height={16}
-                          className="w-4 h-4"
+                          className="w-3 sm:w-4 h-3 sm:h-4"
                         />
-                        Tirage A4
+                        <span>A4</span>
                       </span>
                     ) : item.product_type === 'print_a3' ? (
                       <span className="flex items-center gap-1">
@@ -209,9 +211,9 @@ export function CartContent() {
                           alt="Print"
                           width={16}
                           height={16}
-                          className="w-4 h-4"
+                          className="w-3 sm:w-4 h-3 sm:h-4"
                         />
-                        Tirage A3
+                        <span>A3</span>
                       </span>
                     ) : item.product_type === 'print_a2' ? (
                       <span className="flex items-center gap-1">
@@ -220,13 +222,13 @@ export function CartContent() {
                           alt="Print"
                           width={16}
                           height={16}
-                          className="w-4 h-4"
+                          className="w-3 sm:w-4 h-3 sm:h-4"
                         />
-                        Tirage A2
+                        <span>A2</span>
                       </span>
                     ) : null}
                   </p>
-                  <p className="text-sm text-gray-600 font-lexend-deca">
+                  <p className="text-xs sm:text-sm text-gray-600 font-lexend-deca font-medium">
                     {item.price === 0 ? "Gratuit" : `${item.price.toFixed(2)}€`}
                   </p>
                   {item.delivery_option && (
@@ -247,27 +249,27 @@ export function CartContent() {
                   variant="ghost"
                   onClick={() => handleRemoveFromCart(item.photo_id, item.product_type)}
                   aria-label="Supprimer du panier"
-                  className="font-lexend-deca"
+                  className="font-lexend-deca p-2 sm:p-3"
                 >
-                  <Trash2 className="h-5 w-5 text-red-500" />
+                  <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
                 </Button>
               </div>
             ))}
           </div>
-          <div className="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+          <div className="bg-white shadow-lg rounded-xl p-4 sm:p-6 border border-gray-100">
             {/* Résumé de la commande */}
             <div className="mb-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 font-lexend-deca">Résumé de la commande</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 font-lexend-deca">Résumé de la commande</h3>
               
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600 font-lexend-deca">Nombre de photos</span>
-                  <span className="font-medium font-lexend-deca">{totalItems}</span>
+                  <span className="text-sm sm:text-base text-gray-600 font-lexend-deca">Nombre de photos</span>
+                  <span className="text-sm sm:text-base font-medium font-lexend-deca">{totalItems}</span>
                 </div>
                 
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-600 font-lexend-deca">Sous-total photos</span>
-                  <span className="font-medium font-lexend-deca">{dynamicPricing.total.toFixed(2)}€</span>
+                  <span className="text-sm sm:text-base text-gray-600 font-lexend-deca">Sous-total photos</span>
+                  <span className="text-sm sm:text-base font-medium font-lexend-deca">{dynamicPricing.total.toFixed(2)}€</span>
                 </div>
                 
                 {/* Frais de livraison */}
@@ -275,8 +277,8 @@ export function CartContent() {
                   const deliveryTotal = items.reduce((total, item) => total + (item.delivery_price || 0), 0)
                   return deliveryTotal > 0 && (
                     <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-gray-600 font-lexend-deca">Frais de livraison</span>
-                      <span className="font-medium font-lexend-deca">{deliveryTotal.toFixed(2)}€</span>
+                      <span className="text-sm sm:text-base text-gray-600 font-lexend-deca">Frais de livraison</span>
+                      <span className="text-sm sm:text-base font-medium font-lexend-deca">{deliveryTotal.toFixed(2)}€</span>
                     </div>
                   )
                 })()}
@@ -284,17 +286,17 @@ export function CartContent() {
                 {/* Économies automatiques */}
                 {dynamicPricing.totalSavings > 0 && (
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-green-600 font-lexend-deca">Économies automatiques</span>
-                    <span className="font-medium text-green-600 font-lexend-deca">-{dynamicPricing.totalSavings.toFixed(2)}€</span>
+                    <span className="text-sm sm:text-base text-green-600 font-lexend-deca">Économies automatiques</span>
+                    <span className="text-sm sm:text-base font-medium text-green-600 font-lexend-deca">-{dynamicPricing.totalSavings.toFixed(2)}€</span>
                   </div>
                 )}
               </div>
               
               {/* Total */}
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 mb-4">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 sm:p-4 mb-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-gray-900 font-lexend-deca">Total</span>
-                  <span className="text-xl font-bold text-blue-600 font-lexend-deca">
+                  <span className="text-base sm:text-lg font-bold text-gray-900 font-lexend-deca">Total</span>
+                  <span className="text-lg sm:text-xl font-bold text-blue-600 font-lexend-deca">
                     {dynamicPricing.total.toFixed(2)}€
                   </span>
                 </div>
@@ -302,10 +304,10 @@ export function CartContent() {
             </div>
 
             {/* Information importante */}
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
@@ -332,7 +334,7 @@ export function CartContent() {
 
             {/* Bouton de paiement */}
             <Button 
-              className="w-full py-4 text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 font-lexend-deca" 
+              className="w-full py-3 sm:py-4 text-base sm:text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 font-lexend-deca" 
               onClick={handleCheckout} 
               disabled={isLoading}
             >
@@ -364,11 +366,11 @@ export function CartContent() {
       
       {/* Clear cart confirmation modal */}
       {showClearCartConfirm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-xl">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-5 sm:p-6 max-w-sm w-full shadow-xl">
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <Trash2 className="h-6 w-6 text-red-600" />
+              <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+                <Trash2 className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2 font-lexend-deca">
                 Vider le panier ?

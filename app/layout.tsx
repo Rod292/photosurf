@@ -68,11 +68,6 @@ export const metadata = {
   title: "Photos Surf La Torche | Arode Studio - Photographe Surf Bretagne",
   description: "Photographe professionnel de surf à La Torche, Bretagne. Découvrez et achetez vos photos de session surf. Livraison immédiate par email. Qualité professionnelle garantie.",
   keywords: "photos surf la torche, photographe surf bretagne, session surf la torche, photos surf finistère, arode studio, surf photography brittany",
-  icons: {
-    icon: '/icon.png',
-    shortcut: '/icon.png',
-    apple: '/apple-icon.png',
-  },
   openGraph: {
     title: "Photos Surf La Torche | Arode Studio - Photographe Surf Bretagne",
     description: "Photographe professionnel de surf à La Torche, Bretagne. Découvrez et achetez vos photos de session surf.",
