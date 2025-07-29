@@ -101,7 +101,7 @@ export function CartContent() {
   return (
     <>
       {items.length === 0 ? (
-        <div className="text-center py-16">
+        <div className="text-center py-12 sm:py-16">
           <div className="mb-6 flex justify-center">
             <Image
               src="/Logos/shopping-cart.svg"
@@ -126,9 +126,9 @@ export function CartContent() {
         </div>
       ) : (
         <>
-          <div className="bg-white shadow-lg rounded-xl overflow-hidden mb-8 border border-gray-100">
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-4 sm:px-6 py-4 sm:py-5 border-b border-blue-200">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="bg-white shadow-lg rounded-xl overflow-hidden mb-6 sm:mb-8 border border-gray-100">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-3 sm:px-6 py-2 sm:py-4 border-b border-blue-200">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Image
                     src="/Logos/shopping-cart.svg"
@@ -139,7 +139,7 @@ export function CartContent() {
                   />
                   <div>
                     <h2 className="text-lg sm:text-xl font-bold text-gray-900 font-lexend-deca">Vos photos sélectionnées</h2>
-                    <p className="text-xs sm:text-sm text-blue-700 font-lexend-deca font-medium">{items.length} article{items.length > 1 ? 's' : ''} dans votre panier</p>
+                    <p className="text-xs sm:text-sm text-blue-700 font-lexend-deca font-medium">{items.filter(item => item.product_type !== 'session_pack').length} article{items.filter(item => item.product_type !== 'session_pack').length > 1 ? 's' : ''} dans votre panier</p>
                   </div>
                 </div>
                 {items.length > 0 && (
@@ -147,7 +147,7 @@ export function CartContent() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowClearCartConfirm(true)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 font-lexend-deca self-end sm:self-auto"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 font-lexend-deca"
                   >
                     <Trash2 className="h-4 w-4 mr-1 sm:mr-2" />
                     <span className="hidden sm:inline">Vider le panier</span>
@@ -156,19 +156,33 @@ export function CartContent() {
                 )}
               </div>
             </div>
-            {items.map((item) => (
-              <div key={`${item.photo_id}-${item.product_type}`} className="flex items-center p-4 sm:p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
-                <div className="cursor-pointer mr-3 sm:mr-4 flex-shrink-0" onClick={() => handlePhotoClick(item)}>
-                  <Image
-                    src={item.preview_url || "/placeholder.svg"}
-                    alt={item.filename}
-                    width={100}
-                    height={67}
-                    className="rounded-md object-cover w-16 h-12 sm:w-24 sm:h-16"
-                  />
+            {items.filter(item => item.product_type !== 'session_pack').map((item) => (
+              <div key={`${item.photo_id}-${item.product_type}`} className="flex items-center p-3 sm:p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
+                <div className={`mr-2 sm:mr-4 flex-shrink-0 ${item.product_type !== 'session_pack' ? 'cursor-pointer' : ''}`} onClick={() => item.product_type !== 'session_pack' && handlePhotoClick(item)}>
+                  {item.product_type === 'session_pack' ? (
+                    <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-md flex items-center justify-center">
+                      <Image
+                        src="/Logos/camera2.svg"
+                        alt="Pack Session"
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 sm:w-10 sm:h-10 opacity-70"
+                      />
+                    </div>
+                  ) : (
+                    <Image
+                      src={item.preview_url || "/placeholder.svg"}
+                      alt={item.filename}
+                      width={100}
+                      height={100}
+                      className="rounded-md object-cover w-16 h-16 sm:w-24 sm:h-24"
+                    />
+                  )}
                 </div>
                 <div className="flex-grow min-w-0">
-                  <h3 className="font-semibold font-lexend-deca text-sm sm:text-base truncate">{item.filename}</h3>
+                  <h3 className="font-semibold font-lexend-deca text-sm sm:text-base truncate pr-1">
+                    {item.product_type === 'session_pack' ? '🎁 Pack Session' : item.filename}
+                  </h3>
                   <p className="text-xs sm:text-sm text-gray-600 font-lexend-deca">
                     {item.product_type === 'digital' ? (
                       <span className="flex items-center gap-1">
@@ -226,10 +240,21 @@ export function CartContent() {
                         />
                         <span>A2</span>
                       </span>
+                    ) : item.product_type === 'session_pack' ? (
+                      <span className="flex items-center gap-1">
+                        <Image
+                          src="/Logos/camera2.svg"
+                          alt="Pack Session"
+                          width={16}
+                          height={16}
+                          className="w-3 sm:w-4 h-3 sm:h-4"
+                        />
+                        <span className="font-semibold text-blue-600">Pack Session</span>
+                      </span>
                     ) : null}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600 font-lexend-deca font-medium">
-                    {item.price === 0 ? "Gratuit" : `${item.price.toFixed(2)}€`}
+                  <p className="text-xs sm:text-sm text-gray-600 font-lexend-deca font-medium mt-1">
+                    {item.price === 0 && item.product_type === 'digital' ? "Inclus dans pack session" : `${item.price.toFixed(2)}€`}
                   </p>
                   {item.delivery_option && (
                     <p className="text-xs text-gray-500 font-lexend-deca mt-1">
@@ -245,96 +270,82 @@ export function CartContent() {
                     </p>
                   )}
                 </div>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleRemoveFromCart(item.photo_id, item.product_type)}
-                  aria-label="Supprimer du panier"
-                  className="font-lexend-deca p-2 sm:p-3"
-                >
-                  <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
-                </Button>
+                {item.product_type !== 'session_pack' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveFromCart(item.photo_id, item.product_type)}
+                    aria-label="Supprimer du panier"
+                    className="font-lexend-deca p-1 sm:p-2 ml-1"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                )}
               </div>
             ))}
           </div>
-          <div className="bg-white shadow-lg rounded-xl p-4 sm:p-6 border border-gray-100">
+          <div className="bg-white shadow-lg rounded-xl p-3 sm:p-6 border border-gray-100">
             {/* Résumé de la commande */}
             <div className="mb-6">
-              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 font-lexend-deca">Résumé de la commande</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 font-lexend-deca">Résumé de la commande</h3>
               
-              <div className="space-y-3 mb-4">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
+                <div className="flex justify-between items-center py-2">
                   <span className="text-sm sm:text-base text-gray-600 font-lexend-deca">Nombre de photos</span>
-                  <span className="text-sm sm:text-base font-medium font-lexend-deca">{totalItems}</span>
+                  <span className="text-sm sm:text-base font-medium font-lexend-deca">{items.filter(item => item.product_type !== 'session_pack').length}</span>
                 </div>
                 
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-sm sm:text-base text-gray-600 font-lexend-deca">Sous-total photos</span>
-                  <span className="text-sm sm:text-base font-medium font-lexend-deca">{dynamicPricing.total.toFixed(2)}€</span>
-                </div>
-                
-                {/* Frais de livraison */}
-                {(() => {
-                  const deliveryTotal = items.reduce((total, item) => total + (item.delivery_price || 0), 0)
-                  return deliveryTotal > 0 && (
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm sm:text-base text-gray-600 font-lexend-deca">Frais de livraison</span>
-                      <span className="text-sm sm:text-base font-medium font-lexend-deca">{deliveryTotal.toFixed(2)}€</span>
-                    </div>
-                  )
-                })()}
-                
-                {/* Économies automatiques */}
-                {dynamicPricing.totalSavings > 0 && (
-                  <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-sm sm:text-base text-green-600 font-lexend-deca">Économies automatiques</span>
-                    <span className="text-sm sm:text-base font-medium text-green-600 font-lexend-deca">-{dynamicPricing.totalSavings.toFixed(2)}€</span>
+                {/* Pack Session */}
+                {items.some(item => item.product_type === 'session_pack') && (
+                  <div className="flex justify-between items-center py-2 bg-blue-50 px-3 rounded">
+                    <span className="text-sm sm:text-base font-semibold text-blue-700 font-lexend-deca">
+                      🎁 Pack Session activé
+                    </span>
+                    <span className="text-sm sm:text-base font-bold text-blue-700 font-lexend-deca">40,00€</span>
                   </div>
                 )}
               </div>
               
               {/* Total */}
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 sm:p-4 mb-4">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
                 <div className="flex justify-between items-center">
                   <span className="text-base sm:text-lg font-bold text-gray-900 font-lexend-deca">Total</span>
                   <span className="text-lg sm:text-xl font-bold text-blue-600 font-lexend-deca">
                     {dynamicPricing.total.toFixed(2)}€
                   </span>
                 </div>
+                {dynamicPricing.totalSavings > 0 && (
+                  <div className="text-center mt-2">
+                    <span className="text-sm font-medium text-green-600 font-lexend-deca">
+                      Vous économisez {dynamicPricing.totalSavings.toFixed(2)}€
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Information importante */}
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-blue-800 font-medium font-lexend-deca mb-1">
-                    Livraison rapide par email
-                  </p>
-                  <p className="text-sm text-blue-700 font-lexend-deca">
-                    Les photos vous seront envoyées par mail dans les prochaines minutes. Vous recevrez les photos en
-                    haute résolution et avec les retouches finales. Pensez à vérifier vos spams !
-                  </p>
-                  {dynamicPricing.totalSavings > 0 && (
-                    <p className="text-sm font-lexend-deca mt-2 text-green-700 font-medium">
-                      {shouldApplySessionPack(dynamicPricing.total) ? (
-                        '🎁 Pack Session 40€ - Toutes vos photos pour 40€ !'
-                      ) : (
-                        `💰 Vous économisez ${dynamicPricing.totalSavings.toFixed(2)}€ grâce à notre système de réductions dégressives !`
-                      )}
-                    </p>
-                  )}
-                </div>
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-3 sm:mb-6">
+              <div className="text-center">
+                <p className="text-sm text-blue-800 font-medium font-lexend-deca mb-2 flex items-center justify-center gap-2">
+                  <Image
+                    src="/Logos/mail-logo.svg"
+                    alt="Mail"
+                    width={16}
+                    height={16}
+                    className="w-4 h-4"
+                  />
+                  Livraison rapide par email
+                </p>
+                <p className="text-sm text-red-600 font-medium font-lexend-deca">
+                  Pensez à vérifier vos spams !
+                </p>
               </div>
             </div>
 
             {/* Bouton de paiement */}
             <Button 
-              className="w-full py-3 sm:py-4 text-base sm:text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 font-lexend-deca" 
+              className="w-full py-3 sm:py-4 text-sm sm:text-lg font-bold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 font-lexend-deca" 
               onClick={handleCheckout} 
               disabled={isLoading}
             >
@@ -354,7 +365,7 @@ export function CartContent() {
             </Button>
             
             {/* Sécurité paiement */}
-            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+            <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
@@ -366,8 +377,8 @@ export function CartContent() {
       
       {/* Clear cart confirmation modal */}
       {showClearCartConfirm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-5 sm:p-6 max-w-sm w-full shadow-xl">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 max-w-sm w-full shadow-xl mx-2">
             <div className="text-center">
               <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center mb-3 sm:mb-4">
                 <Trash2 className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />

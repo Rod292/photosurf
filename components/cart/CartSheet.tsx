@@ -27,7 +27,7 @@ export function CartSheet() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const totalItems = getItemCount();
+  const totalItems = items.filter(item => item.product_type !== 'session_pack').length;
   const totalPrice = getTotalPrice();
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export function CartSheet() {
           </Button>
         </motion.div>
       </SheetTrigger>
-      <SheetContent className="w-full sm:w-[350px] lg:w-[400px] flex flex-col">
+      <SheetContent className="w-full sm:w-[350px] lg:w-[400px] flex flex-col p-3 sm:p-6">
         <SheetHeader className="flex-shrink-0">
           <SheetTitle>Votre panier</SheetTitle>
           <SheetDescription>
@@ -110,8 +110,8 @@ export function CartSheet() {
           </SheetDescription>
         </SheetHeader>
         
-        <div className="flex-1 overflow-y-auto mt-6 pr-2 -mr-2">
-          {items.length === 0 ? (
+        <div className="flex-1 overflow-y-auto mt-4 sm:mt-6 pr-2 -mr-2">
+          {totalItems === 0 ? (
             <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
               <Image
                 src="/Logos/shopping-cart.svg"
@@ -124,9 +124,9 @@ export function CartSheet() {
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((item) => (
-                <div key={`${item.photo_id}-${item.product_type}`} className="flex gap-3 py-3 border-b">
-                  <div className="relative h-20 w-20 sm:h-16 sm:w-16 overflow-hidden rounded-md flex-shrink-0">
+              {items.filter(item => item.product_type !== 'session_pack').map((item) => (
+                <div key={`${item.photo_id}-${item.product_type}`} className="flex gap-2 sm:gap-3 py-2 sm:py-3 border-b">
+                  <div className="relative h-20 w-20 sm:h-20 sm:w-20 overflow-hidden rounded-md flex-shrink-0">
                     <Image
                       src={item.preview_url}
                       alt="Photo"
@@ -149,10 +149,13 @@ export function CartSheet() {
                           {item.filename}
                         </p>
                         <p className="text-sm font-medium mt-1">
-                          {new Intl.NumberFormat('fr-FR', {
-                            style: 'currency',
-                            currency: 'EUR',
-                          }).format(item.price)}
+                          {item.price === 0 && item.product_type === 'digital' ? 
+                            "Inclus dans pack session" :
+                            new Intl.NumberFormat('fr-FR', {
+                              style: 'currency',
+                              currency: 'EUR',
+                            }).format(item.price)
+                          }
                         </p>
                       </div>
                       
@@ -172,8 +175,18 @@ export function CartSheet() {
           )}
         </div>
         
-        {items.length > 0 && (
-          <div className="flex-shrink-0 pt-4 border-t mt-4">
+        {totalItems > 0 && (
+          <div className="flex-shrink-0 pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
+            {/* Pack Session */}
+            {items.some(item => item.product_type === 'session_pack') && (
+              <div className="flex items-center justify-between mb-3 bg-blue-50 px-3 py-2 rounded">
+                <span className="text-sm font-semibold text-blue-700">
+                  🎁 Pack Session activé
+                </span>
+                <span className="text-sm font-bold text-blue-700">40,00€</span>
+              </div>
+            )}
+            
             <div className="flex items-center justify-between mb-4">
               <span className="text-lg font-semibold">Total</span>
               <span className="text-lg font-semibold">
@@ -204,7 +217,7 @@ export function CartSheet() {
               </Button>
             </div>
             
-            <p className="text-xs text-muted-foreground text-center mt-4">
+            <p className="text-xs text-muted-foreground text-center mt-3 sm:mt-4">
               Paiement sécurisé avec Stripe
             </p>
           </div>

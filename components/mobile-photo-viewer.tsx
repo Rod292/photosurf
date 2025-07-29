@@ -563,7 +563,7 @@ export function MobilePhotoViewer({
                     </div>
                     <div className="text-right">
                       <span className="font-bold text-blue-600">
-                        {hasSessionPack() ? 'Gratuit' : formatPrice(getDigitalPhotoPrice())}
+                        {hasSessionPack() ? 'Inclus dans pack session' : formatPrice(getDigitalPhotoPrice())}
                       </span>
                     </div>
                   </div>

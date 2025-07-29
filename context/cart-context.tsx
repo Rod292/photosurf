@@ -38,6 +38,28 @@ interface CartStore {
   }
 }
 
+// Helper function to calculate digital photos total
+const calculateDigitalTotal = (items: CartItem[]): number => {
+  let digitalTotal = 0
+  let digitalCount = 0
+  
+  items.forEach((item) => {
+    if (item.product_type === 'digital') {
+      digitalCount++
+      // Calculer le prix selon la position
+      if (digitalCount === 1) {
+        digitalTotal += 10
+      } else if (digitalCount === 2) {
+        digitalTotal += 7
+      } else {
+        digitalTotal += 5
+      }
+    }
+  })
+  
+  return digitalTotal
+}
+
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
@@ -51,23 +73,56 @@ export const useCartStore = create<CartStore>()(
             (i) => i.photo_id === item.photo_id && i.product_type === item.product_type
           )
           
-          // Vérifier s'il y a un pack session dans le panier
-          const hasSessionPack = state.items.some(i => i.product_type === 'session_pack')
-          
-          // Si c'est une photo numérique et qu'il y a un pack session, la mettre à 0€
-          let adjustedItem = item
-          if (item.product_type === 'digital' && hasSessionPack) {
-            adjustedItem = { ...item, price: 0 }
+          // Si l'item existe déjà, ne rien faire
+          if (existingIndex >= 0) {
+            const newItems = [...state.items]
+            newItems[existingIndex] = item
+            return { items: newItems }
           }
           
-          if (existingIndex >= 0) {
-            // Remplacer l'item existant
-            const newItems = [...state.items]
-            newItems[existingIndex] = adjustedItem
-            return { items: newItems }
-          } else {
-            // Ajouter le nouvel item
+          // Ajouter le nouvel item temporairement pour calculer le nouveau total
+          const tempItems = [...state.items, item]
+          
+          // Calculer le total des photos numériques avec le nouvel item
+          const digitalTotal = calculateDigitalTotal(tempItems)
+          
+          // Vérifier s'il y a déjà un pack session
+          const hasSessionPack = tempItems.some(i => i.product_type === 'session_pack')
+          
+          // Si le total dépasse 40€ et qu'il n'y a pas encore de pack session, l'ajouter
+          if (digitalTotal > 40 && !hasSessionPack) {
+            // Mettre toutes les photos numériques à 0€
+            const updatedItems = tempItems.map(i => {
+              if (i.product_type === 'digital') {
+                return { ...i, price: 0 }
+              }
+              return i
+            })
+            
+            // Ajouter le pack session
+            const sessionPack: CartItem = {
+              photo_id: 'session_pack',
+              product_type: 'session_pack',
+              price: 40,
+              preview_url: '/Logos/camera2.svg',
+              filename: 'Pack Session - Toutes vos photos'
+            }
+            
+            return { items: [...updatedItems, sessionPack] }
+          } else if (hasSessionPack && item.product_type === 'digital') {
+            // Si un pack session existe et qu'on ajoute une photo numérique, la mettre à 0€
+            const adjustedItem = { ...item, price: 0 }
             return { items: [...state.items, adjustedItem] }
+          } else {
+            // Sinon, ajouter normalement avec le prix calculé
+            let finalItem = item
+            if (item.product_type === 'digital') {
+              const digitalCountBefore = state.items.filter(i => i.product_type === 'digital').length
+              const newPrice = getNextPhotoPrice(digitalCountBefore, 'digital')
+              finalItem = { ...item, price: newPrice }
+            }
+            
+            return { items: [...state.items, finalItem] }
           }
         })
       },
@@ -100,40 +155,77 @@ export const useCartStore = create<CartStore>()(
       
       removeItem: (photoId: string, productType: string) => {
         set((state) => {
-          // Si on supprime le pack session, il faut recalculer le prix de toutes les photos numériques
-          if (productType === 'session_pack') {
-            const updatedItems = state.items.filter(
-              (item) => !(item.photo_id === photoId && item.product_type === productType)
-            )
+          // D'abord, supprimer l'item
+          let updatedItems = state.items.filter(
+            (item) => !(item.photo_id === photoId && item.product_type === productType)
+          )
+          
+          // Si on supprime une photo numérique ou le pack session, recalculer
+          if (productType === 'digital' || productType === 'session_pack') {
+            // Calculer le nouveau total des photos numériques
+            const digitalTotal = calculateDigitalTotal(updatedItems)
             
-            // Recalculer le prix de toutes les photos numériques
-            const recalculatedItems = updatedItems.map((item, index) => {
-              if (item.product_type === 'digital') {
-                // Compter combien de photos numériques il y a avant celle-ci
-                const digitalItemsBefore = updatedItems
-                  .slice(0, index)
-                  .filter(i => i.product_type === 'digital').length
-                
-                // Calculer le nouveau prix basé sur l'ordre d'ajout
-                const newPrice = getNextPhotoPrice(digitalItemsBefore, 'digital')
-                
-                return {
-                  ...item,
-                  price: newPrice
+            // Vérifier s'il y a un pack session dans les items restants
+            const hasSessionPack = updatedItems.some(i => i.product_type === 'session_pack')
+            
+            // Si on a un pack session mais que le total est maintenant <= 40€, supprimer le pack
+            if (hasSessionPack && digitalTotal <= 40) {
+              // Supprimer le pack session
+              updatedItems = updatedItems.filter(i => i.product_type !== 'session_pack')
+              
+              // Recalculer les prix des photos numériques
+              let digitalPosition = 0
+              updatedItems = updatedItems.map((item) => {
+                if (item.product_type === 'digital') {
+                  const newPrice = getNextPhotoPrice(digitalPosition, 'digital')
+                  digitalPosition++
+                  return { ...item, price: newPrice }
                 }
+                return item
+              })
+            } else if (hasSessionPack) {
+              // Si on garde le pack session, toutes les photos numériques restent à 0€
+              updatedItems = updatedItems.map((item) => {
+                if (item.product_type === 'digital') {
+                  return { ...item, price: 0 }
+                }
+                return item
+              })
+            } else if (!hasSessionPack && digitalTotal > 40) {
+              // Si on n'a pas de pack mais que le total dépasse 40€, l'ajouter
+              // Mettre toutes les photos numériques à 0€
+              updatedItems = updatedItems.map(i => {
+                if (i.product_type === 'digital') {
+                  return { ...i, price: 0 }
+                }
+                return i
+              })
+              
+              // Ajouter le pack session
+              const sessionPack: CartItem = {
+                photo_id: 'session_pack',
+                product_type: 'session_pack',
+                price: 40,
+                preview_url: '/Logos/camera2.svg',
+                filename: 'Pack Session - Toutes vos photos'
               }
-              return item
-            })
-            
-            return { items: recalculatedItems }
+              
+              updatedItems.push(sessionPack)
+            } else {
+              // Sinon, recalculer normalement les prix
+              let digitalPosition = 0
+              updatedItems = updatedItems.map((item) => {
+                if (item.product_type === 'digital') {
+                  const newPrice = getNextPhotoPrice(digitalPosition, 'digital')
+                  digitalPosition++
+                  return { ...item, price: newPrice }
+                }
+                return item
+              })
+            }
           }
           
-          // Suppression normale pour les autres types
-          return {
-            items: state.items.filter(
-              (item) => !(item.photo_id === photoId && item.product_type === productType)
-            )
-          }
+          return { items: updatedItems }
         })
       },
       
