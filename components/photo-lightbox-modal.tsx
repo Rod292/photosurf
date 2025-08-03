@@ -34,7 +34,7 @@ const SESSION_PACK_OPTION = {
   id: 'session_pack',
   label: 'Pack Photo Illimité',
   price: 40,
-  description: 'Toutes vos photos numériques de la session'
+  description: 'Nombre de photos numériques illimitées'
 }
 
 const PRINT_OPTIONS = [

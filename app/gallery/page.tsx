@@ -178,7 +178,7 @@ export default async function GalleriesListPage({
 }) {
   const resolvedSearchParams = await searchParams
   const galleries = await getFilteredGalleries(resolvedSearchParams)
-  const hasFilters = resolvedSearchParams.date || resolvedSearchParams.school
+  const hasFilters = !!(resolvedSearchParams.date || resolvedSearchParams.school)
   const isSchoolFilter = !!resolvedSearchParams.school
   const isDateFilter = !!resolvedSearchParams.date
   

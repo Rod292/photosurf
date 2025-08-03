@@ -147,9 +147,9 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                   {/* Bouton pour voir toutes les photos */}
                   <button 
                     onClick={() => handleGalleryFilter(null)}
-                    className={`group flex-shrink-0 ${selectedGallery === null ? 'ring-2 ring-blue-500' : ''}`}
+                    className={`group flex-shrink-0 transition-all duration-300 ${selectedGallery === null ? 'scale-110' : ''}`}
                   >
-                    <div className="w-28 h-40 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-gray-200">
+                    <div className={`w-28 h-40 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200 ${selectedGallery === null ? 'blur-[1px]' : ''}`}>
                       <div className="w-full h-full relative">
                         {/* Utiliser la première photo disponible comme image de couverture */}
                         {latestPhotos.length > 0 ? (
@@ -197,9 +197,9 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                     <button 
                       key={gallery.id}
                       onClick={() => handleGalleryFilter(gallery.id)}
-                      className={`group flex-shrink-0 ${selectedGallery === gallery.id ? 'ring-2 ring-blue-500' : ''}`}
+                      className={`group flex-shrink-0 transition-all duration-300 ${selectedGallery === gallery.id ? 'scale-110' : ''}`}
                     >
-                      <div className="w-28 h-40 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-gray-200">
+                      <div className={`w-28 h-40 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-200 ${selectedGallery === gallery.id ? 'blur-[1px]' : ''}`}>
                         <div className="w-full h-full relative">
                           {/* Photo de session ou fallback */}
                           {gallery.photos && gallery.photos.length > 0 ? (

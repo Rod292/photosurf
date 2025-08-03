@@ -14,11 +14,15 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Trash2, ShoppingCart, Home, Plus, CheckCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { LanguageSwitcher } from '@/components/language-switcher'
+import { getTranslation, Language } from '@/lib/translations'
 
 export default function FavorisPage() {
   const { favorites, removeFromFavorites, clearFavorites } = useFavorites()
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [isAddingAll, setIsAddingAll] = useState(false)
+  const [language, setLanguage] = useState<Language>('fr')
+  const t = getTranslation(language)
   
   // Cart store hooks
   const cartItems = useCartStore((state) => state.items)
@@ -98,7 +102,7 @@ export default function FavorisPage() {
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <Home className="w-4 h-4" />
-            <span className="font-medium">Retour à l'accueil</span>
+            <span className="font-medium">{t.favorites.backHome}</span>
           </Link>
         </div>
       </div>
@@ -110,11 +114,17 @@ export default function FavorisPage() {
           {/* Titre de la page et actions */}
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-black mb-2">
-                Vos photos favorites
-              </h1>
+              <div className="flex items-center gap-4 mb-2">
+                <h1 className="text-4xl md:text-5xl font-bold text-black">
+                  {t.favorites.title}
+                </h1>
+                <LanguageSwitcher 
+                  currentLanguage={language}
+                  onLanguageChange={setLanguage}
+                />
+              </div>
               <p className="text-gray-600">
-                {favorites.length} photo{favorites.length > 1 ? 's' : ''} favorite{favorites.length > 1 ? 's' : ''}
+                {t.favorites.photoCount(favorites.length)}
               </p>
             </div>
             {favorites.length > 0 && (
@@ -128,17 +138,17 @@ export default function FavorisPage() {
                   {isAddingAll ? (
                     <>
                       <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3" />
-                      <span className="font-semibold">Ajout en cours...</span>
+                      <span className="font-semibold">{t.favorites.addingToCart}</span>
                     </>
                   ) : favorites.every(photo => isPhotoInCart(photo.id)) ? (
                     <>
                       <CheckCircle className="mr-3 h-5 w-5" />
-                      <span className="font-semibold">Toutes dans le panier</span>
+                      <span className="font-semibold">{t.favorites.allInCart}</span>
                     </>
                   ) : (
                     <>
                       <ShoppingCart className="mr-3 h-5 w-5" />
-                      <span className="font-semibold">Ajouter toutes au panier</span>
+                      <span className="font-semibold">{t.favorites.addAllToCart}</span>
                     </>
                   )}
                 </Button>
@@ -148,7 +158,7 @@ export default function FavorisPage() {
                   size="lg"
                 >
                   <Trash2 className="mr-3 h-5 w-5" />
-                  <span className="font-semibold">Vider les favoris</span>
+                  <span className="font-semibold">{t.favorites.clearFavorites}</span>
                 </Button>
               </div>
             )}
@@ -169,18 +179,17 @@ export default function FavorisPage() {
                   </div>
                 </div>
                 <h2 className="text-2xl md:text-3xl font-semibold text-black mb-4">
-                  Aucune photo favorite pour le moment
+                  {t.favorites.noFavorites.title}
                 </h2>
                 <p className="text-gray-600 text-lg mb-8">
-                  Parcourez nos galeries et cliquez sur le cœur pour ajouter vos photos préférées à vos favoris. 
-                  Vous pourrez les retrouver facilement ici et les ajouter rapidement à votre panier.
+                  {t.favorites.noFavorites.description}
                 </p>
                 <Link href="/gallery">
                   <Button 
                     size="lg"
                     className="bg-black text-white hover:bg-gray-800"
                   >
-                    Explorer les galeries
+                    {t.favorites.noFavorites.exploreGalleries}
                   </Button>
                 </Link>
               </div>
@@ -229,7 +238,7 @@ export default function FavorisPage() {
                                   ? 'bg-green-500 hover:bg-green-600 text-white shadow-green-200' 
                                   : 'bg-white/95 hover:bg-white text-gray-700 hover:shadow-xl'
                               }`}
-                              title={inCart ? "Déjà dans le panier" : "Ajouter au panier"}
+                              title={inCart ? t.favorites.alreadyInCart : t.favorites.addToCart}
                               disabled={inCart}
                             >
                               {inCart ? (
@@ -258,7 +267,7 @@ export default function FavorisPage() {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
                             <div className="text-white text-center">
                               <p className="text-sm font-semibold drop-shadow-lg">
-                                Cliquer pour agrandir
+                                {t.favorites.clickToEnlarge}
                               </p>
                             </div>
                           </div>
@@ -275,15 +284,15 @@ export default function FavorisPage() {
           {favorites.length > 0 && (
             <div className="mt-16 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 text-center border border-blue-100">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                💡 Conseils pour vos favoris
+                {t.favorites.tips.title}
               </h3>
               <div className="grid md:grid-cols-3 gap-6 text-sm text-gray-600">
                 <div className="space-y-2">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
                     <ShoppingCart className="w-5 h-5 text-blue-600" />
                   </div>
-                  <p className="font-medium text-gray-800">Ajout rapide au panier</p>
-                  <p>Utilisez le bouton "+" sur chaque photo pour l'ajouter directement au panier</p>
+                  <p className="font-medium text-gray-800">{t.favorites.tips.quickAdd.title}</p>
+                  <p>{t.favorites.tips.quickAdd.description}</p>
                 </div>
                 <div className="space-y-2">
                   <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -294,15 +303,15 @@ export default function FavorisPage() {
                       height={20}
                     />
                   </div>
-                  <p className="font-medium text-gray-800">Sauvegarde locale</p>
-                  <p>Vos favoris sont sauvegardés sur ce navigateur pendant 30 jours</p>
+                  <p className="font-medium text-gray-800">{t.favorites.tips.localSave.title}</p>
+                  <p>{t.favorites.tips.localSave.description}</p>
                 </div>
                 <div className="space-y-2">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
                     <CheckCircle className="w-5 h-5 text-green-600" />
                   </div>
-                  <p className="font-medium text-gray-800">Maximum 100 photos</p>
-                  <p>Gardez vos meilleures photos favorites pour un achat facilité</p>
+                  <p className="font-medium text-gray-800">{t.favorites.tips.maxPhotos.title}</p>
+                  <p>{t.favorites.tips.maxPhotos.description}</p>
                 </div>
               </div>
             </div>
