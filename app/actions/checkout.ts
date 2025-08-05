@@ -17,11 +17,16 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
       return { error: 'Panier vide' };
     }
 
-    // Check if order is too large for Stripe
+    // Check if order is too large for our system
     if (items.length > 100) {
       return { 
         error: `Votre commande contient ${items.length} photos, ce qui dépasse la limite de 100 articles par commande. Veuillez diviser votre commande en plusieurs parties.` 
       };
+    }
+    
+    // Warning for large orders that may hit metadata limits
+    if (items.length >= 75) {
+      console.warn(`⚠️ Large order detected: ${items.length} items. May hit metadata size limits.`);
     }
 
     const supabase = createServiceRoleClient();
@@ -305,10 +310,17 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
           error: `Erreur lors de la création de la session: trop d'articles (${items.length}). Veuillez réduire le nombre d'articles dans votre panier.` 
         };
       }
-      if (error.message.includes('metadata')) {
-        return { 
-          error: 'Erreur lors de la création de la session: données trop volumineuses. Veuillez contacter le support.' 
-        };
+      if (error.message.includes('metadata') || error.message.includes('Invalid value') || error.message.includes('Request entity too large')) {
+        // Large order error - likely 75+ photos causing metadata size limits
+        if (items.length >= 75) {
+          return { 
+            error: `Commande trop volumineuse (${items.length} photos). Veuillez commander maximum 75 photos à la fois. Pour recevoir les photos restantes, contactez-nous à contact@arodestudio.com avec votre liste de photos.` 
+          };
+        } else {
+          return { 
+            error: 'Erreur lors de la création de la session: données trop volumineuses. Veuillez contacter le support.' 
+          };
+        }
       }
       return { 
         error: `Erreur lors de la création de la session de paiement: ${error.message}` 

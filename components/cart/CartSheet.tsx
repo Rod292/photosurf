@@ -107,6 +107,11 @@ export function CartSheet() {
               ? "Votre panier est vide" 
               : `${totalItems} article${totalItems > 1 ? 's' : ''} dans votre panier`
             }
+            {totalItems >= 75 && (
+              <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded text-orange-800 text-sm">
+                ⚠️ Attention: Commande volumineuse ({totalItems} photos). Au-delà de 75 photos, le paiement peut échouer. Contactez-nous à contact@arodestudio.com pour les grosses commandes.
+              </div>
+            )}
           </SheetDescription>
         </SheetHeader>
         
