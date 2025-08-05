@@ -23,7 +23,8 @@ export const translations = {
       backHome: "Retour à l'accueil",
       activeFilters: "Filtres actifs :",
       clearFilters: "Effacer les filtres",
-      invalidDate: "Date invalide"
+      invalidDate: "Date invalide",
+      sessionTimeWarning: "⚠️ Une session dure 1h20. Si votre cours a commencé à 10h, vos photos peuvent se trouver dans les créneaux 9h-10h59 et 11h-12h59. Idem pour les autres créneaux."
     },
     favorites: {
       title: "Vos photos favorites",
@@ -80,7 +81,8 @@ export const translations = {
       backHome: "Back to home",
       activeFilters: "Active filters:",
       clearFilters: "Clear filters",
-      invalidDate: "Invalid date"
+      invalidDate: "Invalid date",
+      sessionTimeWarning: "⚠️ A session lasts 1h20. If your lesson started at 10am, your photos may be in the 9am-10:59am and 11am-12:59pm time slots. Same applies for other time slots."
     },
     favorites: {
       title: "Your favorite photos",
@@ -137,7 +139,8 @@ export const translations = {
       backHome: "Zurück zur Startseite",
       activeFilters: "Aktive Filter:",
       clearFilters: "Filter löschen",
-      invalidDate: "Ungültiges Datum"
+      invalidDate: "Ungültiges Datum",
+      sessionTimeWarning: "⚠️ Eine Sitzung dauert 1h20. Wenn Ihr Kurs um 10 Uhr begonnen hat, können sich Ihre Fotos in den Zeitfenstern 9-10:59 Uhr und 11-12:59 Uhr befinden. Gleiches gilt für andere Zeitfenster."
     },
     favorites: {
       title: "Ihre Lieblingsfotos",

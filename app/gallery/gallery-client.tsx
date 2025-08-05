@@ -8,6 +8,7 @@ import { HeartButton } from "@/components/ui/heart-button"
 import { useCartStore } from "@/context/cart-context"
 import { getNextPhotoPrice } from "@/lib/pricing"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { getTranslation, Language } from "@/lib/translations"
 
 interface Photo {
   id: string
@@ -23,6 +24,7 @@ interface GalleryClientProps {
   galleries: any[]
   schoolName?: string
   dateFilter?: string
+  language: Language
 }
 
 const PHOTOS_PER_PAGE = 50
@@ -42,7 +44,8 @@ const formatDate = (dateString: string | undefined | null): string => {
   })
 }
 
-export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter }: GalleryClientProps) {
+export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter, language }: GalleryClientProps) {
+  const t = getTranslation(language)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedGallery, setSelectedGallery] = useState<string | null>(null)
@@ -238,6 +241,15 @@ export function GalleryClient({ latestPhotos, galleries, schoolName, dateFilter 
                     </button>
                   ))}
                 </div>
+                
+                {/* Warning message about session duration */}
+                {dateFilter && (
+                  <div className="mt-3 text-center">
+                    <p className="text-sm italic text-red-600">
+                      {t.gallery.sessionTimeWarning}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

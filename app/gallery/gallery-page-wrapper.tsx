@@ -129,6 +129,7 @@ export function GalleryPageWrapper({
           latestPhotos={latestPhotos}
           galleries={galleries}
           schoolName={searchParams.school}
+          language={language}
         />
       ) : isDateFilter ? (
         // Layout spécial pour le filtre par date
@@ -136,6 +137,7 @@ export function GalleryPageWrapper({
           latestPhotos={latestPhotos}
           galleries={galleries}
           dateFilter={searchParams.date}
+          language={language}
         />
       ) : (
         // Layout organisé par sessions individuelles
