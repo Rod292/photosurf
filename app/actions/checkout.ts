@@ -5,7 +5,7 @@ import Stripe from 'stripe';
 import { CartItem as NewCartItem } from '@/contexts/CartContext';
 import { CartItem as ZustandCartItem } from '@/context/cart-context';
 import { createServiceRoleClient } from '@/lib/storage';
-import { calculateDynamicPricing } from '@/lib/pricing';
+import { calculateDynamicPricing, calculateDeliveryPrice } from '@/lib/pricing';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
@@ -31,6 +31,58 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
 
     const supabase = createServiceRoleClient();
     
+    // SECURITY: Server-side price validation
+    // Count digital photos for dynamic pricing calculation
+    let digitalPhotoCount = 0;
+    let hasSessionPack = false;
+    const digitalPhotos: Array<{index: number, isZustand: boolean}> = [];
+    
+    // First pass: count digital photos and check for session pack
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const isZustandItem = 'photo_id' in item;
+      const productType = isZustandItem 
+        ? (item as ZustandCartItem).product_type 
+        : (item as NewCartItem).productType;
+      
+      if (productType === 'digital') {
+        const quantity = isZustandItem ? 1 : (item as NewCartItem).quantity;
+        for (let j = 0; j < quantity; j++) {
+          digitalPhotos.push({ index: i, isZustand: isZustandItem });
+          digitalPhotoCount++;
+        }
+      } else if (productType === 'session_pack') {
+        hasSessionPack = true;
+      }
+    }
+    
+    // Calculate if session pack should be applied
+    const digitalPricing = calculateDynamicPricing(digitalPhotoCount, 'digital');
+    const shouldHaveSessionPack = digitalPricing.finalTotal >= 40;
+    
+    // Calculate individual prices for digital photos
+    const digitalPhotoPrices: Map<number, number> = new Map();
+    let currentDigitalIndex = 0;
+    
+    for (const { index } of digitalPhotos) {
+      let photoPrice = 0;
+      if (!shouldHaveSessionPack) {
+        // Apply tiered pricing: 10€, 7€, 5€ for subsequent photos
+        if (currentDigitalIndex === 0) {
+          photoPrice = 10;
+        } else if (currentDigitalIndex === 1) {
+          photoPrice = 7;
+        } else {
+          photoPrice = 5;
+        }
+      }
+      
+      // Store the price for this photo index
+      const currentPrice = digitalPhotoPrices.get(index) || 0;
+      digitalPhotoPrices.set(index, currentPrice + photoPrice);
+      currentDigitalIndex++;
+    }
+    
     // Create Stripe products and prices for each cart item
     const lineItems = [];
     
@@ -40,7 +92,8 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
       const batch = items.slice(i, i + batchSize);
       
       // Process batch in parallel
-      const batchPromises = batch.map(async (item) => {
+      const batchPromises = batch.map(async (item, batchIndex) => {
+        const itemIndex = i + batchIndex;
         try {
           // Detect item type and normalize data
           const isZustandItem = 'photo_id' in item;
@@ -67,7 +120,46 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
             imageUrl = zustandItem.preview_url;
             photoId = zustandItem.photo_id;
             productType = zustandItem.product_type;
-            priceInCents = Math.round((zustandItem.price + (zustandItem.delivery_price || 0)) * 100); // Convert euros to cents and include delivery
+            
+            // SECURITY: Calculate price server-side instead of trusting client
+            let calculatedPrice = 0;
+            if (productType === 'digital') {
+              // Use our pre-calculated price for this digital photo
+              calculatedPrice = digitalPhotoPrices.get(itemIndex) || 0;
+            } else if (productType === 'session_pack') {
+              calculatedPrice = 40; // Fixed price for session pack
+            } else if (productType === 'print_a5') {
+              calculatedPrice = 20;
+            } else if (productType === 'print_a4') {
+              calculatedPrice = 30;
+            } else if (productType === 'print_a3') {
+              calculatedPrice = 50;
+            } else if (productType === 'print_a2') {
+              calculatedPrice = 80;
+            } else if (productType === 'print_polaroid_3') {
+              calculatedPrice = 15;
+            } else if (productType === 'print_polaroid_6') {
+              calculatedPrice = 20;
+            }
+            
+            // Add delivery price if applicable
+            const deliveryPrice = calculateDeliveryPrice(productType, zustandItem.delivery_option || 'pickup');
+            
+            // SECURITY: Log if client price doesn't match server price
+            const clientPrice = zustandItem.price + (zustandItem.delivery_price || 0);
+            const serverPrice = calculatedPrice + deliveryPrice;
+            if (Math.abs(clientPrice - serverPrice) > 0.01) {
+              console.error(`🚨 SECURITY WARNING: Price manipulation detected!`, {
+                photoId,
+                productType,
+                clientPrice,
+                serverPrice,
+                difference: clientPrice - serverPrice,
+                item: zustandItem
+              });
+            }
+            
+            priceInCents = Math.round((calculatedPrice + deliveryPrice) * 100); // Convert euros to cents
             quantity = 1; // Zustand doesn't have quantity
             galleryId = ''; // We'll need to fetch this from the database
           } else {
@@ -78,7 +170,44 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
             imageUrl = newItem.photo.preview_s3_url;
             photoId = newItem.photo.id;
             productType = newItem.productType;
-            priceInCents = newItem.price; // Already in cents
+            
+            // SECURITY: Calculate price server-side
+            let calculatedPrice = 0;
+            if (productType === 'digital') {
+              // For React Context items with quantity, divide the total price by quantity
+              const totalDigitalPrice = digitalPhotoPrices.get(itemIndex) || 0;
+              calculatedPrice = totalDigitalPrice / quantity;
+            } else if (productType === 'session_pack') {
+              calculatedPrice = 40;
+            } else if (productType === 'print_a5') {
+              calculatedPrice = 20;
+            } else if (productType === 'print_a4') {
+              calculatedPrice = 30;
+            } else if (productType === 'print_a3') {
+              calculatedPrice = 50;
+            } else if (productType === 'print_a2') {
+              calculatedPrice = 80;
+            } else if (productType === 'print_polaroid_3') {
+              calculatedPrice = 15;
+            } else if (productType === 'print_polaroid_6') {
+              calculatedPrice = 20;
+            }
+            
+            // SECURITY: Log if client price doesn't match server price
+            const clientPricePerUnit = newItem.price / 100 / quantity; // Convert from cents to euros per unit
+            if (Math.abs(clientPricePerUnit - calculatedPrice) > 0.01) {
+              console.error(`🚨 SECURITY WARNING: Price manipulation detected!`, {
+                photoId,
+                productType,
+                clientPricePerUnit,
+                serverPrice: calculatedPrice,
+                difference: clientPricePerUnit - calculatedPrice,
+                quantity,
+                item: newItem
+              });
+            }
+            
+            priceInCents = Math.round(calculatedPrice * 100); // Convert to cents
             quantity = newItem.quantity;
             galleryId = newItem.photo.gallery_id;
           }
