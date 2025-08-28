@@ -61,7 +61,7 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
     const digitalPhotoPrices: Map<number, number> = new Map();
     
     if (digitalPhotoCount > 0) {
-      if (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal === 69) {
+      if (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal >= 69) {
         // Pack pricing applies - all individual photos are free
         for (const { index } of digitalPhotos) {
           digitalPhotoPrices.set(index, 0);
@@ -86,7 +86,7 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
     const lineItems = [];
     
     // Add pack as line item if pack pricing applies
-    if (digitalPhotoCount > 0 && (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal === 69)) {
+    if (digitalPhotoCount > 0 && (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal >= 69)) {
       const packName = digitalPricing.finalTotal === 40 ? 'Pack 15 Photos Numériques' : 'Pack Illimité Photos Numériques';
       const packDescription = digitalPricing.finalTotal === 40 
         ? 'Pack de 15 photos numériques haute résolution'
