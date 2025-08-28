@@ -108,12 +108,12 @@ export default function BoutiquePage() {
                     </div>
                     <div className="bg-white p-4 rounded-xl shadow-sm border-2 border-purple-400">
                       <div className="text-2xl font-bold text-purple-600">40€</div>
-                      <div className="text-sm text-gray-600">Pack session</div>
-                      <div className="text-xs text-purple-600 font-medium">ILLIMITÉ</div>
+                      <div className="text-sm text-gray-600">Pack 15 photos</div>
+                      <div className="text-xs text-purple-600 font-medium">15 PHOTOS</div>
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mt-4">
-                     <span className="font-bold text-purple-600">Pack photos illimitées : 40€</span>
+                     <span className="font-bold text-purple-600">Pack 15 photos : 40€ • Photos 16+ : 5€ • Pack illimité : 69€</span>
                   </p>
                 </div>
                 

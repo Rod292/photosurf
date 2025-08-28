@@ -10,7 +10,7 @@ import { Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { PhotoModal } from "@/components/photo-modal"
 import { createCheckoutSession } from "@/app/actions/checkout"
-import { shouldApplySessionPack, getSessionPackPrice } from "@/lib/pricing"
+import { calculateDynamicPricing } from "@/lib/pricing"
 
 export function CartContent() {
   const items = useCartStore((state) => state.items)
@@ -139,7 +139,7 @@ export function CartContent() {
                   />
                   <div>
                     <h2 className="text-lg sm:text-xl font-bold text-gray-900 font-lexend-deca">Vos photos sélectionnées</h2>
-                    <p className="text-xs sm:text-sm text-blue-700 font-lexend-deca font-medium">{items.filter(item => item.product_type !== 'session_pack').length} article{items.filter(item => item.product_type !== 'session_pack').length > 1 ? 's' : ''} dans votre panier</p>
+                    <p className="text-xs sm:text-sm text-blue-700 font-lexend-deca font-medium">{items.length} article{items.length > 1 ? 's' : ''} dans votre panier</p>
                   </div>
                 </div>
                 {items.length > 0 && (
@@ -156,32 +156,20 @@ export function CartContent() {
                 )}
               </div>
             </div>
-            {items.filter(item => item.product_type !== 'session_pack').map((item) => (
+            {items.map((item) => (
               <div key={`${item.photo_id}-${item.product_type}`} className="flex items-center p-3 sm:p-6 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200">
-                <div className={`mr-2 sm:mr-4 flex-shrink-0 ${item.product_type !== 'session_pack' ? 'cursor-pointer' : ''}`} onClick={() => item.product_type !== 'session_pack' && handlePhotoClick(item)}>
-                  {item.product_type === 'session_pack' ? (
-                    <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-md flex items-center justify-center">
-                      <Image
-                        src="/Logos/camera2.svg"
-                        alt="Pack Session"
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 sm:w-10 sm:h-10 opacity-70"
-                      />
-                    </div>
-                  ) : (
-                    <Image
-                      src={item.preview_url || "/placeholder.svg"}
-                      alt={item.filename}
-                      width={100}
-                      height={100}
-                      className="rounded-md object-cover w-16 h-16 sm:w-24 sm:h-24"
-                    />
-                  )}
+                <div className="mr-2 sm:mr-4 flex-shrink-0 cursor-pointer" onClick={() => handlePhotoClick(item)}>
+                  <Image
+                    src={item.preview_url || "/placeholder.svg"}
+                    alt={item.filename}
+                    width={100}
+                    height={100}
+                    className="rounded-md object-cover w-16 h-16 sm:w-24 sm:h-24"
+                  />
                 </div>
                 <div className="flex-grow min-w-0">
                   <h3 className="font-semibold font-lexend-deca text-sm sm:text-base truncate pr-1">
-                    {item.product_type === 'session_pack' ? '🎁 Pack Session' : item.filename}
+                    {item.filename}
                   </h3>
                   <p className="text-xs sm:text-sm text-gray-600 font-lexend-deca">
                     {item.product_type === 'digital' ? (
@@ -240,21 +228,14 @@ export function CartContent() {
                         />
                         <span>A2</span>
                       </span>
-                    ) : item.product_type === 'session_pack' ? (
+                    ) : (
                       <span className="flex items-center gap-1">
-                        <Image
-                          src="/Logos/camera2.svg"
-                          alt="Pack Session"
-                          width={16}
-                          height={16}
-                          className="w-3 sm:w-4 h-3 sm:h-4"
-                        />
-                        <span className="font-semibold text-blue-600">Pack Session</span>
+                        📄 {item.product_type}
                       </span>
-                    ) : null}
+                    )}
                   </p>
                   <p className="text-xs sm:text-sm text-gray-600 font-lexend-deca font-medium mt-1">
-                    {item.price === 0 && item.product_type === 'digital' ? "Inclus dans pack session" : `${item.price.toFixed(2)}€`}
+                    {item.price === 0 && item.product_type === 'digital' ? "Inclus dans le pack" : `${item.price.toFixed(2)}€`}
                   </p>
                   {item.delivery_option && (
                     <p className="text-xs text-gray-500 font-lexend-deca mt-1">
@@ -270,7 +251,7 @@ export function CartContent() {
                     </p>
                   )}
                 </div>
-                {item.product_type !== 'session_pack' && (
+                {(
                   <Button
                     variant="ghost"
                     size="sm"
@@ -292,16 +273,28 @@ export function CartContent() {
               <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
                 <div className="flex justify-between items-center py-2">
                   <span className="text-sm sm:text-base text-gray-600 font-lexend-deca">Nombre de photos</span>
-                  <span className="text-sm sm:text-base font-medium font-lexend-deca">{items.filter(item => item.product_type !== 'session_pack').length}</span>
+                  <span className="text-sm sm:text-base font-medium font-lexend-deca">{items.length}</span>
                 </div>
                 
-                {/* Pack Session */}
-                {items.some(item => item.product_type === 'session_pack') && (
+                {/* Pack Info */}
+                {dynamicPricing.digital.finalTotal === 40 && (
+                  <div className="flex justify-between items-center py-2 bg-purple-50 px-3 rounded">
+                    <span className="text-sm sm:text-base font-semibold text-purple-700 font-lexend-deca">
+                      📷 Pack 15 photos activé
+                    </span>
+                    <span className="text-sm sm:text-base font-bold text-purple-700 font-lexend-deca">
+                      40€
+                    </span>
+                  </div>
+                )}
+                {dynamicPricing.digital.finalTotal === 69 && (
                   <div className="flex justify-between items-center py-2 bg-blue-50 px-3 rounded">
                     <span className="text-sm sm:text-base font-semibold text-blue-700 font-lexend-deca">
-                      🎁 Pack Session activé
+                      🎁 Pack Illimité activé
                     </span>
-                    <span className="text-sm sm:text-base font-bold text-blue-700 font-lexend-deca">40,00€</span>
+                    <span className="text-sm sm:text-base font-bold text-blue-700 font-lexend-deca">
+                      69€
+                    </span>
                   </div>
                 )}
               </div>

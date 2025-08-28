@@ -27,7 +27,7 @@ export function CartSheet() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const totalItems = items.filter(item => item.product_type !== 'session_pack').length;
+  const totalItems = items.length;
   const totalPrice = getTotalPrice();
 
   useEffect(() => {
@@ -129,7 +129,7 @@ export function CartSheet() {
             </div>
           ) : (
             <div className="space-y-4">
-              {items.filter(item => item.product_type !== 'session_pack').map((item) => (
+              {items.map((item) => (
                 <div key={`${item.photo_id}-${item.product_type}`} className="flex gap-2 sm:gap-3 py-2 sm:py-3 border-b">
                   <div className="relative h-20 w-20 sm:h-20 sm:w-20 overflow-hidden rounded-md flex-shrink-0">
                     <Image
@@ -182,15 +182,7 @@ export function CartSheet() {
         
         {totalItems > 0 && (
           <div className="flex-shrink-0 pt-3 sm:pt-4 border-t mt-3 sm:mt-4">
-            {/* Pack Session */}
-            {items.some(item => item.product_type === 'session_pack') && (
-              <div className="flex items-center justify-between mb-3 bg-blue-50 px-3 py-2 rounded">
-                <span className="text-sm font-semibold text-blue-700">
-                  🎁 Pack Session activé
-                </span>
-                <span className="text-sm font-bold text-blue-700">40,00€</span>
-              </div>
-            )}
+            {/* Pack Info - automatically calculated */}
             
             <div className="flex items-center justify-between mb-4">
               <span className="text-lg font-semibold">Total</span>

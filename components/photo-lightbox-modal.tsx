@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 import { MobilePhotoViewer } from "./mobile-photo-viewer"
 import { HeartButton } from "@/components/ui/heart-button"
 import { motion } from "framer-motion"
-import { getNextPhotoPrice, formatPrice as formatPriceUtil, calculateSavingsPercentage, calculateDeliveryPrice } from "@/lib/pricing"
+import { getNextPhotoPrice, formatPrice as formatPriceUtil, calculateSavingsPercentage, calculateDeliveryPrice, calculateDynamicPricing } from "@/lib/pricing"
 
 interface PhotoLightboxModalProps {
   isOpen: boolean
@@ -30,12 +30,6 @@ const DIGITAL_OPTION = {
   description: 'Téléchargement haute résolution'
 }
 
-const SESSION_PACK_OPTION = {
-  id: 'session_pack',
-  label: 'Pack Photo Illimité',
-  price: 40,
-  description: 'Nombre de photos numériques illimitées'
-}
 
 const PRINT_OPTIONS = [
   {
@@ -83,21 +77,20 @@ export function PhotoLightboxModal({
   currentIndex,
   onNavigate
 }: PhotoLightboxModalProps) {
-  const [selectedProductType, setSelectedProductType] = useState<'digital' | 'print' | 'session_pack'>('digital')
+  const [selectedProductType, setSelectedProductType] = useState<'digital' | 'print'>('digital')
   const [selectedPrintFormat, setSelectedPrintFormat] = useState<string>('print_a5')
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'delivery'>('pickup')
+  const [showPack15Tooltip, setShowPack15Tooltip] = useState(false)
+  const [showUnlimitedTooltip, setShowUnlimitedTooltip] = useState(false)
   
   const getSelectedProduct = () => {
     if (selectedProductType === 'digital') {
       return DIGITAL_OPTION
     }
-    if (selectedProductType === 'session_pack') {
-      return SESSION_PACK_OPTION
-    }
     return PRINT_OPTIONS.find(option => option.id === selectedPrintFormat) || PRINT_OPTIONS[0]
   }
   const [isMobile, setIsMobile] = useState(false)
-  const { addItem, addSessionPack, removeItem, items } = useCartStore()
+  const { addItem, removeItem, items } = useCartStore()
   const { toast } = useToast()
 
   const currentPhoto = photos[currentIndex]
@@ -136,61 +129,6 @@ export function PhotoLightboxModal({
 
     const selectedOption = getSelectedProduct()
     if (!selectedOption) return
-
-    // Gestion spéciale pour le pack session
-    if (selectedProductType === 'session_pack') {
-      if (hasSessionPack()) {
-        toast({
-          title: "Pack déjà dans le panier",
-          description: "Le Pack Photo Illimité est déjà ajouté",
-          variant: "destructive",
-          duration: 4000,
-        })
-        return
-      }
-
-      // Compter les photos numériques qui vont être remplacées
-      const digitalPhotosCount = items.filter(item => item.product_type === 'digital').length
-      
-      // Ajouter le pack session
-      addSessionPack({
-        photo_id: currentPhoto.id, // On associe le pack à cette photo comme référence
-        product_type: 'session_pack' as any,
-        price: SESSION_PACK_OPTION.price,
-        preview_url: currentPhoto.preview_s3_url,
-        filename: `Pack Session Illimité`,
-        delivery_option: undefined,
-        delivery_price: 0
-      })
-
-      // Ajouter également la photo actuelle comme photo numérique (gratuite grâce au pack)
-      const existingDigitalPhoto = items.find(item => 
-        item.photo_id === currentPhoto.id && item.product_type === 'digital'
-      )
-      
-      if (!existingDigitalPhoto) {
-        addItem({
-          photo_id: currentPhoto.id,
-          product_type: 'digital',
-          price: 0, // Gratuite car le pack est maintenant actif
-          preview_url: currentPhoto.preview_s3_url,
-          filename: currentPhoto.filename,
-          delivery_option: undefined,
-          delivery_price: 0
-        })
-      }
-
-      const message = digitalPhotosCount > 0 
-        ? `${selectedOption.label} + Photo actuelle ajoutées (${digitalPhotosCount} photo${digitalPhotosCount > 1 ? 's' : ''} numérique${digitalPhotosCount > 1 ? 's' : ''} remplacée${digitalPhotosCount > 1 ? 's' : ''})`
-        : `${selectedOption.label} + Photo actuelle ajoutées au panier`
-
-      toast({
-        title: "Pack ajouté au panier !",
-        description: message,
-        duration: 4000,
-      })
-      return
-    }
 
     const productId = selectedProductType === 'digital' ? 'digital' : selectedPrintFormat
 
@@ -239,29 +177,11 @@ export function PhotoLightboxModal({
     }).format(price)
   }
 
-  // Vérifier si le pack session est déjà dans le panier
-  const hasSessionPack = () => {
-    return items.some(item => item.product_type === 'session_pack')
-  }
-
   // Calculer le prix pour la photo numérique
   const getDigitalPhotoPrice = () => {
-    // Si le pack session est déjà dans le panier, les photos numériques sont gratuites
-    if (hasSessionPack()) {
-      return 0
-    }
     const currentPhotoCount = items.filter(item => item.product_type === 'digital').length
     const currentTotal = items.filter(item => item.product_type === 'digital').reduce((sum, item) => sum + item.price, 0)
     return getNextPhotoPrice(currentPhotoCount, 'digital', currentTotal)
-  }
-
-  // Calculer le prix pour le pack session
-  const getSessionPackPrice = () => {
-    // Le pack session ne peut être ajouté qu'une seule fois
-    if (hasSessionPack()) {
-      return 0 // Déjà dans le panier
-    }
-    return SESSION_PACK_OPTION.price
   }
 
   // Calculer le prix pour le tirage sélectionné
@@ -276,9 +196,6 @@ export function PhotoLightboxModal({
     if (selectedProductType === 'digital') {
       return getDigitalPhotoPrice()
     }
-    if (selectedProductType === 'session_pack') {
-      return getSessionPackPrice()
-    }
     if (selectedProductType === 'print') {
       return getPrintPhotoPrice()
     }
@@ -287,11 +204,6 @@ export function PhotoLightboxModal({
 
   // Vérifier si la photo est déjà dans le panier
   const isPhotoInCart = () => {
-    if (selectedProductType === 'session_pack') {
-      // Le pack session ne peut être ajouté qu'une fois, peu importe la photo
-      return hasSessionPack()
-    }
-    
     const productId = selectedProductType === 'digital' ? 'digital' : selectedPrintFormat
     return items.some(item => 
       item.photo_id === currentPhoto.id && item.product_type === productId
@@ -404,9 +316,85 @@ export function PhotoLightboxModal({
                   <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Galerie</h4>
                   <p className="text-sm font-medium text-gray-800">{currentPhoto.filename}</p>
                 </div>
-                <div className="text-xs text-gray-600 text-center mb-4">
-                  <p>1ère photo : 10€ • 2ème photo : 7€ • 3ème+ : 5€ • <span className="text-purple-600 font-medium">Photos illimitées : 40€</span></p>
+                <div className="bg-white rounded-md p-2 shadow-sm border border-gray-200 mb-3">
+                  <div className="flex items-center justify-center gap-2 text-xs mb-2">
+                    <div className="text-center">
+                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mb-1">
+                        <span className="text-green-600 font-bold text-xs">1</span>
+                      </div>
+                      <div className="font-bold text-green-600 text-xs">10€</div>
+                    </div>
+                    <div className="text-gray-300 text-xs">→</div>
+                    <div className="text-center">
+                      <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center mb-1">
+                        <span className="text-orange-600 font-bold text-xs">2</span>
+                      </div>
+                      <div className="font-bold text-orange-600 text-xs">7€</div>
+                    </div>
+                    <div className="text-gray-300 text-xs">→</div>
+                    <div className="text-center">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mb-1">
+                        <span className="text-blue-600 font-bold text-xs">3+</span>
+                      </div>
+                      <div className="font-bold text-blue-600 text-xs">5€</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <div 
+                        className="bg-purple-50 border border-purple-200 rounded-md p-2 text-center cursor-pointer hover:bg-purple-100 transition-colors"
+                        onMouseEnter={() => setShowPack15Tooltip(true)}
+                        onMouseLeave={() => setShowPack15Tooltip(false)}
+                        onClick={() => setShowPack15Tooltip(!showPack15Tooltip)}
+                      >
+                        <div className="h-3 flex items-center justify-center mb-1">
+                          <Image
+                            src="/Logos/camera2.svg"
+                            alt="Pack 15 photos"
+                            width={10}
+                            height={10}
+                            className="opacity-70"
+                          />
+                        </div>
+                        <div className="font-bold text-purple-700 text-xs">Pack 15</div>
+                        <div className="text-purple-600 font-bold text-xs">40€</div>
+                      </div>
+                      {showPack15Tooltip && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-red-300 rounded-md p-2 shadow-lg z-10">
+                          <p className="text-xs text-red-600 font-medium text-center">
+                            S'applique automatiquement dès que votre total atteint 40€
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="relative flex-1">
+                      <div 
+                        className="bg-blue-50 border border-blue-200 rounded-md p-2 text-center cursor-pointer hover:bg-blue-100 transition-colors"
+                        onMouseEnter={() => setShowUnlimitedTooltip(true)}
+                        onMouseLeave={() => setShowUnlimitedTooltip(false)}
+                        onClick={() => setShowUnlimitedTooltip(!showUnlimitedTooltip)}
+                      >
+                        <div className="h-3 flex items-center justify-center mb-1">
+                          <div className="text-xs">🎁</div>
+                        </div>
+                        <div className="font-bold text-blue-700 text-xs">Illimité</div>
+                        <div className="text-blue-600 font-bold text-xs">69€</div>
+                      </div>
+                      {showUnlimitedTooltip && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-red-300 rounded-md p-2 shadow-lg z-10">
+                          <p className="text-xs text-red-600 font-medium text-center">
+                            S'applique automatiquement dès que votre total atteint 69€
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
+                
+                <p className="text-xs text-red-600 italic text-center mt-2">
+                  Ajoutez vos photos une à une, les prix de pack s'appliqueront automatiquement dans le panier
+                </p>
               </div>
               
               {/* Scrollable content area */}
@@ -446,70 +434,6 @@ export function PhotoLightboxModal({
                     </div>
                   </div>
 
-                  {/* Pack Photo Illimité */}
-                  <div className="group relative">
-                    <div 
-                      className={`flex items-start space-x-2 p-3 border-2 rounded-lg transition-all duration-200 ${
-                        hasSessionPack() 
-                          ? 'bg-gray-100 border-gray-300 opacity-60' 
-                          : selectedProductType === 'session_pack' 
-                            ? 'border-purple-500 bg-gradient-to-r from-purple-100 to-blue-100 cursor-pointer' 
-                            : 'bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 group-hover:border-purple-400 hover:shadow-md cursor-pointer'
-                      }`}
-                      onClick={() => !hasSessionPack() && setSelectedProductType('session_pack')}
-                    >
-                      <input
-                        type="radio"
-                        name="productType"
-                        value="session_pack"
-                        checked={selectedProductType === 'session_pack'}
-                        onChange={() => !hasSessionPack() && setSelectedProductType('session_pack')}
-                        disabled={hasSessionPack()}
-                        className={`mt-0.5 w-4 h-4 ${hasSessionPack() ? 'text-gray-400' : 'text-purple-600'}`}
-                      />
-                      <div className="flex-1 pr-6">
-                        <Label 
-                          className={`text-sm font-semibold transition-colors pointer-events-none ${
-                            hasSessionPack() 
-                              ? 'text-gray-500 cursor-not-allowed' 
-                              : 'cursor-pointer text-gray-900 group-hover:text-purple-700'
-                          }`}
-                        >
-                          <span>{SESSION_PACK_OPTION.label} {hasSessionPack() ? '✓' : '🎁'}</span>
-                        </Label>
-                        <p className={`text-xs leading-tight pointer-events-none ${
-                          hasSessionPack() ? 'text-gray-400' : 'text-gray-600'
-                        }`}>
-                          {hasSessionPack() ? 'Déjà ajouté au panier' : SESSION_PACK_OPTION.description}
-                        </p>
-                        <div className="flex items-center justify-between mt-1">
-                          <p className="text-base font-bold text-purple-600 pointer-events-none">
-                            {hasSessionPack() ? "Déjà dans le panier" : formatPrice(getSessionPackPrice())}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    {hasSessionPack() && (
-                      <button
-                        onClick={() => {
-                          // Retirer le pack du panier
-                          const packInCart = items.find(item => item.product_type === 'session_pack');
-                          if (packInCart) {
-                            removeItem(packInCart.photo_id, 'session_pack');
-                            toast({
-                              title: "Pack retiré",
-                              description: "Le Pack Photo Illimité a été retiré du panier",
-                              duration: 3000,
-                            });
-                          }
-                        }}
-                        className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg transition-colors z-10"
-                        title="Retirer le pack du panier"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
 
                   {/* Tirage avec menu déroulant */}
                   <div className="group relative">
@@ -664,6 +588,16 @@ export function PhotoLightboxModal({
                     />
                     {isPhotoInCart() ? "Déjà dans le panier" : "Ajouter au panier"}
                   </Button>
+                </div>
+                
+                {/* Compteur de photos dans le panier */}
+                <div className="text-center mt-3">
+                  <p className="text-xs text-gray-600">
+                    {items.length === 0 
+                      ? "Aucune photo dans le panier" 
+                      : `${items.length} photo${items.length > 1 ? 's' : ''} dans le panier`
+                    }
+                  </p>
                 </div>
               </div>
             </motion.div>

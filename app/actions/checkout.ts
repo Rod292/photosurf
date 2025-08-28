@@ -34,10 +34,9 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
     // SECURITY: Server-side price validation
     // Count digital photos for dynamic pricing calculation
     let digitalPhotoCount = 0;
-    let hasSessionPack = false;
     const digitalPhotos: Array<{index: number, isZustand: boolean}> = [];
     
-    // First pass: count digital photos and check for session pack
+    // First pass: count digital photos
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const isZustandItem = 'photo_id' in item;
@@ -51,36 +50,36 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
           digitalPhotos.push({ index: i, isZustand: isZustandItem });
           digitalPhotoCount++;
         }
-      } else if (productType === 'session_pack') {
-        hasSessionPack = true;
       }
     }
     
-    // Calculate if session pack should be applied
+    // Calculate pricing based on digital photo count
     const digitalPricing = calculateDynamicPricing(digitalPhotoCount, 'digital');
-    const shouldHaveSessionPack = digitalPricing.finalTotal >= 40;
     
-    // Calculate individual prices for digital photos
+    // For digital photos, the total pricing is handled by calculateDynamicPricing
+    // Each individual photo will be priced as 0 if the total qualifies for a pack
     const digitalPhotoPrices: Map<number, number> = new Map();
-    let currentDigitalIndex = 0;
     
-    for (const { index } of digitalPhotos) {
-      let photoPrice = 0;
-      if (!shouldHaveSessionPack) {
-        // Apply tiered pricing: 10€, 7€, 5€ for subsequent photos
-        if (currentDigitalIndex === 0) {
-          photoPrice = 10;
-        } else if (currentDigitalIndex === 1) {
-          photoPrice = 7;
-        } else {
-          photoPrice = 5;
+    if (digitalPhotoCount > 0) {
+      if (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal === 69) {
+        // Pack pricing applies - all individual photos are free
+        for (const { index } of digitalPhotos) {
+          digitalPhotoPrices.set(index, 0);
+        }
+      } else {
+        // Individual pricing applies
+        let currentDigitalIndex = 0;
+        for (const { index } of digitalPhotos) {
+          let photoPrice = 10; // Default first photo price
+          if (currentDigitalIndex === 1) {
+            photoPrice = 7;  // Second photo
+          } else if (currentDigitalIndex >= 2) {
+            photoPrice = 5;  // Third+ photos
+          }
+          digitalPhotoPrices.set(index, photoPrice);
+          currentDigitalIndex++;
         }
       }
-      
-      // Store the price for this photo index
-      const currentPrice = digitalPhotoPrices.get(index) || 0;
-      digitalPhotoPrices.set(index, currentPrice + photoPrice);
-      currentDigitalIndex++;
     }
     
     // Create Stripe products and prices for each cart item
@@ -111,7 +110,6 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
             // Zustand cart item
             const zustandItem = item as ZustandCartItem;
             productName = `Photo ${zustandItem.product_type === 'digital' ? 'Numérique' : 
-                                  zustandItem.product_type === 'session_pack' ? 'Pack Session' :
                                   zustandItem.product_type === 'print_a5' ? 'Tirage A5' :
                                   zustandItem.product_type === 'print_a4' ? 'Tirage A4' :
                                   zustandItem.product_type === 'print_a3' ? 'Tirage A3' :
@@ -126,8 +124,6 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
             if (productType === 'digital') {
               // Use our pre-calculated price for this digital photo
               calculatedPrice = digitalPhotoPrices.get(itemIndex) || 0;
-            } else if (productType === 'session_pack') {
-              calculatedPrice = 40; // Fixed price for session pack
             } else if (productType === 'print_a5') {
               calculatedPrice = 20;
             } else if (productType === 'print_a4') {
@@ -173,12 +169,12 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
             
             // SECURITY: Calculate price server-side
             let calculatedPrice = 0;
+            quantity = newItem.quantity;
+            
             if (productType === 'digital') {
               // For React Context items with quantity, divide the total price by quantity
               const totalDigitalPrice = digitalPhotoPrices.get(itemIndex) || 0;
               calculatedPrice = totalDigitalPrice / quantity;
-            } else if (productType === 'session_pack') {
-              calculatedPrice = 40;
             } else if (productType === 'print_a5') {
               calculatedPrice = 20;
             } else if (productType === 'print_a4') {
@@ -208,7 +204,6 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
             }
             
             priceInCents = Math.round(calculatedPrice * 100); // Convert to cents
-            quantity = newItem.quantity;
             galleryId = newItem.photo.gallery_id;
           }
           
@@ -240,21 +235,18 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
             previewS3Url = newItem.photo.preview_s3_url;
           }
 
-          // For session_pack, handle differently since it doesn't represent a single photo
-          const isSessionPack = productType === 'session_pack';
-          
           const product = await stripe.products.create({
             name: productName,
             description: productDescription,
-            images: isSessionPack ? [] : [imageUrl],
+            images: [imageUrl],
             metadata: {
-              photo_id: isSessionPack ? 'session_pack' : photoId,
+              photo_id: photoId,
               product_type: productType,
               gallery_id: galleryId,
               delivery_option: isZustandItem ? (item as ZustandCartItem).delivery_option || '' : '',
               delivery_price: isZustandItem ? ((item as ZustandCartItem).delivery_price || 0).toString() : '0',
-              original_s3_key: isSessionPack ? 'session_pack' : originalS3Key,
-              preview_s3_url: isSessionPack ? 'session_pack' : previewS3Url,
+              original_s3_key: originalS3Key,
+              preview_s3_url: previewS3Url,
             },
           });
 

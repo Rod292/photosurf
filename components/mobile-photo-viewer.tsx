@@ -9,7 +9,7 @@ import { Photo } from "@/lib/database.types"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { HeartButton } from "@/components/ui/heart-button"
-import { getNextPhotoPrice, calculateDeliveryPrice, formatPrice as formatPriceUtil } from "@/lib/pricing"
+import { getNextPhotoPrice, calculateDeliveryPrice, formatPrice as formatPriceUtil, calculateDynamicPricing } from "@/lib/pricing"
 
 interface MobilePhotoViewerProps {
   isOpen: boolean
@@ -26,12 +26,6 @@ const DIGITAL_OPTION = {
   description: 'Téléchargement haute résolution'
 }
 
-const SESSION_PACK_OPTION = {
-  id: 'session_pack',
-  label: 'Pack Session Illimité',
-  price: 40,
-  description: 'Toutes vos photos numériques'
-}
 
 const PRINT_OPTIONS = [
   {
@@ -79,48 +73,30 @@ export function MobilePhotoViewer({
   currentIndex,
   onNavigate
 }: MobilePhotoViewerProps) {
-  const [selectedProductType, setSelectedProductType] = useState<'digital' | 'print' | 'session_pack'>('digital')
+  const [selectedProductType, setSelectedProductType] = useState<'digital' | 'print'>('digital')
   const [selectedPrintFormat, setSelectedPrintFormat] = useState<string>('print_polaroid_3')
   const [showOptions, setShowOptions] = useState(false)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'delivery'>('pickup')
   const [showClearCartConfirm, setShowClearCartConfirm] = useState(false)
-  const { addItem, addSessionPack, clearCart, removeItem, items } = useCartStore()
+  const [showPack15Tooltip, setShowPack15Tooltip] = useState(false)
+  const [showUnlimitedTooltip, setShowUnlimitedTooltip] = useState(false)
+  const { addItem, clearCart, removeItem, items } = useCartStore()
   const { toast } = useToast()
 
-  // Vérifier si le pack session est déjà dans le panier
-  const hasSessionPack = () => {
-    return items.some(item => item.product_type === 'session_pack')
-  }
 
   const getSelectedProduct = () => {
     if (selectedProductType === 'digital') {
       return DIGITAL_OPTION
-    }
-    if (selectedProductType === 'session_pack') {
-      return SESSION_PACK_OPTION
     }
     return PRINT_OPTIONS.find(option => option.id === selectedPrintFormat) || PRINT_OPTIONS[0]
   }
 
   // Calculer le prix pour la photo numérique
   const getDigitalPhotoPrice = () => {
-    // Si le pack session est déjà dans le panier, les photos numériques sont gratuites
-    if (hasSessionPack()) {
-      return 0
-    }
     const currentPhotoCount = items.filter(item => item.product_type === 'digital').length
     const currentTotal = items.filter(item => item.product_type === 'digital').reduce((sum, item) => sum + item.price, 0)
     return getNextPhotoPrice(currentPhotoCount, 'digital', currentTotal)
-  }
-
-  // Calculer le prix pour le pack session
-  const getSessionPackPrice = () => {
-    // Le pack session ne peut être ajouté qu'une seule fois
-    if (hasSessionPack()) {
-      return 0 // Déjà dans le panier
-    }
-    return SESSION_PACK_OPTION.price
   }
 
   // Calculer le prix pour le tirage sélectionné
@@ -135,9 +111,6 @@ export function MobilePhotoViewer({
     if (selectedProductType === 'digital') {
       return getDigitalPhotoPrice()
     }
-    if (selectedProductType === 'session_pack') {
-      return getSessionPackPrice()
-    }
     if (selectedProductType === 'print') {
       return getPrintPhotoPrice()
     }
@@ -146,7 +119,7 @@ export function MobilePhotoViewer({
 
   // Calculer le prix de livraison
   const getDeliveryPrice = () => {
-    if (selectedProductType === 'digital' || selectedProductType === 'session_pack') return 0
+    if (selectedProductType === 'digital') return 0
     return calculateDeliveryPrice(selectedPrintFormat, deliveryOption)
   }
 
@@ -154,13 +127,6 @@ export function MobilePhotoViewer({
 
   // Vérifier si la photo est déjà dans le panier
   const isPhotoInCart = () => {
-    if (selectedProductType === 'session_pack') {
-      // Pour le pack session, le bouton ne devrait être vert que si le pack est dans le panier
-      // et que cette photo spécifique était celle utilisée pour l'ajout
-      const sessionPackItem = items.find(item => item.product_type === 'session_pack')
-      return sessionPackItem?.photo_id === currentPhoto.id
-    }
-    
     const productId = selectedProductType === 'digital' ? 'digital' : selectedPrintFormat
     return items.some(item => 
       item.photo_id === currentPhoto.id && item.product_type === productId
@@ -197,61 +163,6 @@ export function MobilePhotoViewer({
 
     const selectedOption = getSelectedProduct()
     if (!selectedOption) return
-
-    // Gestion spéciale pour le pack session
-    if (selectedProductType === 'session_pack') {
-      if (hasSessionPack()) {
-        toast({
-          title: "Pack déjà dans le panier",
-          description: "Le Pack Session Illimité est déjà ajouté",
-          variant: "destructive",
-          duration: 4000,
-        })
-        return
-      }
-
-      // Compter les photos numériques qui vont être remplacées
-      const digitalPhotosCount = items.filter(item => item.product_type === 'digital').length
-      
-      // Ajouter le pack session
-      addSessionPack({
-        photo_id: currentPhoto.id, // On associe le pack à cette photo comme référence
-        product_type: 'session_pack' as any,
-        price: SESSION_PACK_OPTION.price,
-        preview_url: currentPhoto.preview_s3_url,
-        filename: `Pack Session Illimité`,
-        delivery_option: undefined,
-        delivery_price: 0
-      })
-
-      // Ajouter également la photo actuelle comme photo numérique (gratuite grâce au pack)
-      const existingDigitalPhoto = items.find(item => 
-        item.photo_id === currentPhoto.id && item.product_type === 'digital'
-      )
-      
-      if (!existingDigitalPhoto) {
-        addItem({
-          photo_id: currentPhoto.id,
-          product_type: 'digital',
-          price: 0, // Gratuite car le pack est maintenant actif
-          preview_url: currentPhoto.preview_s3_url,
-          filename: currentPhoto.filename,
-          delivery_option: undefined,
-          delivery_price: 0
-        })
-      }
-
-      const message = digitalPhotosCount > 0 
-        ? `${selectedOption.label} + Photo actuelle ajoutées (${digitalPhotosCount} photo${digitalPhotosCount > 1 ? 's' : ''} numérique${digitalPhotosCount > 1 ? 's' : ''} remplacée${digitalPhotosCount > 1 ? 's' : ''})`
-        : `${selectedOption.label} + Photo actuelle ajoutées au panier`
-
-      toast({
-        title: "Pack ajouté au panier !",
-        description: message,
-        duration: 4000,
-      })
-      return
-    }
 
     const productId = selectedProductType === 'digital' ? 'digital' : selectedPrintFormat
 
@@ -542,8 +453,84 @@ export function MobilePhotoViewer({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-y-4">
-              <div className="text-xs text-gray-600 text-center">
-                <p>1ère photo : 10€ • 2ème photo : 7€ • 3ème+ : 5€ • <span className="text-purple-600 font-medium">Photos illimitées : 40€</span></p>
+              <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200 mb-4">
+                <div className="flex items-center justify-center gap-4 text-sm mb-3">
+                  <div className="text-center">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mb-1">
+                      <span className="text-green-600 font-bold text-xs">1</span>
+                    </div>
+                    <div className="font-bold text-green-600">10€</div>
+                  </div>
+                  <div className="text-gray-300">→</div>
+                  <div className="text-center">
+                    <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mb-1">
+                      <span className="text-orange-600 font-bold text-xs">2</span>
+                    </div>
+                    <div className="font-bold text-orange-600">7€</div>
+                  </div>
+                  <div className="text-gray-300">→</div>
+                  <div className="text-center">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mb-1">
+                      <span className="text-blue-600 font-bold text-xs">3+</span>
+                    </div>
+                    <div className="font-bold text-blue-600">5€</div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <div 
+                      className="bg-purple-50 border border-purple-200 rounded-lg p-2 text-center cursor-pointer hover:bg-purple-100 transition-colors"
+                      onMouseEnter={() => setShowPack15Tooltip(true)}
+                      onMouseLeave={() => setShowPack15Tooltip(false)}
+                      onClick={() => setShowPack15Tooltip(!showPack15Tooltip)}
+                    >
+                      <div className="h-4 flex items-center justify-center mb-1">
+                        <Image
+                          src="/Logos/camera2.svg"
+                          alt="Pack 15 photos"
+                          width={14}
+                          height={14}
+                          className="opacity-70"
+                        />
+                      </div>
+                      <div className="font-bold text-purple-700 text-xs">Pack 15</div>
+                      <div className="text-purple-600 font-bold text-xs">40€</div>
+                    </div>
+                    {showPack15Tooltip && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-red-300 rounded-md p-2 shadow-lg z-10">
+                        <p className="text-xs text-red-600 font-medium text-center">
+                          S'applique automatiquement dès que votre total atteint 40€
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="relative flex-1">
+                    <div 
+                      className="bg-blue-50 border border-blue-200 rounded-lg p-2 text-center cursor-pointer hover:bg-blue-100 transition-colors"
+                      onMouseEnter={() => setShowUnlimitedTooltip(true)}
+                      onMouseLeave={() => setShowUnlimitedTooltip(false)}
+                      onClick={() => setShowUnlimitedTooltip(!showUnlimitedTooltip)}
+                    >
+                      <div className="h-4 flex items-center justify-center mb-1">
+                        <div className="text-sm">🎁</div>
+                      </div>
+                      <div className="font-bold text-blue-700 text-xs">Illimité</div>
+                      <div className="text-blue-600 font-bold text-xs">69€</div>
+                    </div>
+                    {showUnlimitedTooltip && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-red-300 rounded-md p-2 shadow-lg z-10">
+                        <p className="text-xs text-red-600 font-medium text-center">
+                          S'applique automatiquement dès que votre total atteint 69€
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <p className="text-xs text-red-600 italic text-center mt-2">
+                  Ajoutez vos photos une à une, les prix de pack s'appliqueront automatiquement dans le panier
+                </p>
               </div>
               <div className="space-y-2">
                 {/* Photo Numérique */}
@@ -563,67 +550,12 @@ export function MobilePhotoViewer({
                     </div>
                     <div className="text-right">
                       <span className="font-bold text-blue-600">
-                        {hasSessionPack() ? 'Inclus dans pack session' : formatPrice(getDigitalPhotoPrice())}
+                        {formatPriceUtil(getDigitalPhotoPrice())}
                       </span>
                     </div>
                   </div>
                 </button>
 
-                {/* Pack Session Illimité */}
-                <div className="relative">
-                  <div
-                    className={cn(
-                      "w-full p-4 rounded-xl text-left transition-all border-2 shadow-sm",
-                      hasSessionPack()
-                        ? "bg-gray-100 border-gray-300 opacity-60"
-                        : selectedProductType === 'session_pack'
-                          ? "bg-gradient-to-r from-purple-50 to-blue-50 border-purple-500 shadow-md cursor-pointer"
-                          : "bg-gray-50 border-gray-300 hover:border-gray-400 cursor-pointer"
-                    )}
-                    onClick={() => !hasSessionPack() && setSelectedProductType('session_pack')}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div className="flex-1 pr-8">
-                        <div className="flex items-center">
-                          <span className={`font-medium ${hasSessionPack() ? 'text-gray-500' : ''}`}>
-                            {SESSION_PACK_OPTION.label} {hasSessionPack() ? '✓' : '🎁'}
-                          </span>
-                        </div>
-                        <p className={`text-sm ${hasSessionPack() ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {hasSessionPack() ? 'Déjà ajouté au panier' : SESSION_PACK_OPTION.description}
-                        </p>
-                        <p className="text-xs text-purple-600 font-medium mt-1">
-                          💰 Économisez jusqu'à 50% sur vos photos !
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <span className="font-bold text-purple-600">
-                          {hasSessionPack() ? 'Ajouté' : formatPrice(getSessionPackPrice())}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  {hasSessionPack() && (
-                    <button
-                      onClick={() => {
-                        // Retirer le pack du panier
-                        const packInCart = items.find(item => item.product_type === 'session_pack');
-                        if (packInCart) {
-                          removeItem(packInCart.photo_id, 'session_pack');
-                          toast({
-                            title: "Pack retiré",
-                            description: "Le Pack Session Illimité a été retiré du panier",
-                            duration: 3000,
-                          });
-                        }
-                      }}
-                      className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg transition-colors z-10"
-                      title="Retirer le pack du panier"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
 
                 {/* Tirage avec menu déroulant */}
                 <div className={cn(
@@ -722,6 +654,16 @@ export function MobilePhotoViewer({
                 >
                   {isPhotoInCart() ? 'Ajouté' : 'Confirmer'}
                 </button>
+              </div>
+              
+              {/* Compteur de photos dans le panier */}
+              <div className="text-center mt-3">
+                <p className="text-xs text-gray-600">
+                  {items.length === 0 
+                    ? "Aucune photo dans le panier" 
+                    : `${items.length} photo${items.length > 1 ? 's' : ''} dans le panier`
+                  }
+                </p>
               </div>
             </div>
           </motion.div>
