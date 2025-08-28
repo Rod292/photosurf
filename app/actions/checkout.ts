@@ -56,22 +56,17 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
     // Calculate pricing based on digital photo count
     const digitalPricing = calculateDynamicPricing(digitalPhotoCount, 'digital');
     
-    // Debug logging for pricing logic
-    console.log(`🔍 DEBUG: digitalPhotoCount = ${digitalPhotoCount}, finalTotal = ${digitalPricing.finalTotal}`);
-    
     // For digital photos, the total pricing is handled by calculateDynamicPricing
     // Each individual photo will be priced as 0 if the total qualifies for a pack
     const digitalPhotoPrices: Map<number, number> = new Map();
     
     if (digitalPhotoCount > 0) {
       if (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal >= 69) {
-        console.log('🔍 DEBUG: Using full pack pricing logic');
         // Pack pricing applies - all individual photos are free
         for (const { index } of digitalPhotos) {
           digitalPhotoPrices.set(index, 0);
         }
       } else if (digitalPhotoCount > 15) {
-        console.log('🔍 DEBUG: Using Pack 15 + extra photos logic');
         // Pack 15 + extra photos: Pack 15 is 40€, extras are 5€ each
         // First 15 photos are covered by pack (set to 0), extras are 5€ each
         let currentDigitalIndex = 0;
@@ -84,7 +79,6 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
           currentDigitalIndex++;
         }
       } else {
-        console.log('🔍 DEBUG: Using individual pricing logic');
         // Individual pricing applies (1-15 photos, total < 40€)
         let currentDigitalIndex = 0;
         for (const { index } of digitalPhotos) {
@@ -104,11 +98,8 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
     const lineItems = [];
     
     // Add pack as line item if pack pricing applies
-    console.log(`🔍 DEBUG: Pack condition check - photoCount: ${digitalPhotoCount}, finalTotal: ${digitalPricing.finalTotal}`);
     if (digitalPhotoCount > 0 && (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal >= 69 || digitalPhotoCount > 15)) {
-      console.log('🔍 DEBUG: Pack condition met, determining pack type');
       if (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal >= 69) {
-        console.log('🔍 DEBUG: Creating full pack line item');
         // Full pack pricing (Pack 15 or Pack Unlimited)
         const packName = digitalPricing.finalTotal === 40 ? 'Pack 15 Photos Numériques' : 'Pack Illimité Photos Numériques';
         const packDescription = digitalPricing.finalTotal === 40 
@@ -138,7 +129,6 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
           quantity: 1,
         });
       } else if (digitalPhotoCount > 15) {
-        console.log('🔍 DEBUG: Creating Pack 15 + extras line item');
         // Pack 15 + extra photos (16+ photos, total between 40€ and 69€)
         // Add Pack 15 base
         const pack15Product = await stripe.products.create({
@@ -163,9 +153,6 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
         });
       }
     }
-    
-    // Debug: Log final digital photo prices
-    console.log('🔍 DEBUG: Final digital photo prices:', Array.from(digitalPhotoPrices.entries()));
     
     // Process items in batches to avoid timeouts
     const batchSize = 10;
