@@ -554,6 +554,39 @@ export function MobilePhotoViewer({
                       </span>
                     </div>
                   </div>
+                  
+                  {/* Compteur pour débloquer les packs */}
+                  {(() => {
+                    const digitalPhotosCount = items.filter(item => item.product_type === 'digital').length;
+                    const photosFor15Pack = Math.max(0, 8 - digitalPhotosCount);
+                    const photosForUnlimited = Math.max(0, 14 - digitalPhotosCount);
+                    
+                    if (digitalPhotosCount >= 14) {
+                      return (
+                        <div className="mt-3 p-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                          <p className="text-xs font-bold text-green-700 text-center">
+                            🎁 Pack Illimité débloqué !
+                          </p>
+                        </div>
+                      );
+                    } else if (digitalPhotosCount >= 8) {
+                      return (
+                        <div className="mt-3 p-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                          <p className="text-xs font-bold text-purple-700 text-center">
+                            📷 Pack 15 débloqué ! Encore <span className="text-orange-600">{photosForUnlimited}</span> photo{photosForUnlimited > 1 ? 's' : ''} pour le Pack Illimité
+                          </p>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div className="mt-3 p-2 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border border-orange-200">
+                          <p className="text-xs font-bold text-orange-700 text-center">
+                            Encore <span className="text-orange-600">{photosFor15Pack}</span> photo{photosFor15Pack > 1 ? 's' : ''} pour débloquer le Pack 15
+                          </p>
+                        </div>
+                      );
+                    }
+                  })()}
                 </button>
 
 
