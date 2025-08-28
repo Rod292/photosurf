@@ -85,6 +85,37 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
     // Create Stripe products and prices for each cart item
     const lineItems = [];
     
+    // Add pack as line item if pack pricing applies
+    if (digitalPhotoCount > 0 && (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal === 69)) {
+      const packName = digitalPricing.finalTotal === 40 ? 'Pack 15 Photos Numériques' : 'Pack Illimité Photos Numériques';
+      const packDescription = digitalPricing.finalTotal === 40 
+        ? 'Pack de 15 photos numériques haute résolution'
+        : 'Pack illimité de photos numériques haute résolution';
+      
+      // Create pack product
+      const packProduct = await stripe.products.create({
+        name: packName,
+        description: packDescription,
+        metadata: {
+          product_type: 'digital_pack',
+          pack_type: digitalPricing.finalTotal === 40 ? 'pack_15' : 'pack_unlimited',
+          photo_count: digitalPhotoCount.toString()
+        },
+      });
+
+      // Create pack price
+      const packPrice = await stripe.prices.create({
+        currency: 'eur',
+        unit_amount: digitalPricing.finalTotal * 100, // Convert euros to cents
+        product: packProduct.id,
+      });
+
+      lineItems.push({
+        price: packPrice.id,
+        quantity: 1,
+      });
+    }
+    
     // Process items in batches to avoid timeouts
     const batchSize = 10;
     for (let i = 0; i < items.length; i += batchSize) {
@@ -124,6 +155,11 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
             if (productType === 'digital') {
               // Use our pre-calculated price for this digital photo
               calculatedPrice = digitalPhotoPrices.get(itemIndex) || 0;
+              
+              // Skip creating line item if price is 0 (covered by pack)
+              if (calculatedPrice === 0) {
+                return null; // Will be filtered out later
+              }
             } else if (productType === 'print_a5') {
               calculatedPrice = 20;
             } else if (productType === 'print_a4') {
@@ -175,6 +211,11 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
               // For React Context items with quantity, divide the total price by quantity
               const totalDigitalPrice = digitalPhotoPrices.get(itemIndex) || 0;
               calculatedPrice = totalDigitalPrice / quantity;
+              
+              // Skip creating line item if price is 0 (covered by pack)
+              if (calculatedPrice === 0) {
+                return null; // Will be filtered out later
+              }
             } else if (productType === 'print_a5') {
               calculatedPrice = 20;
             } else if (productType === 'print_a4') {
@@ -269,7 +310,9 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
       
       // Wait for batch to complete
       const batchResults = await Promise.all(batchPromises);
-      lineItems.push(...batchResults);
+      // Filter out null results (digital photos with 0 price covered by pack)
+      const validResults = batchResults.filter(result => result !== null);
+      lineItems.push(...validResults);
     }
 
     // Validate promo code if provided
