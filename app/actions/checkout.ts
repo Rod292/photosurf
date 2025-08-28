@@ -11,6 +11,34 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
 });
 
+/**
+ * Distributes an amount evenly across a number of items, handling rounding to ensure exact total
+ * @param totalAmount Total amount to distribute (in euros)
+ * @param itemCount Number of items to distribute across
+ * @returns Array of prices that sum exactly to totalAmount
+ */
+function distributeAmountEvenly(totalAmount: number, itemCount: number): number[] {
+  // Convert to cents to avoid floating point precision issues
+  const totalCents = Math.round(totalAmount * 100);
+  const basePriceCents = Math.floor(totalCents / itemCount);
+  const remainder = totalCents % itemCount;
+  
+  const prices: number[] = [];
+  
+  // Distribute base price to all items
+  for (let i = 0; i < itemCount; i++) {
+    prices.push(basePriceCents);
+  }
+  
+  // Distribute remainder across first items (1 cent each)
+  for (let i = 0; i < remainder; i++) {
+    prices[i] += 1;
+  }
+  
+  // Convert back to euros
+  return prices.map(cents => cents / 100);
+}
+
 export async function createCheckoutSession(items: ZustandCartItem[] | NewCartItem[], promoCode?: string): Promise<{url?: string, error?: string, isFree?: boolean}> {
   try {
     if (!items || items.length === 0) {
@@ -57,27 +85,22 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
     const digitalPricing = calculateDynamicPricing(digitalPhotoCount, 'digital');
     
     // For digital photos, the total pricing is handled by calculateDynamicPricing
-    // Each individual photo will be priced as 0 if the total qualifies for a pack
+    // Pack prices are distributed evenly across individual photos to maintain correct Stripe totals
     const digitalPhotoPrices: Map<number, number> = new Map();
     
     if (digitalPhotoCount > 0) {
       if (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal >= 69) {
-        // Pack pricing applies - all individual photos are free
-        for (const { index } of digitalPhotos) {
-          digitalPhotoPrices.set(index, 0);
-        }
+        // Pack pricing applies - distribute pack price with smart rounding
+        const distributedPrices = distributeAmountEvenly(digitalPricing.finalTotal, digitalPhotoCount);
+        digitalPhotos.forEach(({ index }, i) => {
+          digitalPhotoPrices.set(index, distributedPrices[i]);
+        });
       } else if (digitalPhotoCount > 15) {
-        // Pack 15 + extra photos: Pack 15 is 40€, extras are 5€ each
-        // First 15 photos are covered by pack (set to 0), extras are 5€ each
-        let currentDigitalIndex = 0;
-        for (const { index } of digitalPhotos) {
-          if (currentDigitalIndex < 15) {
-            digitalPhotoPrices.set(index, 0); // Covered by Pack 15
-          } else {
-            digitalPhotoPrices.set(index, 5); // Extra photos at 5€ each
-          }
-          currentDigitalIndex++;
-        }
+        // Pack 15 + extra photos: Distribute total price with smart rounding
+        const distributedPrices = distributeAmountEvenly(digitalPricing.finalTotal, digitalPhotoCount);
+        digitalPhotos.forEach(({ index }, i) => {
+          digitalPhotoPrices.set(index, distributedPrices[i]);
+        });
       } else {
         // Individual pricing applies (1-15 photos, total < 40€)
         let currentDigitalIndex = 0;
@@ -97,62 +120,9 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
     // Create Stripe products and prices for each cart item
     const lineItems = [];
     
-    // Add pack as line item if pack pricing applies
-    if (digitalPhotoCount > 0 && (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal >= 69 || digitalPhotoCount > 15)) {
-      if (digitalPricing.finalTotal === 40 || digitalPricing.finalTotal >= 69) {
-        // Full pack pricing (Pack 15 or Pack Unlimited)
-        const packName = digitalPricing.finalTotal === 40 ? 'Pack 15 Photos Numériques' : 'Pack Illimité Photos Numériques';
-        const packDescription = digitalPricing.finalTotal === 40 
-          ? 'Pack de 15 photos numériques haute résolution'
-          : 'Pack illimité de photos numériques haute résolution';
-        
-        // Create pack product
-        const packProduct = await stripe.products.create({
-          name: packName,
-          description: packDescription,
-          metadata: {
-            product_type: 'digital_pack',
-            pack_type: digitalPricing.finalTotal === 40 ? 'pack_15' : 'pack_unlimited',
-            photo_count: digitalPhotoCount.toString()
-          },
-        });
-
-        // Create pack price
-        const packPrice = await stripe.prices.create({
-          currency: 'eur',
-          unit_amount: digitalPricing.finalTotal * 100, // Convert euros to cents
-          product: packProduct.id,
-        });
-
-        lineItems.push({
-          price: packPrice.id,
-          quantity: 1,
-        });
-      } else if (digitalPhotoCount > 15) {
-        // Pack 15 + extra photos (16+ photos, total between 40€ and 69€)
-        // Add Pack 15 base
-        const pack15Product = await stripe.products.create({
-          name: 'Pack 15 Photos Numériques',
-          description: 'Pack de 15 photos numériques haute résolution',
-          metadata: {
-            product_type: 'digital_pack',
-            pack_type: 'pack_15',
-            photo_count: '15'
-          },
-        });
-
-        const pack15Price = await stripe.prices.create({
-          currency: 'eur',
-          unit_amount: 4000, // 40€ in cents
-          product: pack15Product.id,
-        });
-
-        lineItems.push({
-          price: pack15Price.id,
-          quantity: 1,
-        });
-      }
-    }
+    // NOTE: We no longer add packs as separate line items
+    // Each photo will be priced individually according to pack logic
+    // This ensures compatibility with the email system that needs individual photos
     
     // Process items in batches to avoid timeouts
     const batchSize = 10;
@@ -194,10 +164,7 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
               // Use our pre-calculated price for this digital photo
               calculatedPrice = digitalPhotoPrices.get(itemIndex) || 0;
               
-              // Skip creating line item if price is 0 (covered by pack)
-              if (calculatedPrice === 0) {
-                return null; // Will be filtered out later
-              }
+              // Keep all photos in Stripe, even if price is 0 (for email system compatibility)
             } else if (productType === 'print_a5') {
               calculatedPrice = 20;
             } else if (productType === 'print_a4') {
@@ -250,10 +217,7 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
               const totalDigitalPrice = digitalPhotoPrices.get(itemIndex) || 0;
               calculatedPrice = totalDigitalPrice / quantity;
               
-              // Skip creating line item if price is 0 (covered by pack)
-              if (calculatedPrice === 0) {
-                return null; // Will be filtered out later
-              }
+              // Keep all photos in Stripe, even if price is 0 (for email system compatibility)
             } else if (productType === 'print_a5') {
               calculatedPrice = 20;
             } else if (productType === 'print_a4') {
@@ -348,9 +312,8 @@ export async function createCheckoutSession(items: ZustandCartItem[] | NewCartIt
       
       // Wait for batch to complete
       const batchResults = await Promise.all(batchPromises);
-      // Filter out null results (digital photos with 0 price covered by pack)
-      const validResults = batchResults.filter(result => result !== null);
-      lineItems.push(...validResults);
+      // All results are valid - we keep all photos including those with 0 price for email compatibility
+      lineItems.push(...batchResults);
     }
 
     // Validate promo code if provided

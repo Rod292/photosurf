@@ -437,16 +437,16 @@ export function PhotoLightboxModal({
                   {/* Compteur simple pour débloquer les packs */}
                   {(() => {
                     const digitalPhotosCount = items.filter(item => item.product_type === 'digital').length;
-                    const photosFor15Pack = Math.max(0, 8 - digitalPhotosCount);
-                    const photosForUnlimited = Math.max(0, 14 - digitalPhotosCount);
+                    const photosFor15Pack = Math.max(0, 7 - digitalPhotosCount);
+                    const photosForUnlimited = Math.max(0, 21 - digitalPhotosCount);
                     
-                    if (digitalPhotosCount >= 14) {
+                    if (digitalPhotosCount >= 21) {
                       return (
                         <p className="text-xs font-bold text-green-600 text-center mb-3">
                           🎁 Pack Illimité débloqué !
                         </p>
                       );
-                    } else if (digitalPhotosCount >= 8) {
+                    } else if (digitalPhotosCount >= 7) {
                       return (
                         <p className="text-xs font-bold text-purple-600 text-center mb-3">
                           📷 Pack 15 débloqué ! <span className="text-orange-600">{photosForUnlimited}</span> photos restantes pour le Pack Illimité
