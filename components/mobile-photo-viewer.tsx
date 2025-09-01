@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { HeartButton } from "@/components/ui/heart-button"
 import { getNextPhotoPrice, calculateDeliveryPrice, formatPrice as formatPriceUtil, calculateDynamicPricing } from "@/lib/pricing"
+import { LanguageSwitcher } from "@/components/language-switcher"
+import { getTranslation, Language } from "@/lib/translations"
 
 interface MobilePhotoViewerProps {
   isOpen: boolean
@@ -19,15 +21,14 @@ interface MobilePhotoViewerProps {
   onNavigate: (index: number) => void
 }
 
-const DIGITAL_OPTION = {
+const getDigitalOption = (t: ReturnType<typeof getTranslation>) => ({
   id: 'digital',
-  label: 'Photo Numérique',
+  label: t.photoModal.digitalPhoto,
   price: 15,
-  description: 'Téléchargement haute résolution'
-}
+  description: t.photoModal.digitalDownload
+})
 
-
-const PRINT_OPTIONS = [
+const getPrintOptions = (t: ReturnType<typeof getTranslation>) => [
   {
     id: 'print_polaroid_3',
     label: 'Polaroid x3',
@@ -73,6 +74,7 @@ export function MobilePhotoViewer({
   currentIndex,
   onNavigate
 }: MobilePhotoViewerProps) {
+  const [language, setLanguage] = useState<Language>('fr')
   const [selectedProductType, setSelectedProductType] = useState<'digital' | 'print'>('digital')
   const [selectedPrintFormat, setSelectedPrintFormat] = useState<string>('print_polaroid_3')
   const [showOptions, setShowOptions] = useState(false)
@@ -80,6 +82,10 @@ export function MobilePhotoViewer({
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'delivery'>('pickup')
   const [showClearCartConfirm, setShowClearCartConfirm] = useState(false)
   const [showPack15Tooltip, setShowPack15Tooltip] = useState(false)
+  
+  const t = getTranslation(language)
+  const DIGITAL_OPTION = getDigitalOption(t)
+  const PRINT_OPTIONS = getPrintOptions(t)
   const [showUnlimitedTooltip, setShowUnlimitedTooltip] = useState(false)
   const { addItem, clearCart, removeItem, items } = useCartStore()
   const { toast } = useToast()
@@ -453,11 +459,20 @@ export function MobilePhotoViewer({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="space-y-4">
+              {/* Language switcher - positioned above pricing box */}
+              <div className="flex justify-end mb-2">
+                <LanguageSwitcher 
+                  onLanguageChange={setLanguage}
+                  currentLanguage={language}
+                  className="opacity-90 hover:opacity-100 transition-opacity scale-90"
+                />
+              </div>
+              
               <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200 mb-4">
                 <div className="flex items-center justify-center gap-4 text-sm mb-3">
                   <div className="text-center">
                     <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mb-1">
-                      <span className="text-green-600 font-bold text-xs">1</span>
+                      <span className="text-green-600 font-bold text-xs">{t.photoModal.pricing.single}</span>
                     </div>
                     <div className="font-bold text-green-600">10€</div>
                   </div>
@@ -494,13 +509,13 @@ export function MobilePhotoViewer({
                           className="opacity-70"
                         />
                       </div>
-                      <div className="font-bold text-purple-700 text-xs">Pack 15</div>
+                      <div className="font-bold text-purple-700 text-xs">{t.photoModal.pricing.pack15}</div>
                       <div className="text-purple-600 font-bold text-xs">40€</div>
                     </div>
                     {showPack15Tooltip && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-red-300 rounded-md p-2 shadow-lg z-10">
                         <p className="text-xs text-red-600 font-medium text-center">
-                          S'applique automatiquement dès que votre total atteint 40€
+                          {t.photoModal.tooltips.pack15}
                         </p>
                       </div>
                     )}
@@ -515,13 +530,13 @@ export function MobilePhotoViewer({
                       <div className="h-4 flex items-center justify-center mb-1">
                         <div className="text-sm">🎁</div>
                       </div>
-                      <div className="font-bold text-blue-700 text-xs">Illimité</div>
+                      <div className="font-bold text-blue-700 text-xs">{t.photoModal.pricing.unlimited}</div>
                       <div className="text-blue-600 font-bold text-xs">69€</div>
                     </div>
                     {showUnlimitedTooltip && (
                       <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-red-300 rounded-md p-2 shadow-lg z-10">
                         <p className="text-xs text-red-600 font-medium text-center">
-                          S'applique automatiquement dès que votre total atteint 69€
+                          {t.photoModal.tooltips.unlimited}
                         </p>
                       </div>
                     )}
@@ -529,7 +544,7 @@ export function MobilePhotoViewer({
                 </div>
                 
                 <p className="text-xs text-red-600 italic text-center mt-2">
-                  Ajoutez vos photos une à une, les prix de pack s'appliqueront automatiquement dans le panier
+                  {t.photoModal.packInstructions}
                 </p>
               </div>
               <div className="space-y-2">
@@ -565,19 +580,19 @@ export function MobilePhotoViewer({
                   if (digitalPhotosCount >= 21) {
                     return (
                       <p className="text-xs font-bold text-green-600 text-center mb-3">
-                        🎁 Pack Illimité débloqué !
+                        {t.photoModal.counter.unlimitedUnlocked}
                       </p>
                     );
                   } else if (digitalPhotosCount >= 7) {
                     return (
                       <p className="text-xs font-bold text-purple-600 text-center mb-3">
-                        📷 Pack 15 débloqué ! <span className="text-orange-600">{photosForUnlimited}</span> photos restantes pour le Pack Illimité
+                        {t.photoModal.counter.pack15Unlocked} <span className="text-orange-600">{photosForUnlimited}</span> {t.photoModal.counter.photosRemainingUnlimited}
                       </p>
                     );
                   } else {
                     return (
                       <p className="text-xs font-bold text-orange-600 text-center mb-3">
-                        <span className="text-orange-700">{photosFor15Pack}</span> photos restantes pour le Pack 15
+                        <span className="text-orange-700">{photosFor15Pack}</span> {t.photoModal.counter.photosRemainingPack15}
                       </p>
                     );
                   }
@@ -596,12 +611,12 @@ export function MobilePhotoViewer({
                   >
                     <div className="flex justify-between items-center">
                       <div>
-                        <span className="font-medium">Tirage photo</span>
-                        <p className="text-sm text-gray-600">Impression professionnelle + JPEG inclus</p>
+                        <span className="font-medium">{t.photoModal.printPhoto}</span>
+                        <p className="text-sm text-gray-600">{t.photoModal.professionalPrint}</p>
                       </div>
                       <div className="text-right">
                         <span className="font-bold text-blue-600">
-                          {selectedProductType === 'print' ? formatPrice(getPrintPhotoPrice()) : 'À partir de 15€'}
+                          {selectedProductType === 'print' ? formatPrice(getPrintPhotoPrice()) : `${t.photoModal.startingFrom} 15€`}
                         </span>
                       </div>
                     </div>
@@ -686,8 +701,8 @@ export function MobilePhotoViewer({
               <div className="text-center mt-3">
                 <p className="text-xs text-gray-600">
                   {items.length === 0 
-                    ? "Aucune photo dans le panier" 
-                    : `${items.length} photo${items.length > 1 ? 's' : ''} dans le panier`
+                    ? t.photoModal.counter.noPhotosInCart
+                    : t.photoModal.counter.photosInCart(items.length)
                   }
                 </p>
               </div>

@@ -1,22 +1,18 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import { SupabaseImage } from "@/components/ui/supabase-image"
 import Link from "next/link"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { StaggerContainer, StaggerItem } from "@/components/animations/page-transition"
-import { SimpleCalendar } from "@/components/ui/simple-calendar"
-import { Calendar } from "lucide-react"
 
 interface GallerySessionsClientProps {
   galleries: any[]
 }
 
 export function GallerySessionsClient({ galleries }: GallerySessionsClientProps) {
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false)
-  const datePickerRef = useRef<HTMLDivElement>(null)
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
   
   // Chaque galerie est une session séparée
   const sessionsWithPhotos = galleries
@@ -41,222 +37,248 @@ export function GallerySessionsClient({ galleries }: GallerySessionsClientProps)
   const uniqueDates = Object.keys(sessionsByDate)
     .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
 
-  // Filtrer par date si sélectionnée
-  const filteredSessions = selectedDate 
-    ? uniqueDates.filter(date => date === selectedDate).map(date => sessionsByDate[date])
-    : Object.values(sessionsByDate)
-
-  const handleDateFilter = (date: string) => {
-    setSelectedDate(date === selectedDate ? null : date)
-  }
-
-  // Fermer le date picker au clic extérieur
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
-        setShowCustomDatePicker(false)
+  // Grouper par mois
+  const sessionsByMonth = uniqueDates.reduce((acc: any, date: string) => {
+    const dateObj = new Date(date)
+    const month = dateObj.getMonth() + 1 // 1-12
+    const year = dateObj.getFullYear()
+    const monthKey = `${year}-${month.toString().padStart(2, '0')}`
+    
+    if (!acc[monthKey]) {
+      acc[monthKey] = {
+        monthKey,
+        month,
+        year,
+        monthName: dateObj.toLocaleDateString('fr-FR', { month: 'long' }),
+        sessions: {},
+        totalPhotos: 0,
+        sessionCount: 0
       }
     }
     
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    acc[monthKey].sessions[date] = sessionsByDate[date]
+    acc[monthKey].totalPhotos += sessionsByDate[date].totalPhotos
+    acc[monthKey].sessionCount += sessionsByDate[date].sessions.length
+    
+    return acc
+  }, {})
 
-  const handleCustomDateSelect = (date: string) => {
-    if (uniqueDates.includes(date)) {
-      setSelectedDate(date)
-    }
-    setShowCustomDatePicker(false)
+  // Obtenir les mois triés (plus récent en premier)
+  const monthKeys = Object.keys(sessionsByMonth)
+    .sort((a, b) => b.localeCompare(a)) // Tri décroissant (2024-08, 2024-07, etc.)
+
+  const handleMonthSelect = (monthKey: string) => {
+    setSelectedMonth(monthKey)
   }
+
+  const handleBackToMonths = () => {
+    setSelectedMonth(null)
+  }
+
+
 
   return (
     <div className="py-8">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 font-dm-sans">
-          Sessions par jour
+          Sessions par mois
         </h2>
         
-        {/* Sélecteur de dates */}
-        {uniqueDates.length > 1 && (
-          <div className="mb-8">
-            <div className="flex justify-center mb-4">
-              <span className="text-sm font-medium text-gray-700">Filtrer par date :</span>
-            </div>
-            <div className="flex gap-2 justify-center flex-wrap items-center">
-              {/* Bouton toutes les dates */}
-              <motion.button
-                onClick={() => setSelectedDate(null)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedDate === null
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Toutes les dates
-              </motion.button>
-              
-              {/* Les 3 dernières dates */}
-              {uniqueDates.slice(0, 3).map((date) => (
-                <motion.button
-                  key={date}
-                  onClick={() => handleDateFilter(date)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    selectedDate === date
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {new Date(date).toLocaleDateString('fr-FR', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric'
-                  })}
-                </motion.button>
-              ))}
-              
-              {/* Date picker personnalisé pour les autres dates */}
-              <div className="relative" ref={datePickerRef}>
-                <motion.button
-                  onClick={() => setShowCustomDatePicker(!showCustomDatePicker)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    selectedDate && !uniqueDates.slice(0, 3).includes(selectedDate)
-                      ? 'border-blue-500 bg-blue-50 text-blue-600'
-                      : 'border border-gray-300 bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Calendar className="w-4 h-4" />
-                  <span>
-                    {selectedDate && !uniqueDates.slice(0, 3).includes(selectedDate)
-                      ? new Date(selectedDate).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric'
-                        })
-                      : 'Plus de dates'
-                    }
-                  </span>
-                </motion.button>
-                
-                <AnimatePresence>
-                  {showCustomDatePicker && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute top-full mt-2 left-0 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
-                    >
-                      <SimpleCalendar
-                        selectedDate={selectedDate || ''}
-                        onDateSelect={handleCustomDateSelect}
-                        availableDates={uniqueDates}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                
-                <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap">
-                  {uniqueDates.length > 3 ? 'Plus de dates' : 'Choisir une date'}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
         
-        {filteredSessions.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="mb-4 flex justify-center">
-              <Image
-                src="/Logos/camera2.svg"
-                alt="Camera"
-                width={96}
-                height={96}
-                className="w-24 h-24"
-              />
+        {/* Vue conditionnelle : Mois → Jours (direct vers galerie) */}
+        {selectedMonth ? (
+          /* Vue 2: Jours d'un mois spécifique */
+          <div className="mb-8">
+            <div className="text-center mb-6">
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 capitalize">
+                {sessionsByMonth[selectedMonth]?.monthName} {sessionsByMonth[selectedMonth]?.year}
+              </h3>
+              <div className="flex justify-center gap-6 text-sm text-gray-600 mb-4">
+                <span>{sessionsByMonth[selectedMonth]?.totalPhotos} photos</span>
+                <span>{sessionsByMonth[selectedMonth]?.sessionCount} sessions</span>
+                <span>{Object.keys(sessionsByMonth[selectedMonth]?.sessions || {}).length} jours</span>
+              </div>
+              <button
+                onClick={handleBackToMonths}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                ← Retour aux mois
+              </button>
             </div>
-            <h3 className="text-2xl font-semibold mb-4">
-              {selectedDate ? "Aucune session pour cette date" : "Aucune session disponible"}
-            </h3>
-            <p className="text-gray-600">
-              {selectedDate 
-                ? "Essayez de sélectionner une autre date ou voir toutes les sessions" 
-                : "Les nouvelles sessions seront bientôt disponibles !"}
-            </p>
+            
+            {sessionsByMonth[selectedMonth] ? (
+              <StaggerContainer className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3" staggerDelay={0.05}>
+                {Object.keys(sessionsByMonth[selectedMonth].sessions)
+                  .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+                  .map((date) => {
+                    const dateData = sessionsByMonth[selectedMonth].sessions[date]
+                    const firstSession = dateData.sessions[0]
+                    
+                    return (
+                      <StaggerItem key={date}>
+                        <Link href={`/gallery?date=${date}`} className="block">
+                          <motion.div
+                            className="bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer overflow-hidden group"
+                            whileHover={{ y: -4 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                          <div className="relative aspect-[3/4] bg-gradient-to-br from-blue-400 to-blue-600">
+                            {firstSession.photos && firstSession.photos.length > 0 ? (
+                              <SupabaseImage
+                                src={firstSession.photos[0].preview_s3_url}
+                                alt={`Photos du ${new Date(date).toLocaleDateString('fr-FR')}`}
+                                width={300}
+                                height={400}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Image
+                                  src="/Logos/camera2.svg"
+                                  alt="Camera"
+                                  width={40}
+                                  height={40}
+                                  className="w-10 h-10"
+                                  style={{ filter: 'brightness(0) invert(1)' }}
+                                />
+                              </div>
+                            )}
+                            
+                            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                              {dateData.totalPhotos} photo{dateData.totalPhotos > 1 ? 's' : ''}
+                            </div>
+                            
+                            <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                              {dateData.sessions.length} session{dateData.sessions.length > 1 ? 's' : ''}
+                            </div>
+                          </div>
+                          
+                          <div className="p-3">
+                            <div className="text-center">
+                              <div className="text-sm text-gray-600 mb-1">
+                                {new Date(date).toLocaleDateString('fr-FR', {
+                                  weekday: 'long'
+                                })}
+                              </div>
+                              <div className="text-lg font-bold text-gray-900">
+                                {new Date(date).toLocaleDateString('fr-FR', {
+                                  day: 'numeric',
+                                  month: 'long'
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                          </motion.div>
+                        </Link>
+                      </StaggerItem>
+                    )
+                  })}
+              </StaggerContainer>
+            ) : (
+              <div className="text-center py-8">
+                <h3 className="text-2xl font-semibold mb-4">Aucune session pour ce mois</h3>
+                <p className="text-gray-600">Essayez de sélectionner un autre mois</p>
+              </div>
+            )}
           </div>
         ) : (
-          <StaggerContainer className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3" staggerDelay={0.1}>
-            {filteredSessions.map((dateData: any) => {
-              const firstSession = dateData.sessions[0]
-              
-              return (
-                <StaggerItem key={dateData.date}>
-                  <Link href={`/gallery?date=${dateData.date}`} className="block">
-                    <motion.div
-                      className="bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer overflow-hidden group"
-                      whileHover={{ y: -4 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {/* Image en format portrait optimisé */}
-                      <div className="relative aspect-[3/4] bg-gradient-to-br from-blue-400 to-blue-600">
-                        {firstSession.photos && firstSession.photos.length > 0 ? (
-                          <SupabaseImage
-                            src={firstSession.photos[0].preview_s3_url}
-                            alt={`Photos du ${new Date(dateData.date).toLocaleDateString('fr-FR')}`}
-                            width={300}
-                            height={400}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Image
-                              src="/Logos/camera2.svg"
-                              alt="Camera"
-                              width={40}
-                              height={40}
-                              className="w-10 h-10"
-                              style={{ filter: 'brightness(0) invert(1)' }}
+          /* Vue 1: Liste des mois (Vue épurée par défaut) */
+          <div>
+            {monthKeys.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="mb-4 flex justify-center">
+                  <Image
+                    src="/Logos/camera2.svg"
+                    alt="Camera"
+                    width={96}
+                    height={96}
+                    className="w-24 h-24"
+                  />
+                </div>
+                <h3 className="text-2xl font-semibold mb-4">Aucune session disponible</h3>
+                <p className="text-gray-600">Les nouvelles sessions seront bientôt disponibles !</p>
+              </div>
+            ) : (
+              <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto" staggerDelay={0.1}>
+                {monthKeys.map((monthKey) => {
+                  const monthData = sessionsByMonth[monthKey]
+                  const monthDates = Object.keys(monthData.sessions)
+                  const firstDate = monthDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0]
+                  const firstSession = firstDate ? monthData.sessions[firstDate].sessions[0] : null
+                  
+                  return (
+                    <StaggerItem key={monthKey}>
+                      <motion.div
+                        onClick={() => handleMonthSelect(monthKey)}
+                        className="bg-white rounded-2xl border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden group"
+                        whileHover={{ y: -8, scale: 1.02 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {/* Image d'en-tête du mois */}
+                        <div className="relative h-48 bg-gradient-to-br from-blue-400 to-blue-600">
+                          {firstSession?.photos && firstSession.photos.length > 0 ? (
+                            <SupabaseImage
+                              src={firstSession.photos[0].preview_s3_url}
+                              alt={`${monthData.monthName} ${monthData.year}`}
+                              width={400}
+                              height={200}
+                              className="w-full h-full object-cover"
                             />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Image
+                                src="/Logos/camera2.svg"
+                                alt="Camera"
+                                width={60}
+                                height={60}
+                                className="w-15 h-15"
+                                style={{ filter: 'brightness(0) invert(1)' }}
+                              />
+                            </div>
+                          )}
+                          
+                          {/* Overlay avec titre du mois */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
+                            <div className="p-6 text-white">
+                              <h3 className="text-2xl md:text-3xl font-bold capitalize">
+                                {monthData.monthName}
+                              </h3>
+                              <p className="text-lg opacity-90">{monthData.year}</p>
+                            </div>
                           </div>
-                        )}
+                        </div>
                         
-                        {/* Badge du nombre de photos centré en bas */}
-                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
-                          {dateData.totalPhotos} photo{dateData.totalPhotos > 1 ? 's' : ''}
-                        </div>
-                        
-                        {/* Badge du nombre de sessions à droite */}
-                        <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
-                          {dateData.sessions.length} session{dateData.sessions.length > 1 ? 's' : ''}
-                        </div>
-                      </div>
-                      
-                      <div className="p-3">
-                        <div className="text-center">
-                          <div className="text-sm text-gray-600 mb-1">
-                            {new Date(dateData.date).toLocaleDateString('fr-FR', {
-                              weekday: 'long'
-                            })}
+                        {/* Statistiques du mois */}
+                        <div className="p-6">
+                          <div className="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                              <div className="text-2xl font-bold text-blue-600">{monthData.totalPhotos}</div>
+                              <div className="text-sm text-gray-600">photos</div>
+                            </div>
+                            <div>
+                              <div className="text-2xl font-bold text-green-600">{monthData.sessionCount}</div>
+                              <div className="text-sm text-gray-600">sessions</div>
+                            </div>
+                            <div>
+                              <div className="text-2xl font-bold text-purple-600">{monthDates.length}</div>
+                              <div className="text-sm text-gray-600">jours</div>
+                            </div>
                           </div>
-                          <div className="text-lg font-bold text-gray-900">
-                            {new Date(dateData.date).toLocaleDateString('fr-FR', {
-                              day: 'numeric',
-                              month: 'long'
-                            })}
+                          
+                          <div className="mt-4 text-center">
+                            <span className="text-blue-600 font-medium text-sm group-hover:text-blue-800 transition-colors">
+                              Voir les sessions →
+                            </span>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  </Link>
-                </StaggerItem>
-              )
-            })}
-          </StaggerContainer>
+                      </motion.div>
+                    </StaggerItem>
+                  )
+                })}
+              </StaggerContainer>
+            )}
+          </div>
         )}
       </div>
     </div>

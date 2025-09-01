@@ -57,6 +57,34 @@ export const translations = {
       },
       addToCart: "Ajouter au panier",
       alreadyInCart: "Déjà dans le panier"
+    },
+    photoModal: {
+      gallery: "GALERIE",
+      digitalPhoto: "Photo Numérique",
+      digitalDownload: "Téléchargement haute résolution",
+      printPhoto: "Tirage photo",
+      professionalPrint: "Impression professionnelle + JPEG inclus",
+      startingFrom: "À partir de",
+      addToFavorites: "Ajoute à tes favoris et reviens en fin de semaine pour sélectionner les meilleures photos.",
+      addToCart: "Ajouter au panier",
+      packInstructions: "Ajoutez vos photos une à une, les prix de pack s'appliqueront automatiquement dans le panier",
+      tooltips: {
+        pack15: "S'applique automatiquement dès que votre total atteint 40€",
+        unlimited: "S'applique automatiquement dès que votre total atteint 69€"
+      },
+      counter: {
+        photosRemainingPack15: "photos restantes pour le Pack 15",
+        pack15Unlocked: "📷 Pack 15 débloqué !",
+        photosRemainingUnlimited: "photos restantes pour le Pack Illimité",
+        unlimitedUnlocked: "🎁 Pack Illimité débloqué !",
+        photosInCart: (count: number) => `${count} photo${count > 1 ? 's' : ''} dans le panier`,
+        noPhotosInCart: "Aucune photo dans le panier"
+      },
+      pricing: {
+        single: "1",
+        pack15: "Pack 15",
+        unlimited: "Illimité"
+      }
     }
   },
   en: {
@@ -115,6 +143,34 @@ export const translations = {
       },
       addToCart: "Add to cart",
       alreadyInCart: "Already in cart"
+    },
+    photoModal: {
+      gallery: "GALLERY",
+      digitalPhoto: "Digital Photo",
+      digitalDownload: "High resolution download",
+      printPhoto: "Photo Print",
+      professionalPrint: "Professional print + JPEG included",
+      startingFrom: "Starting from",
+      addToFavorites: "Add to your favorites and come back at the end of the week to select the best photos.",
+      addToCart: "Add to cart",
+      packInstructions: "Add your photos one by one, pack prices will apply automatically in the cart",
+      tooltips: {
+        pack15: "Applies automatically when your total reaches €40",
+        unlimited: "Applies automatically when your total reaches €69"
+      },
+      counter: {
+        photosRemainingPack15: "photos remaining for Pack 15",
+        pack15Unlocked: "📷 Pack 15 unlocked!",
+        photosRemainingUnlimited: "photos remaining for Unlimited Pack",
+        unlimitedUnlocked: "🎁 Unlimited Pack unlocked!",
+        photosInCart: (count: number) => `${count} photo${count > 1 ? 's' : ''} in cart`,
+        noPhotosInCart: "No photos in cart"
+      },
+      pricing: {
+        single: "1",
+        pack15: "Pack 15",
+        unlimited: "Unlimited"
+      }
     }
   },
   de: {
@@ -173,6 +229,34 @@ export const translations = {
       },
       addToCart: "In den Warenkorb",
       alreadyInCart: "Bereits im Warenkorb"
+    },
+    photoModal: {
+      gallery: "GALERIE",
+      digitalPhoto: "Digitales Foto",
+      digitalDownload: "High-Resolution-Download",
+      printPhoto: "Fotoabzug",
+      professionalPrint: "Professioneller Druck + JPEG enthalten",
+      startingFrom: "Ab",
+      addToFavorites: "Zu Ihren Favoriten hinzufügen und am Ende der Woche wiederkommen, um die besten Fotos auszuwählen.",
+      addToCart: "In den Warenkorb",
+      packInstructions: "Fügen Sie Ihre Fotos einzeln hinzu, Paketpreise werden automatisch im Warenkorb angewendet",
+      tooltips: {
+        pack15: "Wird automatisch angewendet, wenn Ihr Gesamtbetrag 40€ erreicht",
+        unlimited: "Wird automatisch angewendet, wenn Ihr Gesamtbetrag 69€ erreicht"
+      },
+      counter: {
+        photosRemainingPack15: "Fotos übrig für Paket 15",
+        pack15Unlocked: "📷 Paket 15 freigeschaltet!",
+        photosRemainingUnlimited: "Fotos übrig für Unbegrenztes Paket",
+        unlimitedUnlocked: "🎁 Unbegrenztes Paket freigeschaltet!",
+        photosInCart: (count: number) => `${count} Foto${count > 1 ? 's' : ''} im Warenkorb`,
+        noPhotosInCart: "Keine Fotos im Warenkorb"
+      },
+      pricing: {
+        single: "1",
+        pack15: "Paket 15",
+        unlimited: "Unbegrenzt"
+      }
     }
   }
 }

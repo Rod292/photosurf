@@ -14,6 +14,8 @@ import { MobilePhotoViewer } from "./mobile-photo-viewer"
 import { HeartButton } from "@/components/ui/heart-button"
 import { motion } from "framer-motion"
 import { getNextPhotoPrice, formatPrice as formatPriceUtil, calculateSavingsPercentage, calculateDeliveryPrice, calculateDynamicPricing } from "@/lib/pricing"
+import { LanguageSwitcher } from "@/components/language-switcher"
+import { getTranslation, Language } from "@/lib/translations"
 
 interface PhotoLightboxModalProps {
   isOpen: boolean
@@ -23,15 +25,14 @@ interface PhotoLightboxModalProps {
   onNavigate: (index: number) => void
 }
 
-const DIGITAL_OPTION = {
+const getDigitalOption = (t: ReturnType<typeof getTranslation>) => ({
   id: 'digital',
-  label: 'Photo Numérique',
+  label: t.photoModal.digitalPhoto,
   price: 15,
-  description: 'Téléchargement haute résolution'
-}
+  description: t.photoModal.digitalDownload
+})
 
-
-const PRINT_OPTIONS = [
+const getPrintOptions = (t: ReturnType<typeof getTranslation>) => [
   {
     id: 'print_a5',
     label: 'A5',
@@ -77,11 +78,16 @@ export function PhotoLightboxModal({
   currentIndex,
   onNavigate
 }: PhotoLightboxModalProps) {
+  const [language, setLanguage] = useState<Language>('fr')
   const [selectedProductType, setSelectedProductType] = useState<'digital' | 'print'>('digital')
   const [selectedPrintFormat, setSelectedPrintFormat] = useState<string>('print_a5')
   const [deliveryOption, setDeliveryOption] = useState<'pickup' | 'delivery'>('pickup')
   const [showPack15Tooltip, setShowPack15Tooltip] = useState(false)
   const [showUnlimitedTooltip, setShowUnlimitedTooltip] = useState(false)
+  
+  const t = getTranslation(language)
+  const DIGITAL_OPTION = getDigitalOption(t)
+  const PRINT_OPTIONS = getPrintOptions(t)
   
   const getSelectedProduct = () => {
     if (selectedProductType === 'digital') {
@@ -313,14 +319,24 @@ export function PhotoLightboxModal({
               {/* Header - fixed at top */}
               <div className="mb-3 md:mb-4 flex-shrink-0">
                 <div className="mb-2">
-                  <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Galerie</h4>
+                  <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t.photoModal.gallery}</h4>
                   <p className="text-sm font-medium text-gray-800">{currentPhoto.filename}</p>
                 </div>
+                
+                {/* Language switcher - positioned above pricing box */}
+                <div className="flex justify-end mb-2">
+                  <LanguageSwitcher 
+                    onLanguageChange={setLanguage}
+                    currentLanguage={language}
+                    className="opacity-90 hover:opacity-100 transition-opacity"
+                  />
+                </div>
+                
                 <div className="bg-white rounded-md p-2 shadow-sm border border-gray-200 mb-3">
                   <div className="flex items-center justify-center gap-2 text-xs mb-2">
                     <div className="text-center">
                       <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mb-1">
-                        <span className="text-green-600 font-bold text-xs">1</span>
+                        <span className="text-green-600 font-bold text-xs">{t.photoModal.pricing.single}</span>
                       </div>
                       <div className="font-bold text-green-600 text-xs">10€</div>
                     </div>
@@ -357,13 +373,13 @@ export function PhotoLightboxModal({
                             className="opacity-70"
                           />
                         </div>
-                        <div className="font-bold text-purple-700 text-xs">Pack 15</div>
+                        <div className="font-bold text-purple-700 text-xs">{t.photoModal.pricing.pack15}</div>
                         <div className="text-purple-600 font-bold text-xs">40€</div>
                       </div>
                       {showPack15Tooltip && (
                         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-red-300 rounded-md p-2 shadow-lg z-10">
                           <p className="text-xs text-red-600 font-medium text-center">
-                            S'applique automatiquement dès que votre total atteint 40€
+                            {t.photoModal.tooltips.pack15}
                           </p>
                         </div>
                       )}
@@ -378,13 +394,13 @@ export function PhotoLightboxModal({
                         <div className="h-3 flex items-center justify-center mb-1">
                           <div className="text-xs">🎁</div>
                         </div>
-                        <div className="font-bold text-blue-700 text-xs">Illimité</div>
+                        <div className="font-bold text-blue-700 text-xs">{t.photoModal.pricing.unlimited}</div>
                         <div className="text-blue-600 font-bold text-xs">69€</div>
                       </div>
                       {showUnlimitedTooltip && (
                         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-red-300 rounded-md p-2 shadow-lg z-10">
                           <p className="text-xs text-red-600 font-medium text-center">
-                            S'applique automatiquement dès que votre total atteint 69€
+                            {t.photoModal.tooltips.unlimited}
                           </p>
                         </div>
                       )}
@@ -393,7 +409,7 @@ export function PhotoLightboxModal({
                 </div>
                 
                 <p className="text-xs text-red-600 italic text-center mt-2">
-                  Ajoutez vos photos une à une, les prix de pack s'appliqueront automatiquement dans le panier
+                  {t.photoModal.packInstructions}
                 </p>
               </div>
               
@@ -443,19 +459,19 @@ export function PhotoLightboxModal({
                     if (digitalPhotosCount >= 21) {
                       return (
                         <p className="text-xs font-bold text-green-600 text-center mb-3">
-                          🎁 Pack Illimité débloqué !
+                          {t.photoModal.counter.unlimitedUnlocked}
                         </p>
                       );
                     } else if (digitalPhotosCount >= 7) {
                       return (
                         <p className="text-xs font-bold text-purple-600 text-center mb-3">
-                          📷 Pack 15 débloqué ! <span className="text-orange-600">{photosForUnlimited}</span> photos restantes pour le Pack Illimité
+                          {t.photoModal.counter.pack15Unlocked} <span className="text-orange-600">{photosForUnlimited}</span> {t.photoModal.counter.photosRemainingUnlimited}
                         </p>
                       );
                     } else {
                       return (
                         <p className="text-xs font-bold text-orange-600 text-center mb-3">
-                          <span className="text-orange-700">{photosFor15Pack}</span> photos restantes pour le Pack 15
+                          <span className="text-orange-700">{photosFor15Pack}</span> {t.photoModal.counter.photosRemainingPack15}
                         </p>
                       );
                     }
@@ -481,10 +497,10 @@ export function PhotoLightboxModal({
                         <Label 
                           className="text-sm font-semibold cursor-pointer text-gray-900 group-hover:text-blue-700 transition-colors pointer-events-none"
                         >
-                          Tirage photo
+                          {t.photoModal.printPhoto}
                         </Label>
                         <p className="text-xs text-gray-600 leading-tight pointer-events-none">
-                          Impression professionnelle + JPEG inclus
+                          {t.photoModal.professionalPrint}
                         </p>
                         
                         {/* Menu déroulant pour les formats */}
@@ -510,7 +526,7 @@ export function PhotoLightboxModal({
                         
                         <div className="flex items-center justify-between mt-1">
                           <p className="text-base font-bold text-blue-600 pointer-events-none">
-                            {selectedProductType === 'print' ? formatPrice(getPrintPhotoPrice()) : `À partir de ${formatPrice(Math.min(...PRINT_OPTIONS.map(o => o.price)))}`}
+                            {selectedProductType === 'print' ? formatPrice(getPrintPhotoPrice()) : `${t.photoModal.startingFrom} ${formatPrice(Math.min(...PRINT_OPTIONS.map(o => o.price)))}`}
                           </p>
                         </div>
                       </div>
@@ -612,7 +628,7 @@ export function PhotoLightboxModal({
                       height={20}
                       className="h-5 w-5 mr-2 inline-block"
                     />
-                    {isPhotoInCart() ? "Déjà dans le panier" : "Ajouter au panier"}
+                    {isPhotoInCart() ? t.favorites.alreadyInCart : t.photoModal.addToCart}
                   </Button>
                 </div>
                 
@@ -620,8 +636,8 @@ export function PhotoLightboxModal({
                 <div className="text-center mt-3">
                   <p className="text-xs text-gray-600">
                     {items.length === 0 
-                      ? "Aucune photo dans le panier" 
-                      : `${items.length} photo${items.length > 1 ? 's' : ''} dans le panier`
+                      ? t.photoModal.counter.noPhotosInCart
+                      : t.photoModal.counter.photosInCart(items.length)
                     }
                   </p>
                 </div>
