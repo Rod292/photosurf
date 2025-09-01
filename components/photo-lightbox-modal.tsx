@@ -596,7 +596,7 @@ export function PhotoLightboxModal({
               <div className="flex-shrink-0 pt-3 border-t border-gray-200 mt-3 space-y-3">
                 {/* Message informatif sur les favoris */}
                 <p className="text-xs text-gray-600 text-center leading-relaxed">
-                  Ajoute à tes favoris et reviens en fin de semaine pour sélectionner les meilleures photos.
+                  {t.photoModal.addToFavorites}
                 </p>
                 
                 {/* Conteneur pour le bouton favori et le bouton panier */}
