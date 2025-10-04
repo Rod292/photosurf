@@ -1,7 +1,9 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { createSupabaseAdminClient } from "@/lib/supabase/server"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams
+  const locationSlug = searchParams.get('location')
   try {
     // Vérifier les variables d'environnement
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -14,8 +16,22 @@ export async function GET() {
 
     const supabase = createSupabaseAdminClient()
     
+    // Get school ID if location is provided
+    let schoolId: number | null = null
+    if (locationSlug) {
+      const { data: school } = await supabase
+        .from('surf_schools')
+        .select('id')
+        .eq('slug', locationSlug)
+        .single()
+      
+      if (school) {
+        schoolId = school.id
+      }
+    }
+    
     // Récupérer les 8 dernières photos avec leurs galeries
-    const { data: photos, error } = await supabase
+    let query = supabase
       .from('photos')
       .select(`
         id,
@@ -23,7 +39,7 @@ export async function GET() {
         preview_s3_url,
         filename,
         created_at,
-        galleries (
+        galleries!inner (
           id,
           name,
           date,
@@ -32,6 +48,13 @@ export async function GET() {
       `)
       .order('created_at', { ascending: false })
       .limit(8)
+    
+    // Filter by school if location provided
+    if (schoolId) {
+      query = query.eq('galleries.school_id', schoolId)
+    }
+    
+    const { data: photos, error } = await query
     
     if (error) {
       console.error('Erreur Supabase dans latest-photos:', error)

@@ -22,7 +22,11 @@ interface PhotosBySchool {
   totalPhotos: number
 }
 
-export function PhotosBySchool() {
+interface PhotosBySchoolProps {
+  locationSlug?: string
+}
+
+export function PhotosBySchool({ locationSlug }: PhotosBySchoolProps = {}) {
   const [schoolGroups, setSchoolGroups] = useState<PhotosBySchool[]>([])
   const [loading, setLoading] = useState(true)
   const { shouldAnimate, isMobile } = useOptimizedAnimations()
@@ -31,7 +35,10 @@ export function PhotosBySchool() {
   useEffect(() => {
     async function fetchPhotosBySchool() {
       try {
-        const response = await fetch('/api/photos-by-school')
+        const url = locationSlug 
+          ? `/api/photos-by-school?location=${locationSlug}`
+          : '/api/photos-by-school'
+        const response = await fetch(url)
         if (response.ok) {
           const data = await response.json()
           setSchoolGroups(data.schoolGroups || [])
@@ -91,7 +98,7 @@ export function PhotosBySchool() {
         {schoolGroups.map((schoolGroup) => (
           <StaggerItem key={schoolGroup.school.id}>
             <Link
-              href={`/gallery?school=${encodeURIComponent(schoolGroup.school.name)}`}
+              href={`/gallery?school=${encodeURIComponent(schoolGroup.school.name)}${locationSlug ? `&location=${locationSlug}` : ''}`}
               className="group block"
             >
               <motion.div 

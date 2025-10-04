@@ -10,7 +10,11 @@ interface PhotoWithGallery extends Photo {
   galleries?: Gallery
 }
 
-export function LatestPhotosSectionClient() {
+interface LatestPhotosSectionClientProps {
+  locationSlug?: string
+}
+
+export function LatestPhotosSectionClient({ locationSlug }: LatestPhotosSectionClientProps = {}) {
   const [photos, setPhotos] = useState<PhotoWithGallery[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -18,7 +22,10 @@ export function LatestPhotosSectionClient() {
   useEffect(() => {
     async function fetchLatestPhotos() {
       try {
-        const response = await fetch('/api/latest-photos')
+        const url = locationSlug 
+          ? `/api/latest-photos?location=${locationSlug}`
+          : '/api/latest-photos'
+        const response = await fetch(url)
         if (!response.ok) {
           throw new Error('Erreur lors de la récupération des photos')
         }
@@ -69,7 +76,9 @@ export function LatestPhotosSectionClient() {
       {photos.map((photo) => (
         <Link
           key={photo.id}
-          href={photo.galleries?.date ? `/gallery?date=${photo.galleries.date}` : `/gallery/${photo.gallery_id}`}
+          href={photo.galleries?.date 
+            ? `/gallery?date=${photo.galleries.date}${locationSlug ? `&location=${locationSlug}` : ''}`
+            : `/gallery/${photo.gallery_id}`}
           className="group flex-shrink-0 relative"
         >
           <div className="w-40 h-60 sm:w-48 sm:h-72 relative rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-105">

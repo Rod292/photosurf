@@ -85,6 +85,26 @@ export const translations = {
         pack15: "Pack 15",
         unlimited: "Illimité"
       }
+    },
+    location: {
+      sessionsPerDay: "Sessions par jour",
+      recentPhotos: "Photos récentes",
+      surfSchools: "Écoles de surf",
+      cantFindPhotos: "Vous ne trouvez pas vos photos ?",
+      contactUs: "Contactez-nous directement et nous vous aiderons à les retrouver",
+      contactInstagram: "Nous contacter sur Instagram",
+      contactEmail: "Par email",
+      officialPartner: "École de Surf Partenaire Officielle",
+      sessionsImmortal: "Sessions Surf Immortalisées",
+      sessionsDescription: "Photos haute résolution de vos sessions de surf. Présents quotidiennement sur les spots.",
+      professionalQuality: "Qualité professionnelle",
+      instantDelivery: "Livraison immédiate par email",
+      expertise: "Expertise",
+      expertiseDescription: "Spécialisés dans la photographie de surf. Connaissance parfaite des conditions et meilleurs angles.",
+      allLevels: "Tous niveaux de surfeurs",
+      personalizedService: "Service client personnalisé",
+      coverageZone: "Zone de Couverture",
+      coverageDescription: "Couverture complète des spots de surf."
     }
   },
   en: {
@@ -171,6 +191,26 @@ export const translations = {
         pack15: "Pack 15",
         unlimited: "Unlimited"
       }
+    },
+    location: {
+      sessionsPerDay: "Sessions per day",
+      recentPhotos: "Recent photos",
+      surfSchools: "Surf schools",
+      cantFindPhotos: "Can't find your photos?",
+      contactUs: "Contact us directly and we'll help you find them",
+      contactInstagram: "Contact us on Instagram",
+      contactEmail: "By email",
+      officialPartner: "Official Partner Surf School",
+      sessionsImmortal: "Surf Sessions Immortalized",
+      sessionsDescription: "High resolution photos of your surf sessions. Present daily on the spots.",
+      professionalQuality: "Professional quality",
+      instantDelivery: "Instant delivery by email",
+      expertise: "Expertise",
+      expertiseDescription: "Specialized in surf photography. Perfect knowledge of conditions and best angles.",
+      allLevels: "All levels of surfers",
+      personalizedService: "Personalized customer service",
+      coverageZone: "Coverage Area",
+      coverageDescription: "Complete coverage of surf spots."
     }
   },
   de: {
@@ -257,6 +297,26 @@ export const translations = {
         pack15: "Paket 15",
         unlimited: "Unbegrenzt"
       }
+    },
+    location: {
+      sessionsPerDay: "Sitzungen pro Tag",
+      recentPhotos: "Neueste Fotos",
+      surfSchools: "Surfschulen",
+      cantFindPhotos: "Können Sie Ihre Fotos nicht finden?",
+      contactUs: "Kontaktieren Sie uns direkt und wir helfen Ihnen dabei, sie zu finden",
+      contactInstagram: "Kontaktieren Sie uns auf Instagram",
+      contactEmail: "Per E-Mail",
+      officialPartner: "Offizielle Partner-Surfschule",
+      sessionsImmortal: "Surf-Sessions Verewigt",
+      sessionsDescription: "Hochauflösende Fotos Ihrer Surf-Sessions. Täglich an den Spots präsent.",
+      professionalQuality: "Professionelle Qualität",
+      instantDelivery: "Sofortige Lieferung per E-Mail",
+      expertise: "Expertise",
+      expertiseDescription: "Spezialisiert auf Surf-Fotografie. Perfekte Kenntnis der Bedingungen und besten Winkel.",
+      allLevels: "Alle Surfer-Level",
+      personalizedService: "Personalisierter Kundenservice",
+      coverageZone: "Abdeckungsbereich",
+      coverageDescription: "Vollständige Abdeckung der Surf-Spots."
     }
   }
 }

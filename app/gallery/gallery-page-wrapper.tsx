@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Home } from "lucide-react"
+import { motion } from "framer-motion"
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { getTranslation, Language } from '@/lib/translations'
 import { GalleryInstructions } from "@/components/gallery-instructions"
@@ -20,6 +21,7 @@ interface GalleryPageWrapperProps {
   searchParams: {
     date?: string
     school?: string
+    location?: string
   }
 }
 
@@ -33,11 +35,42 @@ export function GalleryPageWrapper({
 }: GalleryPageWrapperProps) {
   const [language, setLanguage] = useState<Language>('fr')
   const t = getTranslation(language)
+  
+  // Determine background image based on location
+  const getHeroImage = () => {
+    if (searchParams.location === 'siargao') {
+      return "/images/siargao-hero-bg.jpg"
+    }
+    return "/Logos/DJI_03862025LaTorche-3.jpg" // Default La Torche image
+  }
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.8,
+        staggerChildren: 0.2
+      }
+    }
+  }
+
+  const titleVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.7,
+        delay: 0.3
+      }
+    }
+  }
 
   return (
-    <>
-      {/* Bouton retour accueil */}
-      <div className="bg-white py-4 border-b border-gray-200">
+    <div className="min-h-screen bg-gray-50">
+      {/* Bouton retour accueil - moved above hero */}
+      <div className="relative z-20 bg-white/95 backdrop-blur-sm py-4 border-b border-gray-200">
         <div className="container mx-auto px-4">
           <Link 
             href="/"
@@ -50,35 +83,66 @@ export function GalleryPageWrapper({
         </div>
       </div>
 
-      {/* Hero Section avec image de fond */}
-      <div className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden">
-        {/* Image de fond */}
-        <div className="absolute inset-0">
-          <Image
-            src="/Logos/DJI_03862025LaTorche-3.jpg"
-            alt="Vue aérienne La Torche Plomeur Bretagne - Spot surf emblématique photographié par Arode Studio"
-            fill
-            className="object-cover"
-            priority
-          />
-          {/* Léger overlay sombre uniquement pour la lisibilité du texte */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
+      {/* Hero Section avec image de fond et animations */}
+      <section className="hidden md:block bg-white border-b border-gray-200">
+        <div className="relative bg-white">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <Image
+              src={getHeroImage()}
+              alt={searchParams.location === 'siargao' 
+                ? "Siargao surf waves - Professional surf photography by Arode Studio"
+                : "Vue aérienne La Torche Plomeur Bretagne - Spot surf emblématique photographié par Arode Studio"
+              }
+              fill
+              className="object-cover"
+              priority
+              unoptimized
+            />
+            {/* Overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
+          </div>
+          
+          {/* Content with animations */}
+          <motion.div
+            className="relative z-10 max-w-6xl mx-auto pt-16 pb-20"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div
+              className="text-center mb-4"
+              variants={titleVariants}
+            >
+              <motion.h1 
+                className="text-3xl md:text-4xl lg:text-6xl font-bold text-white mb-4 drop-shadow-lg"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.5 }}
+              >
+                {t.gallery.title}
+              </motion.h1>
+              <motion.p 
+                className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed drop-shadow-md"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
+              >
+                {t.gallery.subtitle}
+              </motion.p>
+            </motion.div>
+          </motion.div>
         </div>
-        
-        {/* Contenu */}
-        <div className="relative z-10 container mx-auto px-4 text-center text-white">
-          <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold font-playfair mb-4 md:mb-8 drop-shadow-lg">
-            {t.gallery.title}
-          </h1>
-          <p className="text-lg md:text-xl lg:text-2xl font-varela-round opacity-95 max-w-4xl mx-auto leading-relaxed drop-shadow-md">
-            {t.gallery.subtitle}
-          </p>
-        </div>
-      </div>
+      </section>
 
       {/* Filtres actifs */}
       {hasFilters && (
-        <div className="bg-blue-50 py-4">
+        <motion.div 
+          className="bg-blue-50 py-4"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.2 }}
+        >
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-center gap-4 flex-wrap">
               <span className="text-gray-700">{t.gallery.activeFilters}</span>
@@ -108,6 +172,11 @@ export function GalleryPageWrapper({
                   {searchParams.school}
                 </span>
               )}
+              {searchParams.location && (
+                <span className="bg-white px-3 py-1 rounded-full text-sm border border-blue-200">
+                  📍 {searchParams.location === 'siargao' ? 'Siargao' : 'La Torche'}
+                </span>
+              )}
               <Link 
                 href="/gallery"
                 className="text-blue-600 hover:text-blue-800 text-sm font-medium"
@@ -116,33 +185,45 @@ export function GalleryPageWrapper({
               </Link>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Instructions */}
-      <GalleryInstructions language={language} onLanguageChange={setLanguage} />
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 1.4 }}
+      >
+        <GalleryInstructions language={language} onLanguageChange={setLanguage} />
+      </motion.div>
 
       {/* Galleries Grid */}
-      {isSchoolFilter ? (
-        // Layout spécial pour le filtre par école
-        <GalleryClient 
-          latestPhotos={latestPhotos}
-          galleries={galleries}
-          schoolName={searchParams.school}
-          language={language}
-        />
-      ) : isDateFilter ? (
-        // Layout spécial pour le filtre par date
-        <GalleryClient 
-          latestPhotos={latestPhotos}
-          galleries={galleries}
-          dateFilter={searchParams.date}
-          language={language}
-        />
-      ) : (
-        // Layout organisé par sessions individuelles
-        <GallerySessionsClient galleries={galleries} />
-      )}
-    </>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 1.6 }}
+      >
+        {isSchoolFilter ? (
+          // Layout spécial pour le filtre par école
+          <GalleryClient 
+            latestPhotos={latestPhotos}
+            galleries={galleries}
+            schoolName={searchParams.school}
+            language={language}
+          />
+        ) : isDateFilter ? (
+          // Layout spécial pour le filtre par date
+          <GalleryClient 
+            latestPhotos={latestPhotos}
+            galleries={galleries}
+            dateFilter={searchParams.date}
+            language={language}
+          />
+        ) : (
+          // Layout organisé par sessions individuelles
+          <GallerySessionsClient galleries={galleries} />
+        )}
+      </motion.div>
+    </div>
   )
 }

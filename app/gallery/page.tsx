@@ -7,11 +7,26 @@ import { GalleryPageWrapper } from "./gallery-page-wrapper"
 interface SearchParams {
   date?: string
   school?: string
+  location?: string
 }
 
 async function getFilteredGalleries(searchParams: SearchParams): Promise<Gallery[]> {
   try {
     const supabase = createSupabaseAdminClient()
+    
+    // Get school ID if location is provided
+    let schoolId: number | null = null
+    if (searchParams.location) {
+      const { data: school } = await supabase
+        .from('surf_schools')
+        .select('id')
+        .eq('slug', searchParams.location)
+        .single()
+      
+      if (school) {
+        schoolId = school.id
+      }
+    }
     
     // Construire la requête avec join sur surf_schools et photos si on filtre par école
     let query = supabase
@@ -34,6 +49,11 @@ async function getFilteredGalleries(searchParams: SearchParams): Promise<Gallery
           gallery_id
         )
       `)
+    
+    // Filter by location if provided
+    if (schoolId) {
+      query = query.eq('school_id', schoolId)
+    }
     
     // Filtrer par date si présente
     if (searchParams.date) {
@@ -178,9 +198,10 @@ export default async function GalleriesListPage({
 }) {
   const resolvedSearchParams = await searchParams
   const galleries = await getFilteredGalleries(resolvedSearchParams)
-  const hasFilters = !!(resolvedSearchParams.date || resolvedSearchParams.school)
+  const hasFilters = !!(resolvedSearchParams.date || resolvedSearchParams.school || resolvedSearchParams.location)
   const isSchoolFilter = !!resolvedSearchParams.school
   const isDateFilter = !!resolvedSearchParams.date
+  const isLocationFilter = !!resolvedSearchParams.location
   
   // Récupérer les photos récentes si on filtre par école ou par date
   const rawLatestPhotos = isSchoolFilter 

@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { createSupabaseAdminClient } from '@/lib/supabase/server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams
+  const locationSlug = searchParams.get('location')
   try {
     // Vérifier les variables d'environnement
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -14,8 +16,22 @@ export async function GET() {
 
     const supabase = createSupabaseAdminClient()
 
+    // Get school ID if location is provided
+    let schoolId: number | null = null
+    if (locationSlug) {
+      const { data: school } = await supabase
+        .from('surf_schools')
+        .select('id')
+        .eq('slug', locationSlug)
+        .single()
+      
+      if (school) {
+        schoolId = school.id
+      }
+    }
+    
     // Première approche : récupérer toutes les galeries avec photos
-    const { data: galleries, error: galleriesError } = await supabase
+    let galleriesQuery = supabase
       .from('galleries')
       .select(`
         id,
@@ -28,6 +44,13 @@ export async function GET() {
       `)
       .not('school_id', 'is', null)
     
+    // Filter by school if location provided
+    if (schoolId) {
+      galleriesQuery = galleriesQuery.eq('school_id', schoolId)
+    }
+    
+    const { data: galleries, error: galleriesError } = await galleriesQuery
+    
     if (galleriesError) {
       console.error('Erreur récupération galeries:', galleriesError)
       return NextResponse.json({ 
@@ -37,10 +60,17 @@ export async function GET() {
     }
 
     // Récupérer les écoles
-    const { data: schools, error } = await supabase
+    let schoolsQuery = supabase
       .from('surf_schools')
       .select('id, name, slug')
       .order('name', { ascending: true })
+    
+    // If location provided, only get that school
+    if (schoolId) {
+      schoolsQuery = schoolsQuery.eq('id', schoolId)
+    }
+    
+    const { data: schools, error } = await schoolsQuery
 
     if (error) {
       console.error('Erreur Supabase dans photos-by-school:', error)

@@ -19,7 +19,11 @@ interface GalleryByDate {
   }>
 }
 
-export function PhotosByDate() {
+interface PhotosByDateProps {
+  locationSlug?: string
+}
+
+export function PhotosByDate({ locationSlug }: PhotosByDateProps = {}) {
   const [galleryGroups, setGalleryGroups] = useState<GalleryByDate[]>([])
   const [loading, setLoading] = useState(true)
   const [showDatePicker, setShowDatePicker] = useState(false)
@@ -30,7 +34,10 @@ export function PhotosByDate() {
   useEffect(() => {
     async function fetchGalleriesByDate() {
       try {
-        const response = await fetch('/api/galleries-by-date')
+        const url = locationSlug 
+          ? `/api/galleries-by-date?location=${locationSlug}`
+          : '/api/galleries-by-date'
+        const response = await fetch(url)
         if (response.ok) {
           const data = await response.json()
           setGalleryGroups(data.galleryGroups || [])
@@ -60,7 +67,9 @@ export function PhotosByDate() {
   const handleDateSelect = (date: string) => {
     setSelectedDate(date)
     setShowDatePicker(false)
-    router.push(`/gallery?date=${date}`)
+    const params = new URLSearchParams({ date })
+    if (locationSlug) params.append('location', locationSlug)
+    router.push(`/gallery?${params.toString()}`)
   }
 
   const handleCalendarClick = () => {
@@ -154,7 +163,11 @@ export function PhotosByDate() {
           const coverPhoto = group.galleries.find(g => g.coverPhoto)?.coverPhoto || group.galleries[0]?.coverPhoto
           
           return (
-            <Link key={group.date} href={`/gallery?date=${group.date}`} className="flex-shrink-0">
+            <Link 
+              key={group.date} 
+              href={`/gallery?date=${group.date}${locationSlug ? `&location=${locationSlug}` : ''}`} 
+              className="flex-shrink-0"
+            >
               <div className="w-44 bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
                 <div className="relative h-64 rounded-t-xl overflow-hidden">
                   {coverPhoto ? (

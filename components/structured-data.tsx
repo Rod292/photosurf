@@ -4,14 +4,16 @@ interface StructuredDataProps {
   title?: string
   description?: string
   imageUrl?: string
-  page?: 'home' | 'gallery' | 'about' | 'contact'
+  page?: 'home' | 'gallery' | 'about' | 'contact' | 'location'
+  location?: string
 }
 
 const StructuredData: FC<StructuredDataProps> = ({ 
-  title = "Photos Surf La Torche | Arode Studio", 
-  description = "Photographe professionnel de surf à La Torche, Bretagne",
+  title = "Photos Surf | Arode Studio", 
+  description = "Photographe professionnel de surf",
   imageUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/arodelogowhitepng-HNnXW50qCnMuNb7pxKVPk3x4zxq9mP.png",
-  page = 'home'
+  page = 'home',
+  location
 }) => {
   
   // Schema.org pour Business Local
@@ -20,28 +22,37 @@ const StructuredData: FC<StructuredDataProps> = ({
     "@type": "LocalBusiness",
     "@id": "https://www.arodestudio.com/#business",
     name: "Arode Studio",
-    description: "Photographe professionnel de surf à La Torche, spécialisé dans l'immortalisation des sessions de surf en Bretagne",
+    description: "Photographe professionnel de surf, spécialisé dans l'immortalisation des sessions de surf",
     url: "https://www.arodestudio.com",
     telephone: "contact@arodestudio.com",
     email: "contact@arodestudio.com",
     image: imageUrl,
     logo: imageUrl,
     priceRange: "€€",
-    address: {
+    address: location === 'Siargao' ? {
+      "@type": "PostalAddress",
+      addressLocality: "General Luna",
+      addressRegion: "Siargao",
+      addressCountry: "PH"
+    } : {
       "@type": "PostalAddress",
       addressLocality: "La Torche",
       addressRegion: "Bretagne",
       addressCountry: "FR",
       postalCode: "29120"
     },
-    geo: {
+    geo: location === 'Siargao' ? {
+      "@type": "GeoCoordinates",
+      latitude: 9.8432,
+      longitude: 126.0585
+    } : {
       "@type": "GeoCoordinates",
       latitude: 47.8369,
       longitude: -4.3369
     },
     areaServed: {
       "@type": "Place",
-      name: "La Torche, Bretagne, France"
+      name: location === 'Siargao' ? "Siargao, Philippines" : "La Torche, Bretagne, France"
     },
     serviceType: "Photographie de surf",
     hasOfferCatalog: {
@@ -53,7 +64,7 @@ const StructuredData: FC<StructuredDataProps> = ({
           itemOffered: {
             "@type": "Service",
             name: "Photos numériques de surf",
-            description: "Photos haute résolution de vos sessions de surf à La Torche"
+            description: "Photos haute résolution de vos sessions de surf"
           }
         },
         {
@@ -88,7 +99,9 @@ const StructuredData: FC<StructuredDataProps> = ({
       target: "https://www.arodestudio.com/gallery?search={search_term_string}",
       "query-input": "required name=search_term_string"
     },
-    keywords: "photos surf la torche, photographe surf bretagne, session surf finistère, arode studio"
+    keywords: location === 'Siargao' 
+      ? "photos surf siargao, photographe surf philippines, session surf cloud 9, arode studio"
+      : "photos surf la torche, photographe surf bretagne, session surf finistère, arode studio"
   }
 
   // Schema.org pour la page d'accueil avec informations spécifiques
@@ -107,8 +120,8 @@ const StructuredData: FC<StructuredDataProps> = ({
     },
     mainContentOfPage: {
       "@type": "CollectionPage",
-      name: "Galeries Photos Surf La Torche",
-      description: "Collection de photos de surf professionnelles prises à La Torche, Bretagne"
+      name: `Galeries Photos Surf ${location || 'La Torche'}`,
+      description: `Collection de photos de surf professionnelles prises à ${location || 'La Torche'}${location === 'Siargao' ? ', Philippines' : ', Bretagne'}`
     }
   } : null
 

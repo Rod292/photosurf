@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { createSupabaseAdminClient } from '@/lib/supabase/server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams
+  const locationSlug = searchParams.get('location')
   try {
     // Vérifier les variables d'environnement
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -15,19 +17,40 @@ export async function GET() {
     const supabase = createSupabaseAdminClient()
 
     // Récupérer les galeries avec les photos - approche simplifiée
-    const { data: galleries, error } = await supabase
+    let query = supabase
       .from('galleries')
       .select(`
         id,
         name,
         date,
+        school_id,
         photos!gallery_id (
           id,
           preview_s3_url
+        ),
+        surf_schools (
+          id,
+          name,
+          slug
         )
       `)
       .order('date', { ascending: false })
       .limit(20)
+    
+    // Filter by location if provided
+    if (locationSlug) {
+      const { data: school } = await supabase
+        .from('surf_schools')
+        .select('id')
+        .eq('slug', locationSlug)
+        .single()
+      
+      if (school) {
+        query = query.eq('school_id', school.id)
+      }
+    }
+    
+    const { data: galleries, error } = await query
 
     if (error) {
       console.error('Erreur Supabase dans galleries-by-date:', error)

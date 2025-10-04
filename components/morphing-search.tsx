@@ -13,7 +13,11 @@ interface SearchState {
   school: string
 }
 
-export function MorphingSearch() {
+interface MorphingSearchProps {
+  locationSlug?: string
+}
+
+export function MorphingSearch({ locationSlug }: MorphingSearchProps = {}) {
   const { schools } = useSurfSchools()
   const { setSearchDropdownOpen } = useSearchState()
   const [searchState, setSearchState] = useState<SearchState>({
@@ -40,6 +44,7 @@ export function MorphingSearch() {
     
     if (searchState.date) params.append('date', searchState.date)
     if (searchState.school) params.append('school', searchState.school)
+    if (locationSlug) params.append('location', locationSlug)
     
     setTimeout(() => {
       setIsSearching(false)
