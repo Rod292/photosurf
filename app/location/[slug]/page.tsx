@@ -45,8 +45,9 @@ const locations = {
   }
 }
 
-export default async function LocationPage({ params }: { params: { slug: string } }) {
-  const location = locations[params.slug as keyof typeof locations]
+export default async function LocationPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params
+  const location = locations[resolvedParams.slug as keyof typeof locations]
   
   if (!location) {
     notFound()
@@ -55,7 +56,7 @@ export default async function LocationPage({ params }: { params: { slug: string 
   return (
     <>
       <StructuredData page="location" location={location.name} />
-      <LocationPageClient location={location} slug={params.slug} />
+      <LocationPageClient location={location} slug={resolvedParams.slug} />
     </>
   )
 }
